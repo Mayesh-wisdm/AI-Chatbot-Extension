@@ -1,0 +1,16 @@
+{
+    "name": "ishwar/php-rag",
+    "description": "PHP RAG System",
+    "type": "project",
+    "require": {
+        "guzzlehttp/guzzle": "^7.9",
+        "phpfastcache/phpfastcache": "^9.2",
+        "fivefilters/readability.php": ">=3.0",
+        "smalot/pdfparser": "^2.12"
+    },
+    "authors": [
+        {
+            "name": "Ishwar"
+        }
+    ]
+}

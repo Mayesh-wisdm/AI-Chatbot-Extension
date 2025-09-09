@@ -1,0 +1,3164 @@
+/* Manin Layout */
+  .ai-botkit-sidebar-wrapper {
+    min-width: 250px;
+    background-color: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-botkit-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f9fafb;
+    overflow: hidden;
+  }
+  
+  .ai-botkit-main-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .ai-botkit-main {
+    flex: 1;
+    padding: 1rem;
+    background: #F5FBF9;
+  }
+
+  .ai-botkit-topbar {
+    height: 56px;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #F5FBF9;
+    display: none;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
+  .ai-botkit-topbar-left {
+    display: flex;
+    align-items: center;
+  }
+
+  .ai-botkit-topbar-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .ai-botkit-hamburger-menu {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .ai-botkit-hamburger-menu:hover {
+    background: none;
+  }
+
+  .ai-botkit-hamburger-menu i {
+    font-size: 1.5rem;
+    color: #008858;
+  }
+  
+  .ai-botkit-hamburger-menu:hover i {
+    color: #0E594D;
+  }
+  
+  .ai-botkit-hamburger-menu:active i {
+    color: #0056a6;
+  }
+  
+/* Side bar */
+.ai-botkit-sidebar {
+  min-width: 250px;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+  height: 100vh;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 20;
+}
+  
+  .ai-botkit-sidebar-header {
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+  }
+  
+  .ai-botkit-sidebar-logo {
+    /* height: 2rem; */
+    width: 6rem;
+    /* background-color: #008858; */
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+  .ai-botkit-sidebar-logo img{
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+  }
+  
+  .ai-botkit-sidebar-title {
+    font-weight: bold;
+    margin-left: 0.5rem;
+    font-size: 1.2rem;
+  }
+  
+  .ai-botkit-sidebar-new {
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .ai-botkit-button {
+    background-color: #008858;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    width: 100%;
+    font-size: 0.9rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+  }
+  
+  .ai-botkit-button:hover {
+    background-color: #0E594D;
+  }
+  
+  .ai-botkit-sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+  }
+  
+  .ai-botkit-sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: #6B7370;
+    transition: background 0.2s;
+    gap: 0.75rem;
+  }
+  
+  .ai-botkit-sidebar-link:hover {
+    background-color:#f1f5f9;
+    color: #6B7370;
+  }
+
+  .ai-botkit-sidebar-link.active {
+    background-color: #E6F4EF;
+    color: #008858;
+  }
+  .ai-botkit-sidebar-link.active i{
+    color: #008858;
+  }
+  .ai-botkit-sidebar-link.active svg{
+    fill: #008858;
+  }
+  .ai-botkit-sidebar-link:focus{
+    box-shadow: none;
+  }
+  .ai-botkit-sidebar-link i {
+    font-size: 1.25rem;
+    color: #ABBFB7;
+  }
+  .ai-botkit-sidebar-link svg{
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: #ABBFB7;
+  }
+  .ai-botkit-sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid #ddd;
+  }
+  
+  .ai-botkit-user-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .ai-botkit-user-avatar {
+    height: 2rem;
+    width: 2rem;
+    background-color: #e5e7eb;
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.8rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sr-only{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+  
+  .ai-botkit-user-details {
+    margin-left: 0.5rem;
+  }
+  
+  .ai-botkit-user-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  .ai-botkit-user-plan {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  /* Welcome screen */
+  .ai-botkit-welcome-container {
+    max-width: 720px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+  }
+  .ai-botkit-top-bar{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-welcome-icon {
+    height: 96px;
+    width: 96px;
+    background-color: rgba(99, 102, 241, 0.1); /* bg-primary/10 */
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #008858; /* primary */
+  }
+  
+  .ai-botkit-welcome-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 3rem;
+  }
+  
+  .ai-botkit-welcome-subtext {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .ai-botkit-feature-grid {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  
+  .ai-botkit-feature-card {
+    flex-grow: 1;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ai-botkit-feature-card h3,
+  .ai-botkit-feature-card p {
+    margin: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  #ai-botkit-get-started{
+    text-align: center;
+  }
+  .ai-botkit-support-wrapper{
+    display: flex;
+    gap: 1rem;
+    align-items: start;
+  }
+  
+  .ai-botkit-doc-icon{
+    border: 1px solid green;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    color: green;
+  }
+
+  .ai-botkit-support-icon{
+    font-size: 1.5rem;
+  }
+  .ai-botkit-feature-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .ai-botkit-feature-desc {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+  
+  .ai-botkit-button-lg {
+    background-color: #008858;
+    color: white;
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+  }
+  
+  .ai-botkit-button-lg:hover {
+    background-color: #0E594D;
+    color: white;
+  }
+  
+  .ai-botkit-login-note {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 1rem;
+    text-align: center;
+  }
+  
+  .ai-botkit-link {
+    color: #008858;
+    text-decoration: none;
+    margin-left: 0.25rem;
+  }
+  
+  .ai-botkit-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* chatbots page */
+  .ai-botkit-dashboard-wrapper {
+    padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .ai-botkit-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .ai-botkit-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .ai-botkit-dashboard-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .ai-botkit-dashboard-title-wrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .ai-botkit-chatbot-wizard-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .ai-botkit-chatbot-hide-preview{
+    cursor: pointer;
+    margin: 0;
+    color: #008858;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-create-btn {
+    background-color: #008858;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .ai-botkit-create-btn:hover {
+    background-color: #0E594D;
+  }
+
+  .ai-botkit-chatbot-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  /* Empty state */
+  .ai-botkit-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+  
+  .ai-botkit-empty-text {
+    color: #6b7280;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+  
+  /* Grid */
+  .ai-botkit-grid-wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Pagination */
+  .ai-botkit-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .ai-botkit-page-btn {
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    color: #4b5563;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+  
+  .ai-botkit-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .ai-botkit-page-info {
+    font-size: 0.875rem;
+    color: #374151;
+  }
+  
+  /* CTA button */
+  .ai-botkit-create-cta {
+    text-align: center;
+  }
+
+  /* Chatbot card */
+  .ai-botkit-chatbot-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    transition: border-color 0.3s;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    background-color: #fff;
+  }
+  
+  .ai-botkit-chatbot-card:hover {
+    border-color: #c7d2fe;
+  }
+  
+  /* Header */
+  .ai-botkit-chatbot-header {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-chatbot-avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 2.5rem;
+    background-color: #e0f2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .ai-botkit-avatar-icon {
+    font-size: 1.5rem;
+  }
+  
+  .ai-botkit-chatbot-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-chatbot-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    margin-top: 0;
+  }
+  
+  .ai-botkit-chatbot-desc {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+    margin: 0;
+  }
+  
+  .ai-botkit-chatbot-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .ai-botkit-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 49px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  
+  .ai-botkit-status-active {
+    background-color: #DAF9DF;
+    color: #00B61D;
+  }
+  
+  .ai-botkit-status-inactive {
+    background-color: #DF8C2B1A;
+    color: #DF8C2B;
+  }
+
+  .ai-botkit-badge-warning{
+    color: #DF8C2B;
+    background-color: #DF8C2B1A;
+  }
+
+  .ai-botkit-badge-info{
+    color: #DF8C2B;
+    background-color: #DF8C2B1A;
+  }
+
+  .ai-botkit-badge-success{
+    color: #00B61D;
+    background-color: #00B61D1A;
+  }
+
+  .ai-botkit-badge-sitewide{
+    color: #008858;
+    background-color: #0088581A;
+  }
+  #ai-botkit-chatbot-wizard-sitewide{
+    display: none;
+  }
+  .ai-botkit-badge-danger{
+    color: #DE554B;
+    background-color: #DE554B1A;
+  }
+  .ai-botkit-status-training {
+    background-color: #f59e0b;
+  }
+  
+  .ai-botkit-badge-outline {
+    background-color: #6666661A;
+    color: #666666;
+  }
+  
+  /* Content */
+  .ai-botkit-chatbot-content {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .ai-botkit-chatbot-info-wrapper {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-chatbot-info {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .ai-botkit-info-icon {
+    font-size: 1rem;
+    color: #6b7280;
+  }
+  
+  .ai-botkit-info-label {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .ai-botkit-info-value {
+    font-weight: 500;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    margin: 0;
+  }
+  
+  /* Footer */
+  .ai-botkit-chatbot-footer {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .ai-botkit-btn-view-chat {
+    background-color: #008858;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .ai-botkit-btn-view-chat:hover {
+    background-color: #0E594D;
+    color: white;
+  }
+  
+  .ai-botkit-btn-outline {
+    background: #f9fafb;
+    color: #000;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .ai-botkit-btn-outline:hover {
+    background-color: #0E594D;
+    color: white;
+  }
+  .ai-botkit-btn-outline:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .ai-masters-show-title {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .ai-masters-show-title::after {
+      content: attr(data-title);
+      position: absolute;
+      top: -35px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      color: #000;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 1000;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+      border: 1px solid #e0e0e0;
+  }
+
+  .ai-masters-show-title:hover::after {
+      opacity: 1;
+  }
+  
+  .ai-botkit-btn-danger {
+    background: #ef4444;
+    border: none;
+    color: white;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  /* Create chatbot page */
+  .ai-botkit-wizard-container {
+    margin: 2rem;
+    padding: 0 1rem;
+    display: none;
+  }
+  
+  /* Progress */
+  .ai-botkit-progress-wrapper {
+    margin-bottom: 1.5rem;
+  }
+  
+  .ai-botkit-progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .ai-botkit-progress-bar {
+    background: #e5e7eb;
+    height: 0.5rem;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+  
+  .ai-botkit-progress-fill {
+    height: 100%;
+    background: #008858;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  
+  .ai-botkit-tabs-list {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .ai-botkit-step-content:not(:first-child) {
+    display: none;
+  }
+  .ai-botkit-step-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ai-botkit-step-header-left{
+    width: 80%;
+  }
+  
+  .ai-botkit-kb-content-scroll{
+    max-height: 375px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+  }
+  .ai-botkit-kb-footer{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+  }
+  .ai-botkit-tab.active {
+    background: #008858;
+    color: #fff;
+  }
+  
+  /* Card */
+  .ai-botkit-card-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    overflow: hidden;
+    flex-grow: 1;
+  }
+  
+  /* Navigation Buttons */
+  .ai-botkit-navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-btn-primary {
+    background-color: #008858;
+    color: white;
+    border: 1px solid #008858;
+    padding: 0.5rem 0.75rem; /* Averaged padding */
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+  }
+  
+  .ai-botkit-btn-primary:hover {
+    background-color: #0E594D;
+    color: white; /* Added for consistency */
+  }
+  
+  .ai-botkit-btn-primary:disabled {
+    background-color: #e0e0e0;
+    color: #777777;
+    cursor: not-allowed;
+    border: none;
+  }
+  
+  .ai-botkit-step-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-step-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    margin-bottom: 0.25rem;
+  }
+  
+  .ai-botkit-step-subtext {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .ai-botkit-form-section {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .ai-botkit-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+  }
+  
+  .ai-botkit-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  .ai-botkit-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+  }
+  
+  .ai-botkit-help-text {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .ai-botkit-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-avatar-upload {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-avatar-label {
+    height: 40px;
+    border: 2px dashed #B0C6BE;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.875rem;
+    padding: 0 1rem;
+  }
+  
+  .ai-botkit-upload-icon {
+    color: #518472;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-avatar-image {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .ai-botkit-avatar-img {
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    object-fit: cover;
+  }
+  
+  .ai-botkit-btn-remove {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  /* Tabs */
+  .ai-botkit-training-tabs-list {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    justify-content: space-between;
+    padding: 5px;
+    background-color: #f1f5f9;
+    border-radius: 10px;
+  }
+  
+  .ai-botkit-training-tab,
+  .ai-botkit-knowledge-tab {
+    padding: 0.5rem 1rem;
+    background:  #f1f5f9;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: #000;
+    flex-grow: 1;
+    text-decoration: none;
+  }
+  
+  .ai-botkit-training-tab:hover,
+  .ai-botkit-knowledge-tab:hover {
+    color: #000;
+  }
+  
+  .ai-botkit-training-tab.active,
+  .ai-botkit-knowledge-tab.active {
+    background-color: #fff;
+    --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / .05);
+  }
+  
+  .ai-botkit-training-tab-content {
+    display: none;
+  }
+  
+  .ai-botkit-training-tab-content.active {
+    display: block;
+  }
+  
+  /* Upload Box */
+  .ai-botkit-upload-box {
+    border: 2px dashed #cbd5e1;
+    padding: 1rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .ai-botkit-upload-box.hidden{
+    display: none;
+  }
+  .ai-botkit-upload-box.error{
+    border-color: #E50505;
+    background-color: #FEE2E2;
+  }
+  
+  .ai-botkit-upload-btn {
+    background: #f3f4f6;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+  
+  /* Inputs and Buttons */
+  .ai-botkit-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+  }
+  
+  .ai-botkit-btn,
+  .ai-botkit-btn-sm {
+    background-color: #f8fafc;
+    color: black;
+    border: 1px solid #d1d5db;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+  }
+
+  .ai-botkit-btn-sm:hover {
+    background-color: #0E594D;
+    color: white;
+  }
+  
+  .ai-botkit-btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  /* URL input */
+  .ai-botkit-url-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .ai-botkit-url-list,
+  .ai-botkit-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-url-item,
+  .ai-botkit-file-item {
+    background: #f3f4f6;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* Knowledge Base */
+  .ai-botkit-kb-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  /* WordPress Content */
+  .ai-botkit-wp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .ai-botkit-wp-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-wp-types {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .ai-botkit-wp-types label {
+    padding: 12px;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+  }
+  
+  .ai-botkit-wp-filters {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .ai-botkit-wp-dates {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .ai-botkit-wp-date {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .ai-botkit-textarea {
+    resize: none;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-family: inherit;
+  }
+  
+  .ai-botkit-flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* Switch Toggle */
+  .ai-botkit-switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+  }
+  
+  .ai-botkit-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .ai-botkit-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #d1d5db;
+    transition: 0.4s;
+    border-radius: 9999px;
+  }
+  
+  .ai-botkit-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  
+  .ai-botkit-switch input:checked + .ai-botkit-slider {
+    background-color: #008858;
+  }
+  
+  .ai-botkit-switch input:checked + .ai-botkit-slider:before {
+    transform: translateX(20px);
+  }
+  
+  .ai-botkit-model-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-model-option {
+    border: 1px solid #d1d5db;
+    padding: 10px;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .ai-botkit-model-option:hover {
+    border-color: #008858;
+    background-color: #f5f7ff;
+  }
+  
+  .ai-botkit-model-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    cursor: pointer;
+  }
+  
+  .ai-botkit-model-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .ai-botkit-model-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    margin-top: 0;
+  }
+  
+  .ai-botkit-model-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .ai-botkit-tooltip {
+    font-size: 0.875rem;
+    background-color: #f3f4f6;
+    border-radius: 9999px;
+    padding: 0.25rem 0.5rem;
+    cursor: help;
+    position: relative;
+  }
+  
+  .ai-botkit-tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background-color: #111827;
+    color: white;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border-radius: 0.375rem;
+    z-index: 10;
+  }
+  
+  /* Notes box */
+  .ai-botkit-model-notes {
+    background-color: #f3f4f6;
+    padding: 10px 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+  }
+
+  .ai-botkit-model-notes p {
+    margin: 0;
+  }
+  
+  .ai-botkit-model-notes ul {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  .ai-botkit-color-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+  
+  .ai-botkit-color-circle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid #d1d5db;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    background-color: #f9fafb;
+  }
+  
+  .ai-botkit-color-circle.selected {
+    outline: 2px solid #008858;
+    outline-offset: 2px;
+  }
+  .ai-botkit-color-preview.selected{
+    outline: 2px solid #008858;
+    outline-offset: 2px;
+    width: 7rem;
+
+  }
+  
+  .custom-picker input[type="color"] {
+    display: block;
+  }
+  
+  .ai-botkit-color-preview {
+    border-radius: 9999px;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 2px;
+    color: #374151;
+    background-color: #FFF;
+    border: 1px solid #D6E5DF;
+  }
+  .ai-botkit-gradient-color-preview{
+    width: 7rem !important;
+    border-radius: 9999px;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 2px;
+    color: #374151;
+    background-color: #FFF;
+    border: 1px solid #D6E5DF;
+  }
+  /* .ai-botkit-color-preview.active{
+    display: flex;
+  } */
+  
+  #ai-botkit-color-picker-value{
+    display: none;
+  }
+  .ai-botkit-appearance-radio-group {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .ai-botkit-appearance-radio-group label {
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-step-subtext {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+  
+  /* Browser shell */
+  .ai-botkit-browser-shell {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #f9fafb;
+  }
+  
+  .ai-botkit-browser-bar {
+    background: #f0f0f0;
+    padding: 0.25rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .ai-botkit-dot {
+    height: 0.75rem;
+    width: 0.75rem;
+    border-radius: 9999px;
+  }
+  
+  .red { background: #ef4444; }
+  .yellow { background: #f59e0b; }
+  .green { background: #10b981; }
+  
+  .ai-botkit-browser-url {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+  
+  /* Chat Page Layout */
+  .ai-botkit-chat-page {
+    position: relative;
+    height: fit-content;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+  }
+  
+  /* Chat Widget */
+  .ai-botkit-chat-widget {
+    width: 424px;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    z-index: 10;
+    margin-bottom: 15px;
+    max-height: 700px;
+    height: 85vh;
+  }
+
+  .ai-botkit-chat-widget.bottom-left {
+    left: 1rem;
+    right: auto;
+  }
+
+  .ai-botkit-chat-widget.bottom-right {
+    left: auto;
+    right: 1rem;
+  }
+  
+  .ai-botkit-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-bottom: 1px solid #E7E7E7;
+  }
+  .ai-botkit-chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .ai-botkit-chat-avatar {
+    background: linear-gradient(180deg, #21C58B 0%, #038E5D 100%);
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    border: 1px solid #FFFFFF;
+  }
+  
+  .ai-botkit-chat-title {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin: 0;
+    color: #333333;
+  }
+  
+  .ai-botkit-chat-status {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .ai-botkit-chat-header-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #888888;
+  }
+  
+  /* Chat body */
+  .ai-botkit-chat-body {
+    padding: 1rem;
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+  }
+  
+  .ai-botkit-chat-msg {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 1.25rem;
+    max-width: 80%;
+  }
+
+  .ai-botkit-chat-msg p {
+    margin: 0;
+    font-size: 14px;
+  }
+  
+  .bot-msg {
+    background: #F5F5F5;
+    color: #333333;
+    align-self: flex-start;
+    border: 1px solid #DCDCDC
+  }
+  
+  .user-msg {
+    background: #008858;
+    color: #FFF;
+    align-self: flex-end;
+  }
+  
+  /* Chat form */
+  .ai-botkit-chat-form {
+    display: flex;
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+  
+  .ai-botkit-chat-form input {
+    flex: 1;
+    font-size: 0.875rem;
+    border: 1px solid #e7e7e7 !important;
+    border-radius: 0.5rem !important;
+    padding: 0.5rem 0.875rem !important;
+    box-shadow: 2px 2px 10px 0px #00000026;
+  }
+  .ai-botkit-chat-form input:focus{
+    outline: none;
+    box-shadow: 2px 2px 10px 0px #00000026;
+    border: 1px solid #e7e7e7;
+  }
+  
+  .ai-botkit-chat-form button {
+    background-color: #008858;
+    color: white;
+    border: none;
+    padding: 0 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  /* Chat bubble */
+  .ai-botkit-chat-bubble {
+    background: #008858;
+    color: white;
+    border-radius: 9999px;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 55px;
+    width: 55px;
+  }
+
+  .ai-botkit-chat-bubble img {
+    width: 32px;
+    height: 32px;
+    border-radius: 32px;
+  }
+  .ai-botkit-chat-bubble.bottom-left {
+    float: left;
+  }
+
+  .ai-botkit-chat-bubble.bottom-right {
+    float: right;
+  }
+  
+  /* Summary box */
+  .ai-botkit-summary-box {
+    border: 1px solid #e5e7eb;
+    background: #f3f4f6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .ai-botkit-summary-box h4 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .ai-botkit-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .ai-botkit-summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  .label {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+  .ai-botkit-kb-item {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* When selected, add 'selected' class */
+  .ai-botkit-kb-item.selected {
+    background-color: rgba(99, 102, 241, 0.1); /* light blue accent */
+  }
+  
+  .ai-botkit-kb-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .ai-botkit-kb-checkbox {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .ai-botkit-kb-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .ai-botkit-kb-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    cursor: pointer;
+  }
+  
+  .ai-botkit-kb-type {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #6b7280; /* muted */
+    margin-top: 0.25rem;
+  }
+  
+  .ai-botkit-kb-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-right: 0.25rem;
+  }
+  
+  .ai-botkit-kb-tags {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .ai-botkit-kb-tag {
+    background-color: #f3f4f6;
+    color: #374151;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+  }
+  
+  /* Settings page */
+  .ai-botkit-settings-container {
+    margin: 0 2rem;
+    padding: 2rem 1rem;
+  }
+  
+  .ai-botkit-settings-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+  
+  .ai-botkit-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0;
+  }
+  
+  .ai-botkit-tab.active {
+    background: #008858;
+    color: white;
+  }
+  
+  .ai-botkit-tabs-content {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-tab-pane {
+    display: block;
+    flex: 1;
+    flex-grow: 1;
+  }
+  
+  .ai-botkit-card-header {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .ai-botkit-card-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  
+  .ai-botkit-card-header p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+  }
+  
+  .ai-botkit-card-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .ai-botkit-card-footer {
+    padding: 1rem;
+  }
+  .ai-botkit-form-row,
+  .ai-botkit-form-row-color{
+    display: flex;
+    gap: 1rem;
+  }
+
+  .ai-botkit-form-row-color.border{
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .ai-botkit-form-row div{
+    flex: 1;
+  }
+  
+  .ai-botkit-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ai-botkit-form-group.border-right{
+    border-right: 1px solid #E5E7EB;
+    padding-right: 12px;
+  }
+
+  .ai-botkit-form-group .width-half{
+    width: 50%;
+  }
+
+  .ai-botkit-form-row-color .ai-botkit-form-group{
+    margin-bottom: 0;
+  }
+  
+  .ai-botkit-form-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .ai-botkit-inline-input {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    width: 100% !important;
+  }
+  
+  .ai-botkit-hint {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+  }
+  
+  .ai-botkit-btn {
+    background-color: #008858;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+  }
+  .ai-botkit-btn:hover {
+    background-color: #0E594D;
+  }
+  
+  .ai-botkit-switch {
+    position: relative;
+    width: 42px;
+    height: 22px;
+  }
+  
+  .ai-botkit-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .ai-botkit-slider {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #d1d5db;
+    border-radius: 9999px;
+    transition: 0.4s;
+  }
+  
+  .ai-botkit-slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  
+  .ai-botkit-switch input:checked + .ai-botkit-slider {
+    background-color: #008858;
+  }
+  
+  .ai-botkit-switch input:checked + .ai-botkit-slider::before {
+    transform: translateX(20px);
+  }
+  
+  .ai-botkit-select-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #111827;
+    margin-bottom: 0.25rem;
+  }
+  
+  .ai-botkit-select-input {
+    width: 100%;
+    min-width: 100% !important;
+    padding: 0.5rem !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 0.375rem !important;
+    background-color: white !important;
+    color: #111827 !important;
+    font-size: 0.875rem !important;
+    appearance: none; /* Remove native arrow */
+    background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%236b7280" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 9l-7 7-7-7"></path></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    cursor: pointer;
+    line-height: 2;
+  }
+  
+  .ai-botkit-select-input:focus {
+    outline: none;
+    border-color: #008858; /* Primary color on focus */
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+  .ai-botkit-api-test-result-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  /* Knowledge Base Page */
+  .ai-botkit-knowledge-container {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  
+  .ai-botkit-knowledge-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .ai-botkit-knowledge-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .ai-botkit-knowledge-base-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  }
+  
+  .ai-botkit-knowledge-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Filters section */
+  .ai-botkit-knowledge-filters {
+    background: #ffffff;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .ai-botkit-tabs {
+    display: flex;
+    gap: 0.75rem;
+  }
+  
+  .ai-botkit-tab {
+    background: #FFFFFF;
+    padding: 0.5rem 1.25rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    border: 1px solid #59C39E;
+    cursor: pointer;
+    transition: background 0.3s;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  .ai-botkit-tab.active {
+    background: #008858;
+    color: #ffffff;
+  }
+  
+  .ai-botkit-search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 16rem;
+  }
+  
+  .ai-botkit-search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+  }
+  
+  .ai-botkit-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: #9ca3af;
+  }
+  
+  /* Table Section */
+  .ai-botkit-knowledge-table {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    min-height: 300px;
+  }
+  
+  .ai-botkit-placeholder-text {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 2rem;
+  }
+  
+  /* Modal Overlay */
+.ai-botkit-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  z-index: 9999;
+}
+
+/* Modal Box */
+.ai-botkit-kb-modal {
+  background: white;
+  max-width: 32rem;
+  margin: 5% auto;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-botkit-modal-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ai-botkit-modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.ai-botkit-modal-header p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.ai-botkit-modal-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ai-botkit-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-botkit-form-group input[type=text],
+.ai-botkit-form-group input[type=number],
+.ai-botkit-form-group textarea {
+  padding: 0.5rem 0.875rem !important;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.ai-botkit-modal-footer {
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Buttons */
+.ai-botkit-btn {
+  background: #008858;
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.ai-botkit-btn-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+
+/* Extending Modal Styles */
+.ai-botkit-modal-wide {
+  max-width: 40rem;
+}
+
+/* Content Type Section */
+.ai-botkit-content-type-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.ai-botkit-content-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.ai-botkit-content-type-item {
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  gap: 0.5rem;
+}
+
+.ai-botkit-checkbox {
+  width: 1rem;
+  height: 1rem;
+}
+
+.ai-botkit-wordpress-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-botkit-wordpress-dates {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.ai-botkit-select-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ai-botkit-knowledge-table-wrapper {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}
+
+.ai-botkit-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.ai-botkit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ai-botkit-table th,
+.ai-botkit-table td {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+}
+
+.ai-botkit-table th {
+  background: #E9F3F0;
+  font-weight: 600;
+}
+
+.ai-botkit-table td a {
+  display: inline-block;
+}
+
+.ai-botkit-table-empty {
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.ai-botkit-btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+/* Icon Sizes */
+.ai-botkit-icon-small {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Upload Modal Styles */
+.ai-botkit-upload-dropzone {
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  background: #f9fafb;
+}
+
+.ai-botkit-upload-dropzone p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.ai-botkit-upload-note {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  color: #9ca3af;
+}
+
+.ai-botkit-selected-file {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-botkit-selected-file-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-botkit-selected-file-box p {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.ai-botkit-remove-file {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.ai-botkit-remove-file i {
+  font-size: 0.875rem;
+  color: #ff0000;
+}
+
+.ai-botkit-knowledge-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.ai-botkit-knowledge-stats-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  flex-grow: 1;
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / .05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  background: #ffffff;
+}
+.ai-botkit-stats-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ai-botkit-knowledge-stats-item-label{
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+.ai-botkit-knowledge-stats-item-value{
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+.ai-botkit-stats-icon {
+  font-size: 1.5rem;
+  color: #6b7280;
+  padding: 1rem;
+  border-radius: 100px;
+  background: #C9E6DB;
+}
+.ai-botkit-chat-session-container{
+  display: flex;
+  gap: 1rem;
+}
+
+.ai-botkit-chat-session-details{
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-height: 500px;
+  min-width: 300px;
+}
+.ai-botkit-chat-session-messages{
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-height: 500px;
+  flex-grow: 1;
+}
+.ai-botkit-chat-session-details-item{
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+.ai-botkit-chat-session-details-item h2,
+.ai-botkit-chat-session-messages-item-label{
+  font-size: 1.5rem;
+  color: #111827;
+  font-weight: 700;
+  margin: 0;
+}
+.ai-botkit-chat-session-details-item p{
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+  margin: 0;
+}
+.ai-botkit-chat-session-details-item p:last-child{
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111827;
+  margin:0;
+}
+
+.ai-botkit-save-chatbot-status,
+.ai-botkit-notice{
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+  margin: 0;
+}
+
+.ai-botkit-notice{
+  display: none;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+}
+.ai-botkit-save-chatbot-status.success,
+.ai-botkit-notice.success{
+  color: #10b981;
+}
+.ai-botkit-save-chatbot-status.error,
+.ai-botkit-notice.error{
+  color: #ef4444;
+}
+.ai-botkit-save-chatbot-container{
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.ai-botkit-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.ai-botkit-chart-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.ai-botkit-chart-card canvas {
+  max-height: 300px !important;
+}
+
+.ai-botkit-chart-card h3 {
+  margin: 0 0 20px;
+  color: #1d2327;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.ai-botkit-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 24px;
+}
+
+.ai-botkit-data-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ai-botkit-data-card h3 {
+  margin: 0 0 20px;
+  color: #1d2327;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+@media screen and (max-width: 782px) {
+  .ai-botkit-charts-grid,
+  .ai-botkit-data-grid {
+      grid-template-columns: 1fr;
+  }
+}
+
+.ai-botkit-shortcode-wrapper{
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: max-content;
+  background: #fff;
+  padding: 4px;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #d6d6d66e;
+  z-index: 99;
+}
+
+.ai-botkit-shortcode-wrapper button{
+  background: #fff;
+  width: 100%;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: left;
+  border: none;
+}
+.ai-botkit-shortcode-wrapper button:hover{
+  background: #f9fafb;
+}
+
+.ai-botkit-copy-code-wrapper{
+  position: relative;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+  .ai-botkit-sidebar-wrapper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    background-color: white;
+    transform: translateX(-100%);
+  }
+
+  .ai-botkit-sidebar-wrapper.open {
+    transform: translateX(0%);
+  }
+  .ai-botkit-topbar {
+    display: flex;
+  }
+
+  .ai-botkit-card-wrapper{
+    flex-direction: column;
+  }
+
+  .ai-botkit-chat-page{
+    width: fit-content;
+  }
+}
+
+/* Style Settings Accordion */
+.ai-botkit-style-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ai-botkit-style-section {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.ai-botkit-style-header {
+  background: #f9fafb;
+  padding: 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+.ai-botkit-style-header i {
+  transition: transform 0.3s ease;
+}
+
+.ai-botkit-style-header.collapsed i {
+  transform: rotate(-180deg);
+}
+.ai-botkit-style-header.collapsed .ai-botkit-wp-count-container i {
+  transform: rotate(-90deg);
+}
+
+.ai-botkit-style-content {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+  display: grid;
+  gap: 1rem;
+}
+
+.ai-botkit-style-content.collapsed {
+  display: none;
+}
+
+/* Color Picker Group */
+.ai-botkit-color-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-botkit-color-input {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.ai-botkit-color-value {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+/* Size Inputs */
+.ai-botkit-size-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-botkit-size-input input {
+  width: 80px;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.ai-botkit-size-input span {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Preview Section */
+.ai-botkit-chat-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+.ai-botkit-add-data-btn{
+  position: relative;
+}
+.ai-botkit-add-data-items{
+  display: none;
+  gap: 1rem;
+  flex-direction: column;
+  align-items: flex-start;
+  position: absolute;
+  top: 25px;
+  right: 0;
+  min-width: max-content;
+  background: #fff;
+  position: absolute;
+  list-style: none;
+  padding: 12px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  border: 1px solid #EDEFEE;
+  z-index: 99;
+}
+.ai-botkit-add-data-item{
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d2327;
+  padding: 5px 0;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  margin-bottom: 0;
+}
+.ai-botkit-add-data-item:hover{
+  background: #f9fafb;
+}
+
+.ai-botkit-add-data-btn:hover .ai-botkit-add-data-items {
+  display: flex;
+}
+.ai-botkit-no-training-docs{
+  border: 2px dashed #cbd5e1;
+  padding: 1rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  background: #F9F9F9;
+}
+.ai-botkit-no-training-docs h3{
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6B7370;
+  margin-bottom: 0.5rem;
+}
+.ai-botkit-no-training-docs p{
+  font-size: 0.875rem;
+  color: #6B7370;
+}
+
+.ai-botkit-training-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ai-botkit-training-modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.ai-botkit-training-modal-header button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  font-size: 1.25rem;
+  color: #6b7280;
+}
+.ai-botkit-training-modal {
+  background: white;
+  max-width: 32rem;
+  margin: 5% auto;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+.ai-botkit-training-wp-modal{
+  max-width: 50rem !important;
+}
+.ai-botkit-training-modal-body{
+  display: flex;
+  gap: 0.5rem;
+}
+.ai-botkit-training-modal-subtext{
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+.ai-botkit-training-modal-body .ai-botkit-form-group{
+  margin-bottom: 0;
+  flex-grow: 1;
+}
+.ai-botkit-training-modal-body .ai-botkit-upload-box{
+  width: 100%;
+}
+.ai-botkit-training-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.ai-botkit-training-pdf-upload{
+  color: #008858;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.ai-botkit-training-pdf-upload i{
+  font-size: 2rem;
+}
+.ai-botkit-wp-types-modal{
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.ai-botkit-wp-types-modal > div{
+  width: calc(50% - 0.5rem - 2px);
+}
+.ai-botkit-navigation-wrapper{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.ai-botkit-bot-avatar-icon,
+.ai-botkit-bot-widget-icon{
+  cursor: pointer;
+}
+.ai-botkit-bot-avatar-icon-image,
+.ai-botkit-bot-widget-icon-image{
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, #21C58B 0%, #038E5D 100%);
+  border-radius: 50%;
+}
+.ai-botkit-bot-avatar-icon.active,
+.ai-botkit-bot-widget-icon.active{
+  border: 2px solid #038E5D;
+  border-radius: 50%;
+  padding: 2px;
+}
+.ai-botkit-btn-remove{
+  background: #E505051A;
+  border: 1px solid #E5050540;
+  height: 40px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0 1rem;
+}
+.ai-botkit-btn-remove.hidden{
+  display: none !important;
+}
+.ai-botkit-bot-widget-icon.hidden,
+.ai-botkit-bot-avatar-icon.hidden{
+  display: none;
+}
+.ai-botkit-bot-widget-icon-preview,
+.ai-botkit-bot-avatar-icon-preview{
+  width: 40px;
+  height: 40px;
+}
+.ai-botkit-custom-color{
+  border: 2px solid #0EA5E9;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  padding: 0 1rem;
+}
+.ai-botkit-bot-theme{
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.ai-botkit-bot-theme-item{
+  width: 250px;
+  border-radius: 8px;
+  padding: 14px 16px;
+  border: 1px solid #E1E6E4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+.ai-botkit-bot-theme-item img{
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+.ai-botkit-bot-theme-item .check{
+  border: 1px solid #008858;
+  background-color: #008858;
+  color: #fff;
+  height: 1rem;
+  width: 1rem;
+  border-radius: 4px;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+.ai-botkit-bot-theme-item.active .check{
+  display: flex;
+}
+.ai-botkit-background-image-label{
+  color: #008858;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.ai-botkit-background-image-container{
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 1rem;
+}
+.ai-botkit-background-image-label i,
+.ai-botkit-background-image-remove i{
+  font-size: 1.25rem;
+}
+.ai-botkit-background-image-preview{
+  width: 150px;
+  display: none;
+}
+.ai-botkit-background-image-preview img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.ai-botkit-background-image-remove{
+  color: #E50505;
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.ai-botkit-table-heading{
+  font-weight: 600;
+  font-size: 16px;
+  color: #1D2327;
+}
+.ai-botkit-training-data-container{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.ai-botkit-training-data{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ai-botkit-training-data-post,
+.ai-botkit-training-data-url,
+.ai-botkit-training-data-file{
+  display: none;
+}
+.ai-botkit-remove-training-item{
+  cursor: pointer;
+  color: #E50505;
+  font-size: 1.25rem;
+  transition: all 0.3s ease;
+}
+.ai-botkit-remove-training-item:hover{
+  color: #E50505;
+}
+.ai-botkit-chat-page-title{
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1D2327;
+  margin-bottom: 1.5rem;
+}
+
+.gradient-color-container{
+  display: none;
+}
+
+/* Paste the CSS code here */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Apply the animation to your icon */
+.ai-botkit-loading-icon {
+  font-size: 2rem;
+  animation: spin 1s linear infinite; /* Adjust duration and timing as needed */
+  display: inline-block; /* Ensures transform works correctly */
+}
+.ai-botkit-loading-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid #008858;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  color: #008858;
+  background: #0088581A;
+}
+.ai-botkit-error-message{
+  color: #E50505;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  display: none;
+}
+.ai-botkit-error-message.show{
+  display: block;
+}
+.ai-botkit-wp-count{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #008858;
+  background: #0088581A;
+  padding: 6px 12px;
+  border-radius: 9999px;
+}
+.ai-botkit-wp-count-container{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.ai-botkit-wp-count-container i{
+  font-size: 1.25rem;
+}
+.ai-botkit-form-group input:focus,
+.ai-botkit-form-group textarea:focus,
+.ai-botkit-form-group select:focus{
+  border: 1px solid #008858;
+}
+.ai-botkit-knowledge-tab:focus,
+.ai-botkit-knowledge-tab:active{
+  border:none;
+  outline: none;
+  box-shadow: none;
+}
+.ai-botkit-modal-header h3,
+.ai-botkit-modal-header p,
+.ai-botkit-card-header h3,
+.ai-botkit-card-header p{
+  margin: 0;
+  margin-bottom: 0.5rem;
+}
+.ai-botkit-delete-btn{
+  color:gray !important;
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 1.25rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+.ai-botkit-delete-btn:hover{
+  color: #E50505 !important;
+  background: #f9fafb !important;
+}
+.ai-botkit-delete-btn:hover i{
+  color: #E50505 !important;
+}
+.ai-botkit-delete-bot:hover{
+  background: #E50505 !important;
+
+}
+.ai-botkit-modal-content{
+  padding: 1rem;
+}
+.ai-botkit-shortcode-container{
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+}
+.ai-botkit-shortcode-container pre{
+  padding: 4px 8px;
+  background: #f9fafb;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1D2327;
+  border: 1px solid #E1E6E4;
+  margin: 0;
+  width: 250px;
+  display: flex;
+  align-items: center;
+}
+.ai-botkit-shortcode-container button{
+  flex-grow: 1;
+}
+.ai-botkit-modal-content>p{
+  margin: 0;
+  margin-top: 1rem;
+}
+.ai-botkit-card-header,
+.ai-botkit-card-body{
+  padding: 0;
+}
+input[type=radio]:checked::before{
+  background-color: #008858;
+}
+.ai-botkit-wp-header-back{
+  display: none;
+  cursor: pointer;
+}
+.ai-botkit-widget-code-container{
+  display: flex;
+  gap: 0.5rem;
+}
+.ai-botkit-widget-code-container input{
+  padding: 0.5rem 1rem;
+  border: 1px solid #E1E6E4;
+  border-radius: 4px;
+  flex-grow: 1;
+  width: auto !important;
+  background-color: #ffffff;
+}
+.ai-botkit-widget-code-container button{
+  width: fit-content;
+}
+.ai-botkit-training-data tbody tr td:first-child{
+  width: 50%;
+}
+#ai-botkit-existing-kb-table-body tr td:nth-child(2){
+  width: 40%;
+}
+.ai-botkit-wp-types-modal .ai-botkit-style-content{
+  max-height: 300px !important;
+}
+.ai-botkit-wp-header-post-label{
+  padding: 6px 12px;
+}
+
+/* Toast Notification Styles */
+.ai-botkit-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999999;
+    max-width: 400px;
+}
+
+.ai-botkit-toast {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+    padding: 16px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    border-left: 4px solid #ddd;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-botkit-toast.show {
+    transform: translateX(0);
+}
+
+.ai-botkit-toast.success {
+    border-left-color: #00a32a;
+}
+
+.ai-botkit-toast.error {
+    border-left-color: #d63638;
+}
+
+.ai-botkit-toast.warning {
+    border-left-color: #dba617;
+}
+
+.ai-botkit-toast.info {
+    border-left-color: #72aee6;
+}
+
+.ai-botkit-toast .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ai-botkit-toast .toast-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.ai-botkit-toast.success .toast-icon {
+    color: #00a32a;
+}
+
+.ai-botkit-toast.error .toast-icon {
+    color: #d63638;
+}
+
+.ai-botkit-toast.warning .toast-icon {
+    color: #dba617;
+}
+
+.ai-botkit-toast.info .toast-icon {
+    color: #72aee6;
+}
+
+.ai-botkit-toast .toast-message {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #1d2327;
+}
+
+.ai-botkit-toast .toast-close {
+    background: none;
+    border: none;
+    color: #787c82;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.ai-botkit-toast .toast-close:hover {
+    background: #f0f0f1;
+    color: #1d2327;
+}
+
+.ai-botkit-toast .toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.ai-botkit-toast .toast-progress-bar {
+    height: 100%;
+    background: currentColor;
+    width: 100%;
+    animation: toast-progress 5s linear forwards;
+}
+
+@keyframes toast-progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .ai-botkit-toast-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .ai-botkit-toast {
+        margin-bottom: 8px;
+        padding: 12px;
+    }
+}

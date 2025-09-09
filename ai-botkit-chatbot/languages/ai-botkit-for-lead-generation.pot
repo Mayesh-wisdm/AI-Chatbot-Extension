@@ -1,0 +1,1263 @@
+# Copyright (C) 2025 AI BotKit
+# This file is distributed under the same license as the AI BotKit package.
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: AI BotKit\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-07 11:26+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: Poedit 3.5\n"
+"X-Loco-Version: 2.5.2; wp-5.7.2\n"
+"X-Domain: ai-botkit-for-lead-generation\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;esc_attr_e;esc_html__;esc_html_e;esc_html_x:1,2c;"
+"__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c;_nc:4c,1,2;_x:1,2c;"
+"_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;esc_attr_;esc_attr_x:1,2c;esc_attr__\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: admin/views/analytics.php:42
+msgid "Total Events"
+msgstr ""
+
+#: admin/views/analytics.php:43
+msgid "Avg Response Time (ms)"
+msgstr ""
+
+#: admin/views/analytics.php:44
+msgid "Error Rate (%)"
+msgstr ""
+
+#: admin/views/analytics.php:45 admin/views/analytics.php:114
+msgid "Token Usage"
+msgstr ""
+
+#: admin/views/analytics.php:53
+msgid "Analytics Dashboard"
+msgstr ""
+
+#: admin/views/analytics.php:54
+msgid "Track performance metrics for your chatbots"
+msgstr ""
+
+#: admin/views/analytics.php:63
+msgid "7 Days"
+msgstr ""
+
+#: admin/views/analytics.php:64
+msgid "30 Days"
+msgstr ""
+
+#: admin/views/analytics.php:65
+msgid "90 Days"
+msgstr ""
+
+#: admin/views/analytics.php:66
+msgid "1 Year"
+msgstr ""
+
+#: admin/views/analytics.php:76
+msgid "Total Interactions"
+msgstr ""
+
+#: admin/views/analytics.php:82
+msgid "Total Conversations"
+msgstr ""
+
+#: admin/views/analytics.php:88
+msgid "Unique Users"
+msgstr ""
+
+#: admin/views/analytics.php:94
+msgid "Total Tokens Used"
+msgstr ""
+
+#: admin/views/analytics.php:102
+msgid "Daily Usage"
+msgstr ""
+
+#: admin/views/analytics.php:106
+msgid "Response Times"
+msgstr ""
+
+#: admin/views/analytics.php:110
+msgid "Error Rates"
+msgstr ""
+
+#: admin/views/analytics.php:121
+msgid "Top Query Types"
+msgstr ""
+
+#: admin/views/analytics.php:125
+msgid "Query Type"
+msgstr ""
+
+#: admin/views/analytics.php:126
+msgid "Frequency"
+msgstr ""
+
+#: admin/views/analytics.php:127
+msgid "Avg. Quality"
+msgstr ""
+
+#: admin/views/analytics.php:128
+msgid "Avg. Response Time"
+msgstr ""
+
+#: admin/views/analytics.php:145
+msgid "Recent Errors"
+msgstr ""
+
+#: admin/views/analytics.php:149
+msgid "Error Type"
+msgstr ""
+
+#: admin/views/analytics.php:150
+msgid "Count"
+msgstr ""
+
+#: admin/views/analytics.php:151
+msgid "Component"
+msgstr ""
+
+#: admin/views/analytics.php:152
+msgid "Last Occurrence"
+msgstr ""
+
+#: admin/views/chat-session.php:39
+msgid "Conversation"
+msgstr ""
+
+#: admin/views/chat-session.php:46
+msgid "Session Details"
+msgstr ""
+
+#: admin/views/chat-session.php:49 admin/views/chatbot-sessions.php:91
+msgid "User"
+msgstr ""
+
+#: admin/views/chat-session.php:53
+msgid "Chatbot"
+msgstr ""
+
+#: admin/views/chat-session.php:57
+msgid "Date"
+msgstr ""
+
+#: admin/views/chat-session.php:61
+msgid "Time"
+msgstr ""
+
+#: admin/views/chat-session.php:65
+msgid "Duration"
+msgstr ""
+
+#: admin/views/chat-session.php:69 admin/views/chat-session.php:75
+#: admin/views/chatbot-sessions.php:93
+msgid "Messages"
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:41
+msgid "Sessions"
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:42
+msgid "View user interactions with this chatbot"
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:49
+msgid "Total Sessions"
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:58
+msgid "Total Messages"
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:82
+msgid "No sessions found. Start a new conversation to get started."
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:92
+msgid "Last Message"
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:94 admin/views/knowledge-base.php:143
+msgid "Actions"
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:128 admin/views/chatbots.php:133
+#: admin/views/knowledge-base.php:181
+msgid "Page"
+msgstr ""
+
+#: admin/views/chatbot-sessions.php:128 admin/views/chatbots.php:133
+#: admin/views/chatbots.php:159 admin/views/knowledge-base.php:181
+msgid "of"
+msgstr ""
+
+#: admin/views/chatbots.php:28
+msgid "My Chatbots"
+msgstr ""
+
+#: admin/views/chatbots.php:31
+msgid "Create New Bot"
+msgstr ""
+
+#: admin/views/chatbots.php:43
+msgid "You don't have any chatbots yet."
+msgstr ""
+
+#: admin/views/chatbots.php:46 admin/views/dashboard.php:42
+msgid "Create Your First Chatbot"
+msgstr ""
+
+#: admin/views/chatbots.php:83
+msgid "Conversations"
+msgstr ""
+
+#: admin/views/chatbots.php:90
+msgid "Last Updated"
+msgstr ""
+
+#: admin/views/chatbots.php:98
+msgid "View Chat"
+msgstr ""
+
+#: admin/views/chatbots.php:145 admin/views/knowledge-base.php:191
+msgid "Confirm Deletion"
+msgstr ""
+
+#: admin/views/chatbots.php:146
+msgid ""
+"Are you sure you want to delete this chatbot? This action cannot be undone."
+msgstr ""
+
+#: admin/views/chatbots.php:149 admin/views/knowledge-base.php:195
+#: admin/views/knowledge-base.php:226 admin/views/knowledge-base.php:295
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/chatbots.php:150 admin/views/knowledge-base.php:196
+msgid "Delete"
+msgstr ""
+
+#: admin/views/chatbots.php:159
+msgid "Step"
+msgstr ""
+
+#: admin/views/chatbots.php:160
+msgid "0% Complete"
+msgstr ""
+
+#: admin/views/chatbots.php:169
+msgid "1. Bot Basics"
+msgstr ""
+
+#: admin/views/chatbots.php:170
+msgid "2. Training"
+msgstr ""
+
+#: admin/views/chatbots.php:171
+msgid "3. Behavior"
+msgstr ""
+
+#: admin/views/chatbots.php:172
+msgid "4. Model"
+msgstr ""
+
+#: admin/views/chatbots.php:173
+msgid "5. Appearance"
+msgstr ""
+
+#: admin/views/chatbots.php:174
+msgid "6. Preview"
+msgstr ""
+
+#: admin/views/chatbots.php:184
+msgid "Bot Basics"
+msgstr ""
+
+#: admin/views/chatbots.php:186
+msgid "Let's start by setting up the basic information for your chatbot."
+msgstr ""
+
+#: admin/views/chatbots.php:193
+msgid "Bot Name"
+msgstr ""
+
+#: admin/views/chatbots.php:201
+msgid "This name will be visible to your website visitors."
+msgstr ""
+
+#: admin/views/chatbots.php:212
+msgid "Activate Chatbot"
+msgstr ""
+
+#: admin/views/chatbots.php:214
+msgid "This will determine if the chatbot is active on your website."
+msgstr ""
+
+#: admin/views/chatbots.php:218
+msgid "Bot Tone"
+msgstr ""
+
+#: admin/views/chatbots.php:222
+msgid "Professional - Formal and business-like"
+msgstr ""
+
+#: admin/views/chatbots.php:226
+msgid "Friendly - Warm and approachable"
+msgstr ""
+
+#: admin/views/chatbots.php:230
+msgid "Casual - Relaxed and conversational"
+msgstr ""
+
+#: admin/views/chatbots.php:236
+msgid "Bot Avatar"
+msgstr ""
+
+#: admin/views/chatbots.php:249
+msgid "Upload an image (recommended size: 256x256)"
+msgstr ""
+
+#: admin/views/chatbots.php:256 includes/admin/class-admin.php:419
+msgid "Remove"
+msgstr ""
+
+#: admin/views/chatbots.php:267
+msgid "Train Your Bot"
+msgstr ""
+
+#: admin/views/chatbots.php:269
+msgid ""
+"Upload documents or add website URLs to train your chatbot with specific "
+"knowledge."
+msgstr ""
+
+#: admin/views/chatbots.php:275
+msgid "Upload New"
+msgstr ""
+
+#: admin/views/chatbots.php:276 admin/views/knowledge-base.php:58
+#: admin/views/sidebar.php:21 includes/admin/class-admin.php:85
+msgid "Knowledge Base"
+msgstr ""
+
+#: admin/views/chatbots.php:277
+msgid "WordPress"
+msgstr ""
+
+#: admin/views/chatbots.php:284
+msgid "Upload PDF Documents"
+msgstr ""
+
+#: admin/views/chatbots.php:286
+msgid "Drag and drop your PDF files here, or click to browse"
+msgstr ""
+
+#: admin/views/chatbots.php:288
+msgid "Browse Files"
+msgstr ""
+
+#: admin/views/chatbots.php:297
+msgid "Max 10 MB per file. Supported format: PDF"
+msgstr ""
+
+#: admin/views/chatbots.php:303
+msgid "Add Website URLs"
+msgstr ""
+
+#: admin/views/chatbots.php:304
+msgid "Add URLs to specific pages that contain relevant info."
+msgstr ""
+
+#: admin/views/chatbots.php:311
+msgid "Add"
+msgstr ""
+
+#: admin/views/chatbots.php:318
+msgid "Select from Knowledge Base"
+msgstr ""
+
+#: admin/views/chatbots.php:367
+msgid "Preview Content"
+msgstr ""
+
+#: admin/views/chatbots.php:374
+msgid "Import Content"
+msgstr ""
+
+#: admin/views/chatbots.php:386
+msgid "Bot Behavior"
+msgstr ""
+
+#: admin/views/chatbots.php:388
+msgid "Customize how your chatbot interacts with visitors."
+msgstr ""
+
+#: admin/views/chatbots.php:392
+msgid "Personality"
+msgstr ""
+
+#: admin/views/chatbots.php:398
+msgid ""
+"You are a helpful support assistant that can answer questions and help with "
+"tasks."
+msgstr ""
+
+#: admin/views/chatbots.php:399
+msgid "helpful website assistant"
+msgstr ""
+
+#: admin/views/chatbots.php:401
+msgid "Chatbot personality and behavior."
+msgstr ""
+
+#: admin/views/chatbots.php:406
+msgid "Initial Greeting Message"
+msgstr ""
+
+#: admin/views/chatbots.php:412 admin/views/chatbots.php:413
+msgid "Hi there! How can I help you today?"
+msgstr ""
+
+#: admin/views/chatbots.php:415
+msgid ""
+"This is the first message your chatbot will display when a user opens the "
+"chat."
+msgstr ""
+
+#: admin/views/chatbots.php:420
+msgid "Fallback Message"
+msgstr ""
+
+#: admin/views/chatbots.php:426 admin/views/chatbots.php:427
+msgid "I don't have an answer for that. Would you like to contact support?"
+msgstr ""
+
+#: admin/views/chatbots.php:429
+msgid ""
+"This message will be displayed when the chatbot can't find an answer to the "
+"user's question."
+msgstr ""
+
+#: admin/views/chatbots.php:452
+msgid "Select LLM Model"
+msgstr ""
+
+#: admin/views/chatbots.php:454
+msgid "Choose the AI model that will power your chatbot."
+msgstr ""
+
+#: admin/views/chatbots.php:486
+msgid "Model selection considerations:"
+msgstr ""
+
+#: admin/views/chatbots.php:488
+msgid "More capable models typically cost more but provide better responses"
+msgstr ""
+
+#: admin/views/chatbots.php:489
+msgid "Consider your response time requirements and budget"
+msgstr ""
+
+#: admin/views/chatbots.php:490
+msgid "You can change the model later if needed"
+msgstr ""
+
+#: admin/views/chatbots.php:495
+msgid "Max Context Chunks"
+msgstr ""
+
+#: admin/views/chatbots.php:504
+msgid ""
+"This is the number of reference documents that the model can use to generate "
+"a response."
+msgstr ""
+
+#: admin/views/chatbots.php:507
+msgid "Max Tokens"
+msgstr ""
+
+#: admin/views/chatbots.php:516
+msgid ""
+"This is the maximum number of tokens that the model can use in a single "
+"response."
+msgstr ""
+
+#: admin/views/chatbots.php:525
+msgid "Appearance Settings"
+msgstr ""
+
+#: admin/views/chatbots.php:527
+msgid "Customize how your chatbot looks on your website."
+msgstr ""
+
+#: admin/views/chatbots.php:532
+msgid "Chat Color"
+msgstr ""
+
+#: admin/views/chatbots.php:550
+msgid "Preview: Chat bubble will use this color"
+msgstr ""
+
+#: admin/views/chatbots.php:555
+msgid "Position on Screen"
+msgstr ""
+
+#: admin/views/chatbots.php:557
+msgid "Bottom Left"
+msgstr ""
+
+#: admin/views/chatbots.php:558
+msgid "Bottom Right"
+msgstr ""
+
+#: admin/views/chatbots.php:563
+msgid "Theme"
+msgstr ""
+
+#: admin/views/chatbots.php:565
+msgid "Light"
+msgstr ""
+
+#: admin/views/chatbots.php:566
+msgid "Dark"
+msgstr ""
+
+#: admin/views/chatbots.php:567
+msgid "Auto (based on system)"
+msgstr ""
+
+#: admin/views/chatbots.php:577
+msgid "Preview & Finish"
+msgstr ""
+
+#: admin/views/chatbots.php:579
+msgid "Review how your chatbot will look and behave on your website."
+msgstr ""
+
+#: admin/views/chatbots.php:601 includes/public/class-shortcode-handler.php:43
+#: includes/public/class-shortcode-handler.php:89 public/templates/widget.php:9
+msgid "AI Assistant"
+msgstr ""
+
+#: admin/views/chatbots.php:602
+msgid "Online"
+msgstr ""
+
+#: admin/views/chatbots.php:609 includes/public/class-shortcode-handler.php:44
+#: includes/public/class-shortcode-handler.php:90 public/templates/chat.php:44
+#: public/templates/widget.php:10
+msgid "Hello! How can I help you today?"
+msgstr ""
+
+#: admin/views/chatbots.php:619
+msgid "Send"
+msgstr ""
+
+#: admin/views/chatbots.php:639
+msgid "Previous"
+msgstr ""
+
+#: admin/views/chatbots.php:642
+msgid "Next Step"
+msgstr ""
+
+#: admin/views/chatbots.php:647
+msgid "Save Chatbot"
+msgstr ""
+
+#: admin/views/dashboard.php:7
+msgid "Welcome to ChatBot Builder"
+msgstr ""
+
+#: admin/views/dashboard.php:11
+msgid ""
+"Create engaging AI chatbots for your WordPress site without writing a single "
+"line of code."
+msgstr ""
+
+#: admin/views/dashboard.php:17
+msgid "No-Code Builder"
+msgstr ""
+
+#: admin/views/dashboard.php:20
+msgid "Create custom chatbots with our intuitive builder interface"
+msgstr ""
+
+#: admin/views/dashboard.php:25
+msgid "Train with Your Content"
+msgstr ""
+
+#: admin/views/dashboard.php:28
+msgid "Upload PDFs or connect to your site content"
+msgstr ""
+
+#: admin/views/dashboard.php:33
+msgid "Analytics & Insights"
+msgstr ""
+
+#: admin/views/dashboard.php:36
+msgid "Learn what your visitors are asking about"
+msgstr ""
+
+#: admin/views/dashboard.php:46
+msgid "Already have a chatbot?"
+msgstr ""
+
+#: admin/views/dashboard.php:48
+msgid "Go to dashboard"
+msgstr ""
+
+#: admin/views/knowledge-base.php:59
+msgid "Manage the resources your chatbots can access"
+msgstr ""
+
+#: admin/views/knowledge-base.php:63
+msgid "Upload Document"
+msgstr ""
+
+#: admin/views/knowledge-base.php:64 admin/views/knowledge-base.php:209
+#: admin/views/knowledge-base.php:227
+msgid "Add URL"
+msgstr ""
+
+#: admin/views/knowledge-base.php:65
+msgid "Import from WordPress"
+msgstr ""
+
+#: admin/views/knowledge-base.php:113
+msgid "All Resources"
+msgstr ""
+
+#: admin/views/knowledge-base.php:114
+msgid "Documents"
+msgstr ""
+
+#: admin/views/knowledge-base.php:115
+msgid "URLs"
+msgstr ""
+
+#: admin/views/knowledge-base.php:119
+msgid "Search resources..."
+msgstr ""
+
+#: admin/views/knowledge-base.php:139
+msgid "Name"
+msgstr ""
+
+#: admin/views/knowledge-base.php:140
+msgid "Type"
+msgstr ""
+
+#: admin/views/knowledge-base.php:141
+msgid "Date Added"
+msgstr ""
+
+#: admin/views/knowledge-base.php:142
+msgid "Size/URL"
+msgstr ""
+
+#: admin/views/knowledge-base.php:154
+msgid "Visit URL"
+msgstr ""
+
+#: admin/views/knowledge-base.php:192
+msgid ""
+"Are you sure you want to delete this resource? This action cannot be undone."
+msgstr ""
+
+#: admin/views/knowledge-base.php:210
+msgid "Add a website URL to your Knowledge Base"
+msgstr ""
+
+#: admin/views/knowledge-base.php:215 admin/views/knowledge-base.php:315
+msgid "Title"
+msgstr ""
+
+#: admin/views/knowledge-base.php:220
+msgid "URL"
+msgstr ""
+
+#: admin/views/knowledge-base.php:238
+msgid "Add WordPress Content"
+msgstr ""
+
+#: admin/views/knowledge-base.php:239
+msgid "Import content from your WordPress site"
+msgstr ""
+
+#: admin/views/knowledge-base.php:247
+msgid "Select Content Types"
+msgstr ""
+
+#: admin/views/knowledge-base.php:249
+msgid "Select All"
+msgstr ""
+
+#: admin/views/knowledge-base.php:250
+msgid "Deselect All"
+msgstr ""
+
+#: admin/views/knowledge-base.php:269
+msgid "Search"
+msgstr ""
+
+#: admin/views/knowledge-base.php:270
+msgid "Search by title or content"
+msgstr ""
+
+#: admin/views/knowledge-base.php:275
+msgid "Start Date"
+msgstr ""
+
+#: admin/views/knowledge-base.php:279
+msgid "End Date"
+msgstr ""
+
+#: admin/views/knowledge-base.php:286
+msgid "Preview"
+msgstr ""
+
+#: admin/views/knowledge-base.php:296
+msgid "Import Selected"
+msgstr ""
+
+#: admin/views/settings.php:8
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: admin/views/settings.php:44
+msgid "Settings Saved"
+msgstr ""
+
+#: admin/views/settings.php:69 admin/views/sidebar.php:33
+#: includes/admin/class-admin.php:92
+msgid "Settings"
+msgstr ""
+
+#: admin/views/settings.php:73
+msgid "General"
+msgstr ""
+
+#: admin/views/settings.php:74 admin/views/settings.php:151
+msgid "API Keys"
+msgstr ""
+
+#: admin/views/settings.php:87
+msgid "General Settings"
+msgstr ""
+
+#: admin/views/settings.php:88
+msgid "Manage your account preferences"
+msgstr ""
+
+#: admin/views/settings.php:93
+msgid "Admin Email"
+msgstr ""
+
+#: admin/views/settings.php:98
+msgid "Chunk Size"
+msgstr ""
+
+#: admin/views/settings.php:103
+msgid "Chunk Overlap"
+msgstr ""
+
+#: admin/views/settings.php:108
+msgid "Rate Limit Window"
+msgstr ""
+
+#: admin/views/settings.php:113
+msgid "Rate Limit Max Requests"
+msgstr ""
+
+#: admin/views/settings.php:142
+msgid "Save Changes"
+msgstr ""
+
+#: admin/views/settings.php:152
+msgid "Connect to AI providers"
+msgstr ""
+
+#: admin/views/settings.php:157
+msgid "AI Engine"
+msgstr ""
+
+#: admin/views/settings.php:166
+msgid "Select the AI engine you want to use"
+msgstr ""
+
+#: admin/views/settings.php:169
+msgid "OpenAI API Key"
+msgstr ""
+
+#: admin/views/settings.php:172 admin/views/settings.php:195
+#: admin/views/settings.php:207 admin/views/settings.php:219
+msgid "Verify"
+msgstr ""
+
+#: admin/views/settings.php:178
+msgid "Required for GPT-3.5 and GPT-4 models"
+msgstr ""
+
+#: admin/views/settings.php:181
+msgid "OpenAI Organization ID"
+msgstr ""
+
+#: admin/views/settings.php:189
+msgid "Optional: Your OpenAI organization ID."
+msgstr ""
+
+#: admin/views/settings.php:192
+msgid "Anthropic API Key"
+msgstr ""
+
+#: admin/views/settings.php:201
+msgid "Required for Claude models"
+msgstr ""
+
+#: admin/views/settings.php:204
+msgid "VoyageAI API Key"
+msgstr ""
+
+#: admin/views/settings.php:213
+msgid "Required for VoyageAI Embedding models"
+msgstr ""
+
+#: admin/views/settings.php:216
+msgid "Google API Key"
+msgstr ""
+
+#: admin/views/settings.php:225
+msgid "Required for Google models"
+msgstr ""
+
+#: admin/views/settings.php:228
+msgid "Chat Model"
+msgstr ""
+
+#: admin/views/settings.php:237
+msgid "Select the chat model you want to use"
+msgstr ""
+
+#: admin/views/settings.php:240
+msgid "Embedding Model"
+msgstr ""
+
+#: admin/views/settings.php:249
+msgid "Select the embedding model you want to use"
+msgstr ""
+
+#: admin/views/settings.php:254
+msgid "Save API Keys"
+msgstr ""
+
+#: admin/views/sidebar.php:6 includes/admin/class-admin.php:77
+#: includes/admin/class-admin.php:135 includes/admin/class-admin.php:136
+msgid "AI BotKit"
+msgstr ""
+
+#: admin/views/sidebar.php:14
+msgid "My Bots"
+msgstr ""
+
+#: admin/views/sidebar.php:27 includes/admin/class-admin.php:99
+msgid "Analytics"
+msgstr ""
+
+#: includes/admin/class-admin.php:76
+msgid "AI BotKit Dashboard"
+msgstr ""
+
+#: includes/admin/class-admin.php:84
+msgid "Knowledge Base Management"
+msgstr ""
+
+#: includes/admin/class-admin.php:91
+msgid "Plugin Settings"
+msgstr ""
+
+#: includes/admin/class-admin.php:98
+msgid "Usage Analytics"
+msgstr ""
+
+#: includes/admin/class-admin.php:406
+msgid "Are you sure you want to delete this item?"
+msgstr ""
+
+#: includes/admin/class-admin.php:407 includes/admin/class-admin.php:423
+msgid "Are you sure you want to perform this action?"
+msgstr ""
+
+#: includes/admin/class-admin.php:408
+msgid "Operation completed successfully."
+msgstr ""
+
+#: includes/admin/class-admin.php:409
+msgid "An error occurred."
+msgstr ""
+
+#: includes/admin/class-admin.php:410
+msgid "Loading..."
+msgstr ""
+
+#: includes/admin/class-admin.php:411
+msgid "Saving..."
+msgstr ""
+
+#: includes/admin/class-admin.php:412
+msgid "Deleting..."
+msgstr ""
+
+#: includes/admin/class-admin.php:413
+msgid "Processing..."
+msgstr ""
+
+#: includes/admin/class-admin.php:414
+msgid "Add New Chatbot"
+msgstr ""
+
+#: includes/admin/class-admin.php:415
+msgid "Edit Chatbot"
+msgstr ""
+
+#: includes/admin/class-admin.php:416
+msgid "Are you sure you want to delete this chatbot?"
+msgstr ""
+
+#: includes/admin/class-admin.php:417
+msgid "No documents selected."
+msgstr ""
+
+#: includes/admin/class-admin.php:418
+msgid "No documents found."
+msgstr ""
+
+#: includes/admin/class-admin.php:420 includes/admin/class-ajax-handler.php:94
+msgid "API key is required."
+msgstr ""
+
+#: includes/admin/class-admin.php:421
+msgid "Are you sure you want to reprocess this document?"
+msgstr ""
+
+#: includes/admin/class-admin.php:422
+msgid "No selection made."
+msgstr ""
+
+#: includes/admin/class-admin.php:424
+msgid "Invalid date range."
+msgstr ""
+
+#: includes/admin/class-admin.php:425
+msgid "Are you sure you want to remove this document?"
+msgstr ""
+
+#: includes/admin/class-admin.php:426 includes/admin/class-ajax-handler.php:217
+msgid "Chatbot saved successfully."
+msgstr ""
+
+#: includes/admin/class-admin.php:427
+msgid "Error saving chatbot."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:78
+#: includes/admin/class-ajax-handler.php:113
+#: includes/admin/class-ajax-handler.php:226
+#: includes/admin/class-ajax-handler.php:254
+#: includes/admin/class-ajax-handler.php:275
+#: includes/admin/class-ajax-handler.php:296
+#: includes/admin/class-ajax-handler.php:324
+#: includes/admin/class-ajax-handler.php:442
+#: includes/admin/class-ajax-handler.php:524
+#: includes/admin/class-ajax-handler.php:596
+#: includes/admin/class-ajax-handler.php:652
+#: includes/admin/class-ajax-handler.php:713
+#: includes/admin/class-ajax-handler.php:750
+#: includes/admin/class-ajax-handler.php:787
+#: includes/admin/class-ajax-handler.php:816
+#: includes/admin/class-ajax-handler.php:902
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:100
+msgid "API connection successful."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:102
+msgid "API connection failed."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:194
+msgid "Failed to save chatbot."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:237
+#: includes/public/class-shortcode-handler.php:56
+#: includes/public/class-shortcode-handler.php:102
+msgid "Chatbot not found."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:265
+msgid "Failed to delete chatbot."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:268
+msgid "Chatbot deleted successfully."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:280
+msgid "Invalid order data."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:286
+msgid "Fallback order updated successfully."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:305
+#: includes/admin/class-ajax-handler.php:331
+#: includes/admin/class-ajax-handler.php:720
+#: includes/admin/class-ajax-handler.php:757
+#: includes/admin/class-ajax-handler.php:793
+msgid "Invalid parameters."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:311
+msgid "Rate limits updated successfully."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:313
+msgid "Failed to update rate limits."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:337
+msgid "Rate limits reset successfully."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:339
+msgid "Failed to reset rate limits."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:360
+msgid "Invalid provider."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:451
+msgid "Please select at least one content type."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:507
+msgid "No content found matching your criteria."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:528
+#: includes/admin/class-ajax-handler.php:600
+msgid "Missing required fields."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:536
+#: includes/admin/class-ajax-handler.php:913
+msgid "File upload failed."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:542
+msgid "Invalid file type."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:561
+msgid "Failed to save file."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:580
+#: includes/admin/class-ajax-handler.php:636
+msgid "Failed to save document."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:584
+msgid "Document uploaded successfully."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:607
+msgid "Invalid URL."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:613
+msgid "URL is not accessible."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:640
+msgid "URL imported successfully."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:656
+msgid "No content selected."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:696
+#, php-format
+msgid "%d items imported successfully. %d items failed."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:734
+msgid "Documents added successfully."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:768
+msgid "Document removed successfully."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:772
+msgid "Failed to remove document."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:884
+msgid "No documents available."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:906
+msgid "No file uploaded."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:919
+msgid "Invalid file type. Please upload an image (JPG, PNG, or GIF)."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:940
+msgid "Failed to save image."
+msgstr ""
+
+#: includes/admin/class-ajax-handler.php:949
+msgid "Avatar uploaded successfully."
+msgstr ""
+
+#: includes/admin/class-rate-limiter.php:64
+#, php-format
+msgid "Rate limit exceeded. Please wait %d seconds."
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:114
+msgid "API connection is working properly"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:120
+#, php-format
+msgid "API connection error: %s"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:135
+msgid "Database is working properly"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:150
+#, php-format
+msgid "Required table %s is missing"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:171
+msgid "Upload directory does not exist"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:178
+msgid "Upload directory is not writable"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:184
+msgid "Filesystem is working properly"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:194
+msgid "Resource usage is within limits"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:205
+msgid "Memory usage is critically high"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:210
+msgid "Memory usage is high"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:228
+msgid "High number of expired cache entries"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:234
+msgid "Cache system is working properly"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:256
+#, php-format
+msgid "%d items stuck in processing"
+msgstr ""
+
+#: includes/monitoring/class-health-checks.php:264
+msgid "Processing queue is working properly"
+msgstr ""
+
+#: includes/public/class-ajax-handler.php:58
+msgid "Message cannot be empty"
+msgstr ""
+
+#: includes/public/class-ajax-handler.php:97
+msgid "Invalid response ID"
+msgstr ""
+
+#: includes/public/class-ajax-handler.php:103
+msgid "Response not found or expired"
+msgstr ""
+
+#: includes/public/class-ajax-handler.php:127
+#: includes/public/class-ajax-handler.php:152
+msgid "Invalid conversation ID"
+msgstr ""
+
+#: includes/public/class-ajax-handler.php:254
+msgid "Security check failed"
+msgstr ""
+
+#: includes/public/class-shortcode-handler.php:45 public/templates/chat.php:55
+#: public/templates/widget.php:11
+msgid "Type your message..."
+msgstr ""
+
+#: includes/public/class-shortcode-handler.php:91 public/templates/widget.php:12
+msgid "Chat with AI"
+msgstr ""
+
+#: includes/public/class-shortcode-handler.php:158
+msgid "An error occurred. Please try again."
+msgstr ""
+
+#: includes/public/class-shortcode-handler.php:159
+msgid "Network error. Please check your connection."
+msgstr ""
+
+#: includes/public/class-shortcode-handler.php:160
+msgid "Failed to send message. Please try again."
+msgstr ""
+
+#: public/templates/chat.php:24
+msgid "Clear chat"
+msgstr ""
+
+#: public/templates/chat.php:28
+msgid "Minimize chat"
+msgstr ""
+
+#: public/templates/chat.php:57
+msgid "Message input"
+msgstr ""
+
+#: public/templates/chat.php:61
+msgid "Send message"
+msgstr ""

@@ -1,0 +1,226 @@
+# Changelog
+
+All notable changes to the WDM AI BotKit Extension will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- **Pinecone Toggle Option**: Added user-configurable checkbox to enable/disable Pinecone vector database
+  - Users can now choose between Pinecone cloud storage or local WordPress database
+  - Checkbox appears above Pinecone API settings in admin panel
+  - JavaScript functionality to show/hide Pinecone fields based on checkbox state
+  - Automatic fallback to local storage when Pinecone is disabled or misconfigured
+  - Improved user control over vector storage preferences
+- **SweetAlert Integration for Public Chat**: Added SweetAlert2 library to public chat interface
+  - Modern confirmation dialogs for clear conversation functionality
+  - Proper z-index layering to appear above chatbot window
+  - Prevents interference with chatbot functionality
+  - Consistent styling with admin interface confirmations
+- **Dynamic Dashboard Content**: Enhanced dashboard to intelligently display content based on existing chatbots
+  - Dashboard now checks for existing chatbots and shows appropriate content
+  - Shows "Manage your chatbots" when chatbots exist instead of "Create your first chatbot"
+  - Displays chatbot count and appropriate messaging based on user's current setup
+  - Button text changes from "Create Your First Chatbot" to "Manage Chatbots" when appropriate
+  - Maintains "Create Your First Chatbot" for new users without chatbots
+
+### Fixed
+- **Dashboard Inconsistency**: Fixed hardcoded "Create your first chatbot" message showing even when chatbots exist
+  - Dashboard now dynamically adapts content based on actual chatbot data
+  - Eliminates confusion for users who already have chatbots configured
+  - Provides better user experience with contextually appropriate messaging
+- **Debug Statement Cleanup**: Removed all debugging statements from extension and core plugin
+  - Cleaned up error_log statements from WDM extension admin class
+  - Removed debug logging from core AI BotKit admin class
+  - Cleaned up debug statements from sidebar view
+  - Production-ready code without development debugging artifacts
+- **License Validation Logic**: Fixed periodic license validation to prevent unnecessary license invalidation
+  - Only update local status if remote validation succeeds and status actually changed
+  - Don't invalidate license on network errors or server failures
+  - Improved validation timing to be less aggressive
+  - Corrected remote response field name from `license_status` to `license`
+  - Added proper handling for `deactivated` status value from remote server
+- **Notice Display System**: Fixed double notices and improved notice logic
+  - Show notices only when there are actual issues (not when everything is working)
+  - Removed conflicting static vs dynamic status displays
+  - Improved notice hierarchy and context awareness
+  - Added support for `deactivated` status in notice logic
+  - Enhanced screen detection to disable notices only on AI BotKit extension-license tab page
+  - Precise detection using page and tab parameters for targeted notice suppression
+- **AJAX Flow Optimization**: Streamlined license management AJAX calls
+  - Removed redundant status update AJAX call
+  - Return updated status directly from license actions
+  - Eliminated unnecessary AJAX requests
+- **UI Consistency**: Fixed license status display conflicts
+  - Made settings page display fully dynamic
+  - Removed static status elements that conflicted with AJAX updates
+  - Improved status update flow for both main plugin and extension licenses
+  - Added proper display handling for `deactivated` license status
+- **Main Plugin License Dependencies**: Removed all main plugin license checking functionality
+  - Eliminated double notices caused by main plugin license checks
+  - Simplified license system to focus only on extension licensing
+  - Removed unnecessary dependencies on main plugin licensing
+  - Cleaner user interface with only relevant extension license information
+- **Plugin Dependency Management**: Added proper dependency checking and user feedback
+- **SweetAlert Z-Index Fix**: Fixed SweetAlert popup appearing behind chatbot window
+  - Added custom CSS classes for proper layering
+  - Set z-index to 99999 to appear above chatbot (z-index: 9999)
+  - Prevented popup clicks from interfering with chatbot functionality
+  - Added backdrop and proper event handling configuration
+  - Prevents extension activation when AI BotKit plugin is not active
+  - Shows clear error message during activation if dependency is missing
+  - Displays admin notice when plugin is active but dependency is missing
+  - Graceful handling of missing dependencies without breaking functionality
+  - Robust plugin detection using WordPress plugin functions instead of class checks
+  - Handles folder name changes and plugin structure variations
+- **User Interface Improvements**: Enhanced user experience with modern UI elements
+  - Replaced browser alerts with elegant toast notifications
+  - Moved inline styles to dedicated CSS file for better maintainability
+  - Moved inline JavaScript to dedicated JS file for better organization
+  - Added smooth animations and transitions for better user feedback
+  - Improved form handling with proper loading states and error handling
+- **JavaScript and AJAX Fixes**: Resolved JavaScript errors and improved functionality
+  - Fixed undefined function errors by removing obsolete function calls
+  - Added proper AJAX localization for JavaScript variables
+  - Fixed form submission and error handling
+  - Improved toast notification system integration
+  - Fixed AJAX variable localization by moving it to enqueue_scripts method
+- **License Validation Logic**: Fixed license validation and scheduling issues
+  - Fixed remote response field mapping to handle different server response structures
+  - Improved activation validation to check actual license status from remote response
+  - Prevented periodic validation from running when license is not activated
+  - Added proper schedule clearing when license becomes invalid
+  - Enhanced error handling for network and server failures
+- **AJAX Form Handling**: Fixed form field name mismatch in license activation
+  - Corrected AJAX handler to use proper form field name `wdm_ai_botkit_extension_license_key`
+  - Fixed PHP warning about undefined array key in license processing
+  - Ensured proper license key extraction from form submission
+- **Chatbot Property Validation**: Fixed PHP warnings about undefined properties in chatbot display
+  - Added validation for JSON-decoded style and model_config objects
+  - Set default values for missing properties (primary_color, avatar, tone)
+  - Prevents PHP warnings when chatbot data is incomplete or corrupted
+  - Ensures consistent display even with incomplete database records
+  - Added proper escaping for style properties (esc_attr for CSS values)
+- **Public Template Array Key Validation**: Fixed undefined array key warnings in public templates
+  - Added null coalescing operators for style properties in shortcode handler
+  - Set default values for missing style properties (header_icon_color, background_image, theme, enable_gradient)
+  - Added array validation and defaults in widget.php and chat.php templates
+  - Prevents PHP warnings when chatbot style data is incomplete
+  - Ensures graceful fallback to default values for missing properties
+- **Translation Loading Fix**: Fixed WordPress compatibility issue with translation loading
+  - Moved plugin initialization from 'plugins_loaded' to 'init' hook
+  - Prevents "_load_textdomain_just_in_time" warnings about loading too early
+  - Ensures proper WordPress initialization order and compatibility
+  - Follows WordPress best practices for plugin initialization
+- **Default Bot Image Update**: Changed default bot avatar and widget images
+  - Updated default avatar from admin logo to public bot image
+  - Updated default widget image from admin logo to public bot image
+  - More appropriate default images for chatbot functionality
+  - Consistent branding across admin and public interfaces
+- **Message Styling Fixes**: Fixed poor message background colors and styling
+  - Removed !important declarations that were causing black backgrounds
+  - Added default values for message background colors (white for assistant, blue for user)
+  - Added default values for message text colors (dark for assistant, white for user)
+  - Improved readability and visual appeal of chat messages
+  - Prevents CSS conflicts and ensures consistent styling
+- **Directory Creation Error Handling**: Fixed chmod errors during plugin activation
+  - Added proper error handling for directory creation operations
+  - Added logging for failed directory and file creation attempts
+  - Prevents chmod warnings when creating upload directories
+  - More robust plugin activation process
+- **Chatbot Creation Form Completion**: Fixed missing color fields causing black backgrounds
+  - Added missing header color fields (background, font, icon colors)
+  - Added fallback default values in AJAX handler for all color fields
+  - Prevents new chatbots from being created with black backgrounds
+  - Ensures proper default styling for new chatbots
+  - New chatbots now have readable colors out of the box
+- **JavaScript Modernization**: Upgraded from browser alerts to modern UI components
+  - Replaced all JavaScript alert() calls with elegant toast notifications
+  - Replaced confirm() dialogs with SweetAlert modern confirmations
+  - Added comprehensive toast notification system with success, error, warning, and info types
+  - Added SweetAlert library for beautiful confirmation dialogs
+  - Improved user experience with modern, professional UI components
+  - Toast notifications auto-dismiss with progress bars and manual close options
+  - Mobile-responsive design for all notifications
+
+### Changed
+- **License Manager**: Improved remote validation handling
+  - `check_extension_license()` no longer automatically updates local status
+  - `maybe_validate_license()` only updates status when it actually changes
+  - Better error handling for network and server issues
+- **Admin Interface**: Enhanced license settings integration
+  - Simplified AJAX flow with direct status updates
+  - Improved user experience with immediate UI feedback
+  - Better error handling and user feedback
+- **License System Architecture**: Simplified to extension-only licensing
+  - Removed `check_main_plugin_license()` method entirely
+  - Updated `is_extension_licensed()` to only check extension license status
+  - Updated `activate_extension_license()` to remove main plugin license requirement
+  - Updated `show_license_notices()` to remove main plugin license notices
+  - Updated `get_license_status_display()` to focus only on extension license
+  - Removed main plugin license status from AJAX responses
+- **Plugin Architecture**: Enhanced dependency management and user experience
+  - Added runtime dependency checking to prevent plugin initialization without AI BotKit
+  - Improved activation process with proper dependency validation
+  - Added settings link to plugins page for easy access to license settings
+  - Better user feedback for missing dependencies
+  - Replaced fragile class-based dependency checks with robust plugin detection
+  - Future-proof dependency checking that adapts to plugin structure changes
+  - Refactored duplicate dependency checking functions into single reusable static method
+- **Code Organization**: Improved code structure and maintainability
+  - Separated concerns by moving styles and scripts to dedicated files
+  - Eliminated inline styles and JavaScript from PHP templates
+  - Centralized UI logic in proper CSS and JavaScript files
+  - Better separation of presentation and business logic
+- **License Validation Scheduling**: Improved license check efficiency
+  - License validation only runs when license is manually activated
+  - Automatic scheduling/unscheduling based on license status
+  - Prevents unnecessary background processes when no license is active
+  - Better resource management and performance
+
+### Removed
+- **Redundant AJAX Handler**: Removed `get_license_status_ajax()` method
+- **Static Status Elements**: Removed conflicting static license status displays
+- **Unnecessary Notice Logic**: Removed notices for valid license states
+- **Main Plugin License Functionality**: Removed all main plugin license checking
+  - Removed main plugin license status display from settings page
+  - Removed main plugin license dependency checks from activation process
+  - Removed main plugin license notices from admin interface
+  - Removed main plugin license option key and related properties
+  - Removed main plugin license status from AJAX responses
+- **Duplicate Code**: Eliminated redundant dependency checking functions
+  - Removed duplicate `is_ai_botkit_active()` methods from multiple classes
+  - Centralized dependency checking logic in single static method
+  - Reduced code duplication and improved maintainability
+- **Inline Code**: Removed inline styles and JavaScript
+  - Moved all inline styles from PHP template to dedicated CSS file
+  - Moved all inline JavaScript from PHP template to dedicated JS file
+  - Replaced browser alerts with modern toast notification system
+  - Improved code organization and maintainability
+- **Obsolete Functions**: Removed non-existent function calls
+  - Removed call to undefined `initLicenseFormHandlers()` function
+  - Fixed JavaScript errors that were preventing form functionality
+  - Cleaned up obsolete code references
+
+### Added
+- **Plugin Dependency Validation**: Added comprehensive dependency checking
+  - Activation-time dependency validation prevents plugin activation without AI BotKit
+  - Runtime dependency checking prevents plugin initialization without AI BotKit
+  - Clear error messages and admin notices for missing dependencies
+- **Settings Page Integration**: Added easy access to license settings
+  - Settings link in plugins page for quick access to license management
+  - Link only appears when AI BotKit is active and accessible
+  - Direct navigation to AI BotKit extension license tab
+- **Toast Notification System**: Added modern user feedback system
+  - Elegant toast notifications replacing browser alerts
+  - Multiple notification types (success, error, warning, info)
+  - Auto-dismiss with progress bar and manual close option
+  - Smooth animations and responsive design
+  - Global availability for use across the plugin
+- **Enhanced Form Handling**: Improved license form functionality
+  - Proper form submission with AJAX
+  - Loading states and button management
+  - Dynamic status updates without page reload
+  - Better error handling and user feedback 
