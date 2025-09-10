@@ -131,7 +131,7 @@ class Vector_Database {
         int $bot_id,
         array $query_vector,
         int $limit = 5,
-        float $min_similarity = 0.7,
+        float $min_similarity = 0.0,
         array $filters = []
     ): array {
         global $wpdb;
@@ -145,7 +145,10 @@ class Vector_Database {
                 return $cached_results;
             }
 
-            if ($this->pinecone_database && $this->pinecone_database->is_configured()) {
+            // Check if Pinecone is configured
+            $pinecone_configured = $this->pinecone_database && $this->pinecone_database->is_configured();
+
+            if ($pinecone_configured) {
                 // Use Pinecone for vector search
                 $results = $this->pinecone_database->query_vectors($query_vector, $limit, $bot_id, $min_similarity);
                 
@@ -223,7 +226,7 @@ class Vector_Database {
                         ];
                     }
                 }
-
+                
                 // Sort by similarity (highest first)
                 usort($similar_results, function($a, $b) {
                     return $b['similarity'] <=> $a['similarity'];

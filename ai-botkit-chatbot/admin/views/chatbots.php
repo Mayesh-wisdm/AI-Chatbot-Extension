@@ -955,6 +955,21 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                     />
                                     <p class="ai-botkit-help-text"><?php esc_html_e('This is the temperature of the model. The higher the temperature, the more creative the model will be.', 'ai-botkit-for-lead-generation'); ?></p>
                                 </div>
+                                <div class="ai-botkit-form-group">
+                                    <label for="min_chunk_relevance" class="ai-botkit-label"><?php esc_html_e('Minimum Similarity Threshold', 'ai-botkit-for-lead-generation'); ?></label>
+                                    <input
+                                        id="min_chunk_relevance"
+                                        class="ai-botkit-input"
+                                        type="number"
+                                        name="min_chunk_relevance"
+                                        placeholder="e.g. 0.0"
+                                        value="0.0"
+                                        max="1"
+                                        min="0"
+                                        step="0.1"
+                                    />
+                                    <p class="ai-botkit-help-text"><?php esc_html_e('Minimum similarity score for content to be considered relevant. Lower values (0.0-0.3) allow more matches, higher values (0.7-1.0) are more strict.', 'ai-botkit-for-lead-generation'); ?></p>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -140,35 +140,55 @@ class Pinecone_Database {
      * @return array Query results
      * @throws Pinecone_Exception If the request fails.
      */
-    public function query_vectors($query_vector, $limit = 5, $bot_id = null, $min_similarity = 0.7) {
+    public function query_vectors($query_vector, $limit = 5, $bot_id = null, $min_similarity = 0.0) {
         if (!$this->is_configured()) {
             throw new Pinecone_Exception( 'Pinecone is not properly configured' );
         }
 
         try {
             $filter = array();
+            
+            // Get document IDs associated with this chatbot (like local database does)
             if ($bot_id) {
-                $filter['bot_id'] = array('$eq' => $bot_id);
+                global $wpdb;
+                $document_ids = $wpdb->get_col($wpdb->prepare(
+                    "SELECT target_id FROM {$wpdb->prefix}ai_botkit_content_relationships 
+                     WHERE source_type = 'chatbot' AND source_id = %d AND relationship_type = 'knowledge_base'",
+                    $bot_id
+                ));
+                
+                if (!empty($document_ids)) {
+                    // Filter by document_id instead of bot_id (since bot_id doesn't exist in vector metadata)
+                    $filter['document_id'] = array('$in' => array_map('intval', $document_ids));
+                } else {
+                    // No documents associated with this chatbot, return empty results
+                    return array();
+                }
             }
 
             $user_aware_context = apply_filters( 'ai_botkit_user_aware_context', false, $bot_id );
             if ($user_aware_context && is_array($user_aware_context)) {
-                // Add user-specific filters based on enrolled courses
-                $filter['course_id'] = array('$in' => $user_aware_context);
+                // Only apply user-aware context filter if we don't already have document_id filter
+                // This prevents conflicting filters that would return no results
+                if (!isset($filter['document_id'])) {
+                    $filter['course_id'] = array('$in' => $user_aware_context);
+                }
             }
+
+            $request_body = [
+                'vector' => $query_vector,
+                'topK' => $limit,
+                'includeMetadata' => true,
+                'includeValues' => false,
+                'filter' => !empty($filter) ? $filter : null,
+            ];
 
             $args = array(
                 'headers'     => array(
                     'Api-Key'      => $this->api_key,
                     'Content-Type' => 'application/json',
                 ),
-                'body'        => wp_json_encode([
-                    'vector' => $query_vector,
-                    'topK' => $limit,
-                    'includeMetadata' => true,
-                    'includeValues' => false,
-                    'filter' => !empty($filter) ? $filter : null,
-                ]),
+                'body'        => wp_json_encode($request_body),
             );
 
             $response = wp_remote_post($this->get_base_url() . '/query', $args);
@@ -178,9 +198,11 @@ class Pinecone_Database {
             }
 
             $response_code = wp_remote_retrieve_response_code($response);
+            
             if ($response_code !== 200) {
+                $error_message = wp_remote_retrieve_response_message($response);
                 throw new Pinecone_Exception(
-                    'Pinecone API error: ' . wp_remote_retrieve_response_message( $response ),
+                    'Pinecone API error: ' . $error_message,
                     $response_code
                 );
             }
@@ -207,7 +229,6 @@ class Pinecone_Database {
                     }
                 }
             }
-
             return $results;
 
         } catch (Pinecone_Exception $e) {
@@ -397,6 +418,7 @@ class Pinecone_Database {
             );
         }
     }
+
 
     /**
      * Describe index statistics

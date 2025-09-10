@@ -176,10 +176,6 @@ class RAG_Engine {
                             esc_html__('⚠️ The word "%s" is not allowed in this chat.', 'ai-botkit-for-lead-generation'),
                             esc_html($keyword)
                         );
-                        $callback([
-                            'content' => $warning_message,
-                            'sources' => []
-                        ]);
                         //return that this word is not allowed
                         return [
                             'content' => $warning_message,
@@ -211,10 +207,12 @@ class RAG_Engine {
             $history = $this->get_conversation_history($conversation_id);
 
             // Find relevant context
-            $context = $this->retriever->find_context($message, $bot_id, [
+            $retrieval_options = [
                 'max_results' => $model_config['context_length'] ? $model_config['context_length'] : self::DEFAULT_SETTINGS['max_context_chunks'],
                 'min_similarity' => $model_config['min_chunk_relevance'] ?? self::DEFAULT_SETTINGS['min_chunk_relevance']
-            ]);
+            ];
+            
+            $context = $this->retriever->find_context($message, $bot_id, $retrieval_options);
 
             // check if context is empty
             if (empty($context)) {
@@ -232,6 +230,7 @@ class RAG_Engine {
 
             $options['model'] = $model_config['model'] ? $model_config['model'] : get_option('ai_botkit_chat_model', 'gpt-4o-mini');
             $options['max_tokens'] = $model_config['max_tokens'] ? $model_config['max_tokens'] : get_option('ai_botkit_max_tokens', 1000);
+            $options['temperature'] = $model_config['temperature'] ? $model_config['temperature'] : get_option('ai_botkit_temperature', 0.7);
 
             // Build conversation messages
             $messages = $this->build_conversation_messages($message, $history, $formatted_context, $model_config);
@@ -355,10 +354,12 @@ class RAG_Engine {
             $history = $this->get_conversation_history($conversation_id);
 
             // Find relevant context
-            $context = $this->retriever->find_context($message, $bot_id, [
+            $retrieval_options = [
                 'max_results' => $model_config['context_length'] ? $model_config['context_length'] : self::DEFAULT_SETTINGS['max_context_chunks'],
                 'min_similarity' => $model_config['min_chunk_relevance'] ?? self::DEFAULT_SETTINGS['min_chunk_relevance']
-            ]);
+            ];
+            
+            $context = $this->retriever->find_context($message, $bot_id, $retrieval_options);
 
             // check if context is empty
             if (empty($context)) {
@@ -376,6 +377,7 @@ class RAG_Engine {
 
             $options['model'] = $model_config['model'] ? $model_config['model'] : get_option('ai_botkit_chat_model', 'gpt-4o-mini');
             $options['max_tokens'] = $model_config['max_tokens'] ? $model_config['max_tokens'] : get_option('ai_botkit_max_tokens', 1000);
+            $options['temperature'] = $model_config['temperature'] ? $model_config['temperature'] : get_option('ai_botkit_temperature', 0.7);
 
             // Build conversation messages
             $messages = $this->build_conversation_messages($message, $history, $formatted_context, $model_config);
@@ -652,6 +654,7 @@ class RAG_Engine {
             }
         }
     }
+
 
     /**
      * Get engine settings

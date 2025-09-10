@@ -229,7 +229,7 @@ $engines = $this->get_engines();
                             <div class="ai-botkit-form-group">
                                 <label for="ai_botkit_pinecone_host" class="ai-botkit-label"><?php esc_html_e('Pinecone Host', 'ai-botkit-for-lead-generation'); ?></label>
                                 <input type="text" id="ai_botkit_pinecone_host" name="ai_botkit_pinecone_host" placeholder="https://your-index.pinecone.io" value="<?php echo esc_attr($pinecone_host); ?>" />
-                                <p class="ai-botkit-hint"><?php esc_html_e('Enter the Pinecone host URL (e.g., https://your-index.pinecone.io)', 'ai-botkit-for-lead-generation'); ?></p>
+                                <p class="ai-botkit-hint"><?php esc_html_e('Enter the Pinecone host URL (e.g., https://your-index.pinecone.io).', 'ai-botkit-for-lead-generation'); ?> <br /><strong><?php esc_html_e('Important: Your Pinecone host index must be configured with 1536 dimensions to work with this plugin.', 'ai-botkit-for-lead-generation'); ?></strong></p>
                             </div>
                         </div>
                     </div>

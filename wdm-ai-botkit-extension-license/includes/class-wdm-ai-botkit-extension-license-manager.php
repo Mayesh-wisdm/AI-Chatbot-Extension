@@ -185,8 +185,7 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
             } elseif (isset($response['status'])) {
                 return $response['status'];
             }
-            // If no expected field found, log the response for debugging
-            error_log('Unexpected license response structure: ' . print_r($response, true));
+            // If no expected field found, return false
             return false;
         }
         // Don't automatically invalidate on remote failure
@@ -235,14 +234,8 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
         $current_page = isset($_GET['page']) ? $_GET['page'] : '';
         $current_tab = isset($_GET['tab']) ? $_GET['tab'] : '';
         
-        // Debug logging (temporary)
-        error_log('Current Page: ' . $current_page);
-        error_log('Current Tab: ' . $current_tab);
-        error_log('License Status: ' . $this->get_extension_license_status());
-        
         // Disable notices only on the extension-license tab page
         if ($current_page === 'ai-botkit' && $current_tab === 'extension-license') {
-            error_log('Disabling notices on AI BotKit extension-license tab page');
             return;
         }
         
@@ -380,7 +373,6 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
      */
     public function get_license_status_display() {
         $status = $this->get_extension_license_status();
-        error_log('License status: ' . $status);
         switch ($status) {
             case 'valid':
                 return [

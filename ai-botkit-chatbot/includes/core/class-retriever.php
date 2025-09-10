@@ -39,7 +39,7 @@ class Retriever {
      */
     private const DEFAULT_SETTINGS = [
         'max_results' => 5,
-        'min_similarity' => 0.7,
+        'min_similarity' => 0.0, // Lowered from 0.7 to allow more matches
         'context_window' => 3,
         'deduplication_threshold' => 0.95,
         'reranking_enabled' => true

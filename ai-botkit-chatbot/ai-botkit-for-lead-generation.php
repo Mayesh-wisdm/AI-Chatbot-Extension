@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: AI BotKit –  AI Chatbot for WordPress
- * Plugin URI: https://aibotkit.io
+ * Plugin URI: https://wisdmlabs.com/
  * Description: An advanced RAG-based chatbot plugin for WordPress with vector search capabilities.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: WisdmLabs
  * Author URI: https://wisdmlabs.com/
  * License: GPL v2 or later

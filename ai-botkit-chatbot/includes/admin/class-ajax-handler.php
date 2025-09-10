@@ -189,6 +189,8 @@ class Ajax_Handler {
                 'context_length' => intval($_POST['context_length']),
                 'max_tokens' => intval($_POST['max_tokens']),
                 'tone' => sanitize_text_field($_POST['tone']),
+                'temperature' => floatval($_POST['model_temperature']),
+                'min_chunk_relevance' => floatval($_POST['min_chunk_relevance']),
             )),
         );
     
