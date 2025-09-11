@@ -1,8 +1,6 @@
 <?php
 namespace AI_BotKit\Core;
 
-// Add a debug log to confirm this file is being loaded
-//error_log('AI BotKit: Rate_Limiter class file loaded');
 
 /**
  * Class Rate_Limiter
@@ -93,7 +91,7 @@ class Rate_Limiter {
             return true;
         } catch (\Exception $e) {
             // Log the error but don't block the user in case of database issues
-            error_log('AI BotKit Rate Limiter Error: ' . $e->getMessage());
+            error_log('AI BotKit Rate Limiter Error: Database operation failed - ' . $e->getMessage());
             return true;
         }
     }
@@ -140,8 +138,6 @@ class Rate_Limiter {
                 throw new \Exception('No user_id or guest_ip provided for rate limiting');
             }
             
-            // Log the query for debugging
-            //error_log('AI BotKit Rate Limiter Query: ' . $query);
             
             $messages = $wpdb->get_results($query);
             
@@ -182,7 +178,7 @@ class Rate_Limiter {
                 'time_window' => $time_window
             ];
         } catch (\Exception $e) {
-            error_log('AI BotKit Rate Limiter Error in get_user_usage_stats: ' . $e->getMessage());
+            error_log('AI BotKit Rate Limiter Error: User usage stats retrieval failed - ' . $e->getMessage());
             // Return safe defaults in case of error
             return [
                 'message_count' => 0,
@@ -223,7 +219,7 @@ class Rate_Limiter {
                 'usage' => $stats
             ];
         } catch (\Exception $e) {
-            error_log('AI BotKit Rate Limiter Error in get_remaining_limits: ' . $e->getMessage());
+            error_log('AI BotKit Rate Limiter Error: Remaining limits calculation failed - ' . $e->getMessage());
             // Return safe defaults in case of error
             return [
                 'remaining_tokens' => $this->get_token_bucket_limit(),

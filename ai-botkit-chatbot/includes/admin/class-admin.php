@@ -405,6 +405,35 @@ class Admin {
         // Enqueue SweetAlert for modern confirmations
         wp_enqueue_script('sweetalert2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11', array(), '11.0.0', true);
 
+        // Enqueue migration wizard scripts on knowledge base page
+        if (strpos($hook, 'ai-botkit') !== false && isset($_GET['tab']) && $_GET['tab'] === 'knowledge') {
+            wp_enqueue_script(
+                'ai-botkit-migration-wizard',
+                AI_BOTKIT_PLUGIN_URL . 'admin/js/migration-wizard.js',
+                array('jquery'),
+                $this->version,
+                true
+            );
+
+            wp_enqueue_style(
+                'ai-botkit-migration-wizard',
+                AI_BOTKIT_PLUGIN_URL . 'admin/css/migration-wizard.css',
+                array(),
+                $this->version
+            );
+
+            // Localize migration script
+            wp_localize_script('ai-botkit-migration-wizard', 'aiBotKitMigration', array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('ai_botkit_admin'),
+                'strings' => array(
+                    'loading' => __('Loading...', 'ai-botkit-for-lead-generation'),
+                    'error' => __('An error occurred', 'ai-botkit-for-lead-generation'),
+                    'success' => __('Success', 'ai-botkit-for-lead-generation')
+                )
+            ));
+        }
+
         // Localize script with plugin data
         wp_localize_script('ai-botkit-admin', 'ai_botkitAdmin', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),

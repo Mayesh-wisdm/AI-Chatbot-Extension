@@ -229,31 +229,28 @@ class Activator {
             'ai_botkit_chunk_size' => 1000,
             'ai_botkit_chunk_overlap' => 200,
             'ai_botkit_batch_size' => 20,
-            'ai_botkit_queue_batch_size' => 5,
             
             // Cache Settings
             'ai_botkit_cache_ttl' => 3600,
-            'ai_botkit_embeddings_cache_ttl' => 86400,
             
             // Rate Limiting
-            'ai_botkit_rate_limit' => 100,
-            'ai_botkit_rate_window' => 60,
+            'ai_botkit_max_requests_per_day' => 60,
             
             // WooCommerce Integration
-            'ai_botkit_wc_enabled' => true,
             'ai_botkit_wc_product_sync' => true,
             'ai_botkit_wc_order_sync' => true,
             'ai_botkit_wc_customer_sync' => true,
             
             // Analytics Settings
-            'ai_botkit_analytics_enabled' => true,
             'ai_botkit_analytics_retention' => 90,
             'ai_botkit_performance_monitoring' => true,
             
             // Monitoring Settings
             'ai_botkit_health_check_interval' => 'daily',
-            'ai_botkit_backup_enabled' => true,
             'ai_botkit_backup_retention' => 30,
+            
+            // Content Processing
+            'ai_botkit_post_types' => ['post', 'page'],
             'ai_botkit_log_level' => 'info'
         ];
         
@@ -276,7 +273,7 @@ class Activator {
         if (!file_exists($ai_botkit_dir)) {
             $result = wp_mkdir_p($ai_botkit_dir);
             if (!$result) {
-                error_log('AI BotKit: Failed to create directory: ' . $ai_botkit_dir);
+                error_log('AI BotKit Activator Error: Failed to create directory - ' . $ai_botkit_dir);
                 return;
             }
         }
@@ -286,7 +283,7 @@ class Activator {
         if (!file_exists($documents_dir)) {
             $result = wp_mkdir_p($documents_dir);
             if (!$result) {
-                error_log('AI BotKit: Failed to create documents directory: ' . $documents_dir);
+                error_log('AI BotKit Activator Error: Failed to create documents directory - ' . $documents_dir);
                 return;
             }
         }
@@ -300,7 +297,7 @@ class Activator {
             
             $result = file_put_contents($htaccess_file, $htaccess_content);
             if ($result === false) {
-                error_log('AI BotKit: Failed to create .htaccess file: ' . $htaccess_file);
+                error_log('AI BotKit Activator Error: Failed to create .htaccess file - ' . $htaccess_file);
             }
         }
     }

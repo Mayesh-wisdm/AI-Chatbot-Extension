@@ -80,8 +80,12 @@ class WordPress_Content {
             return;
         }
 
-        // Queue post for processing
-        $this->queue_content_for_processing($post_id, 'post', $update ? 'update' : 'create');
+        // Check if content actually changed using hash comparison
+        if ($this->has_content_changed($post_id, $post)) {
+            // Queue post for processing with priority based on content size
+            $priority = $this->get_processing_priority($post);
+            $this->queue_content_for_processing($post_id, 'post', $update ? 'update' : 'create', $priority);
+        }
     }
 
     /**
@@ -184,19 +188,32 @@ class WordPress_Content {
     }
 
     /**
-     * Process content queue
+     * Process content queue with priority and rate limiting
      */
     public function process_content_queue(): void {
         global $wpdb;
 
-        // Get queued items
+        // Check rate limiting
+        if (!$this->check_rate_limits()) {
+            return;
+        }
+
+        // Get queued items ordered by priority and creation time
         $items = $wpdb->get_results(
             "SELECT * FROM {$wpdb->prefix}ai_botkit_wp_content
             WHERE status = 'pending'
-            ORDER BY created_at ASC
-            LIMIT 10"
+            ORDER BY 
+                CASE priority 
+                    WHEN 'high' THEN 1 
+                    WHEN 'normal' THEN 2 
+                    WHEN 'low' THEN 3 
+                    ELSE 4 
+                END,
+                created_at ASC
+            LIMIT 5"
         );
 
+        $processed_count = 0;
         foreach ($items as $item) {
             try {
                 // Update status to processing
@@ -209,12 +226,25 @@ class WordPress_Content {
 
                 // Mark as completed
                 $this->update_content_status($item->post_id, 'completed');
+                $processed_count++;
+
+                // Rate limiting: don't process more than 3 items per batch
+                if ($processed_count >= 3) {
+                    break;
+                }
+
             } catch (\Exception $e) {
                 // Log error and mark as failed
-                error_log('AI BotKit content processing error: ' . $e->getMessage());
+                error_log('AI BotKit WordPress Content Error: Content processing failed - ' . $e->getMessage());
                 $this->update_content_status($item->post_id, 'error');
+                
+                // Increment error count for rate limiting
+                $this->increment_error_count();
             }
         }
+
+        // Update rate limiting counters
+        $this->update_rate_limit_counters($processed_count);
     }
 
     /**
@@ -249,13 +279,68 @@ class WordPress_Content {
     }
 
     /**
+     * Check if content has actually changed using hash comparison
+     * 
+     * @param int $post_id Post ID
+     * @param \WP_Post $post Post object
+     * @return bool True if content changed, false otherwise
+     */
+    private function has_content_changed(int $post_id, \WP_Post $post): bool {
+        // Get current content hash
+        $current_content = $post->post_content . $post->post_title . $post->post_excerpt;
+        $current_hash = md5($current_content);
+        
+        // Get stored hash from post meta
+        $stored_hash = get_post_meta($post_id, '_ai_botkit_content_hash', true);
+        
+        // If no stored hash, content has changed (first time processing)
+        if (empty($stored_hash)) {
+            update_post_meta($post_id, '_ai_botkit_content_hash', $current_hash);
+            return true;
+        }
+        
+        // Compare hashes
+        if ($current_hash !== $stored_hash) {
+            // Update stored hash
+            update_post_meta($post_id, '_ai_botkit_content_hash', $current_hash);
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get processing priority based on content characteristics
+     * 
+     * @param \WP_Post $post Post object
+     * @return string Priority level (high, normal, low)
+     */
+    private function get_processing_priority(\WP_Post $post): string {
+        $content_length = strlen($post->post_content);
+        
+        // High priority for important content types
+        if (in_array($post->post_type, ['sfwd-courses', 'product', 'page'])) {
+            return 'high';
+        }
+        
+        // Low priority for very long content (will be processed in background)
+        if ($content_length > 5000) {
+            return 'low';
+        }
+        
+        // Normal priority for everything else
+        return 'normal';
+    }
+
+    /**
      * Queue content for processing
      * 
      * @param int $content_id Content ID
      * @param string $type Content type
      * @param string $action Action type
+     * @param string $priority Processing priority
      */
-    private function queue_content_for_processing(int $content_id, string $type, string $action): void {
+    private function queue_content_for_processing(int $content_id, string $type, string $action, string $priority = 'normal'): void {
         global $wpdb;
 
         $data = [
@@ -263,6 +348,7 @@ class WordPress_Content {
             'post_type' => $type,
             'status' => 'pending',
             'action' => $action,
+            'priority' => $priority,
             'created_at' => current_time('mysql'),
             'updated_at' => current_time('mysql'),
         ];
@@ -280,14 +366,14 @@ class WordPress_Content {
                 $wpdb->prefix . 'ai_botkit_wp_content',
                 $data,
                 ['id' => $existing],
-                ['%s', '%s', '%s', '%s', '%s', '%s'],
+                ['%s', '%s', '%s', '%s', '%s', '%s', '%s'],
                 ['%d']
             );
         } else {
             $wpdb->insert(
                 $wpdb->prefix . 'ai_botkit_wp_content',
                 $data,
-                ['%d', '%s', '%s', '%s', '%s', '%s']
+                ['%d', '%s', '%s', '%s', '%s', '%s', '%s']
             );
         }
 
@@ -334,6 +420,74 @@ class WordPress_Content {
     }
 
     /**
+     * Check rate limits for processing
+     * 
+     * @return bool True if processing is allowed, false otherwise
+     */
+    private function check_rate_limits(): bool {
+        $current_time = time();
+        $minute_key = 'ai_botkit_rate_limit_minute_' . floor($current_time / 60);
+        $hour_key = 'ai_botkit_rate_limit_hour_' . floor($current_time / 3600);
+        
+        // Check per-minute limit (max 10 operations per minute)
+        $minute_count = get_transient($minute_key) ?: 0;
+        if ($minute_count >= 10) {
+            return false;
+        }
+        
+        // Check per-hour limit (max 100 operations per hour)
+        $hour_count = get_transient($hour_key) ?: 0;
+        if ($hour_count >= 100) {
+            return false;
+        }
+        
+        // Check error rate (max 20% error rate)
+        $error_count = get_transient('ai_botkit_error_count_' . floor($current_time / 300)) ?: 0; // 5-minute window
+        $total_count = get_transient('ai_botkit_total_count_' . floor($current_time / 300)) ?: 1;
+        
+        if ($error_count / $total_count > 0.2) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Update rate limiting counters
+     * 
+     * @param int $processed_count Number of items processed
+     */
+    private function update_rate_limit_counters(int $processed_count): void {
+        $current_time = time();
+        $minute_key = 'ai_botkit_rate_limit_minute_' . floor($current_time / 60);
+        $hour_key = 'ai_botkit_rate_limit_hour_' . floor($current_time / 3600);
+        $total_key = 'ai_botkit_total_count_' . floor($current_time / 300);
+        
+        // Update minute counter
+        $minute_count = get_transient($minute_key) ?: 0;
+        set_transient($minute_key, $minute_count + $processed_count, 60);
+        
+        // Update hour counter
+        $hour_count = get_transient($hour_key) ?: 0;
+        set_transient($hour_key, $hour_count + $processed_count, 3600);
+        
+        // Update total counter
+        $total_count = get_transient($total_key) ?: 0;
+        set_transient($total_key, $total_count + $processed_count, 300);
+    }
+
+    /**
+     * Increment error count for rate limiting
+     */
+    private function increment_error_count(): void {
+        $current_time = time();
+        $error_key = 'ai_botkit_error_count_' . floor($current_time / 300);
+        
+        $error_count = get_transient($error_key) ?: 0;
+        set_transient($error_key, $error_count + 1, 300);
+    }
+
+    /**
      * Get processing statistics
      * 
      * @return array Processing statistics
@@ -362,4 +516,5 @@ class WordPress_Content {
 
         return $formatted;
     }
+
 } 

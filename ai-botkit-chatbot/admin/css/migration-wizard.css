@@ -1,0 +1,462 @@
+/**
+ * AI BotKit Migration Wizard Styles
+ */
+
+/* Migration Section */
+.ai-botkit-migration-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.ai-botkit-migration-status h5 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.ai-botkit-status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.ai-botkit-status-item:last-child {
+    border-bottom: none;
+}
+
+.ai-botkit-status-label {
+    font-weight: 500;
+    color: #555;
+}
+
+.ai-botkit-status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.ai-botkit-status-synced {
+    background: #d4edda;
+    color: #155724;
+}
+
+.ai-botkit-status-empty {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.ai-botkit-status-configured {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.ai-botkit-status-not_configured {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.ai-botkit-migration-controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ai-botkit-clear-controls {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Modal Styles */
+.ai-botkit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-botkit-modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.ai-botkit-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-botkit-modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.ai-botkit-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-botkit-modal-close:hover {
+    color: #333;
+}
+
+.ai-botkit-modal-body {
+    padding: 20px;
+}
+
+.ai-botkit-modal-footer {
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Migration Steps */
+.ai-botkit-migration-step h4 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.ai-botkit-radio-label {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-botkit-radio-label:hover {
+    border-color: #007cba;
+    background: #f8f9fa;
+}
+
+.ai-botkit-radio-label input[type="radio"] {
+    margin-right: 12px;
+    margin-top: 2px;
+}
+
+.ai-botkit-radio-text {
+    flex: 1;
+}
+
+.ai-botkit-radio-text strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.ai-botkit-radio-text br {
+    margin-bottom: 5px;
+}
+
+/* Content Types Selection */
+.ai-botkit-content-types-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.ai-botkit-checkbox-label {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.ai-botkit-checkbox-label:hover {
+    background: #f8f9fa;
+}
+
+.ai-botkit-checkbox-label input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.ai-botkit-checkbox-text {
+    flex: 1;
+}
+
+.ai-botkit-count {
+    color: #666;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+/* Progress Bar */
+.ai-botkit-progress-container {
+    margin: 20px 0;
+}
+
+.ai-botkit-progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.ai-botkit-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007cba, #005a87);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.ai-botkit-progress-text {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Migration Log */
+.ai-botkit-migration-log {
+    max-height: 200px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 15px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.ai-botkit-migration-result {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.ai-botkit-migration-result h5 {
+    margin: 0 0 10px 0;
+    color: #155724;
+}
+
+.ai-botkit-migration-result p {
+    margin: 5px 0;
+    color: #155724;
+}
+
+.ai-botkit-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 15px;
+    color: #721c24;
+    margin: 10px 0;
+}
+
+/* Button Styles */
+.ai-botkit-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.ai-botkit-btn-primary {
+    background: #007cba;
+    color: white;
+}
+
+.ai-botkit-btn-primary:hover {
+    background: #005a87;
+}
+
+.ai-botkit-btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.ai-botkit-btn-secondary:hover {
+    background: #545b62;
+}
+
+.ai-botkit-btn-outline {
+    background: transparent;
+    color: #007cba;
+    border: 2px solid #007cba;
+}
+
+.ai-botkit-btn-outline:hover {
+    background: #007cba;
+    color: white;
+}
+
+.ai-botkit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Button danger styles are defined in admin.css */
+
+/* Form Elements */
+.ai-botkit-form-group {
+    margin-bottom: 20px;
+}
+
+.ai-botkit-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.ai-botkit-form-group input[type="date"],
+.ai-botkit-form-group input[type="text"],
+.ai-botkit-form-group input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.ai-botkit-form-group input[type="date"]:focus,
+.ai-botkit-form-group input[type="text"]:focus,
+.ai-botkit-form-group input[type="number"]:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .ai-botkit-modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .ai-botkit-migration-controls {
+        flex-direction: column;
+    }
+    
+    .ai-botkit-modal-footer {
+        flex-direction: column;
+    }
+    
+    .ai-botkit-status-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+
+/* Animation for step transitions */
+.ai-botkit-migration-step {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading states */
+.ai-botkit-migration-section.ai-botkit-loading {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.ai-botkit-migration-section.ai-botkit-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 10;
+    border-radius: 8px;
+}
+
+.ai-botkit-migration-section.ai-botkit-loading::after {
+    content: 'Loading...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #007cba;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 11;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.ai-botkit-loading-content {
+    position: relative;
+}
+
+.ai-botkit-loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007cba;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

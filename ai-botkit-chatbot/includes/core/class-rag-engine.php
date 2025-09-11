@@ -87,7 +87,7 @@ class RAG_Engine {
         try {
             $this->rate_limiter = new Rate_Limiter();
         } catch (\Exception $e) {
-            error_log('AI BotKit: Rate_Limiter initialization error in RAG_Engine: ' . $e->getMessage());
+            error_log('AI BotKit RAG Engine Error: Rate_Limiter initialization failed - ' . $e->getMessage());
             $this->rate_limiter = null;
         }
 

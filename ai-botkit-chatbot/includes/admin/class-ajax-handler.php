@@ -64,6 +64,12 @@ class Ajax_Handler {
         // Enable chatbot sitewide endpoint
         add_action('wp_ajax_ai_botkit_enable_chatbot_sitewide', array($this, 'handle_enable_chatbot_sitewide'));
         add_action('wp_ajax_ai_botkit_enable_chatbot', array($this, 'handle_enable_chatbot'));
+
+        // Migration endpoints
+        add_action('wp_ajax_ai_botkit_get_migration_status', array($this, 'handle_get_migration_status'));
+        add_action('wp_ajax_ai_botkit_get_content_types', array($this, 'handle_get_content_types'));
+        add_action('wp_ajax_ai_botkit_start_migration', array($this, 'handle_start_migration'));
+        add_action('wp_ajax_ai_botkit_clear_database', array($this, 'handle_clear_database'));
     }
 
     /**
@@ -1163,6 +1169,197 @@ class Ajax_Handler {
             }
         } else {
             wp_send_json_error(['message' => esc_html__('Failed to enable chatbot.', 'ai-botkit-for-lead-generation')]);
+        }
+    }
+
+    /**
+     * Handle getting migration status
+     */
+    public function handle_get_migration_status() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        try {
+            // Create required dependencies
+            $llm_client = new \AI_BotKit\Core\LLM_Client();
+            $document_loader = new \AI_BotKit\Core\Document_Loader();
+            $text_chunker = new \AI_BotKit\Core\Text_Chunker();
+            $embeddings_generator = new \AI_BotKit\Core\Embeddings_Generator($llm_client);
+            $vector_database = new \AI_BotKit\Core\Vector_Database();
+            $retriever = new \AI_BotKit\Core\Retriever($vector_database, $embeddings_generator);
+            $rag_engine = new \AI_BotKit\Core\RAG_Engine(
+                $document_loader,
+                $text_chunker,
+                $embeddings_generator,
+                $vector_database,
+                $retriever,
+                $llm_client
+            );
+            
+            $migration_manager = new \AI_BotKit\Core\Migration_Manager(
+                $rag_engine,
+                $vector_database
+            );
+
+            $status = $migration_manager->get_migration_status();
+            wp_send_json_success($status);
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle getting content types for migration
+     */
+    public function handle_get_content_types() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        try {
+            // Create required dependencies
+            $llm_client = new \AI_BotKit\Core\LLM_Client();
+            $document_loader = new \AI_BotKit\Core\Document_Loader();
+            $text_chunker = new \AI_BotKit\Core\Text_Chunker();
+            $embeddings_generator = new \AI_BotKit\Core\Embeddings_Generator($llm_client);
+            $vector_database = new \AI_BotKit\Core\Vector_Database();
+            $retriever = new \AI_BotKit\Core\Retriever($vector_database, $embeddings_generator);
+            $rag_engine = new \AI_BotKit\Core\RAG_Engine(
+                $document_loader,
+                $text_chunker,
+                $embeddings_generator,
+                $vector_database,
+                $retriever,
+                $llm_client
+            );
+            
+            $migration_manager = new \AI_BotKit\Core\Migration_Manager(
+                $rag_engine,
+                $vector_database
+            );
+
+            $content_types = $migration_manager->get_available_content_types();
+            wp_send_json_success($content_types);
+
+        } catch (\Exception $e) {
+            error_log('AI BotKit Migration Error: Migration operation failed - ' . $e->getMessage());
+            error_log('AI BotKit Migration Error: Stack trace - ' . $e->getTraceAsString());
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle starting migration
+     */
+    public function handle_start_migration() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        if (!isset($_POST['options'])) {
+            wp_send_json_error(['message' => esc_html__('Migration options are required.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        try {
+            // $_POST['options'] is already an array when sent via AJAX
+            $options = $_POST['options'];
+            
+            if (!is_array($options)) {
+                wp_send_json_error(['message' => esc_html__('Invalid migration options.', 'ai-botkit-for-lead-generation')]);
+            }
+
+            // Create required dependencies
+            $llm_client = new \AI_BotKit\Core\LLM_Client();
+            $document_loader = new \AI_BotKit\Core\Document_Loader();
+            $text_chunker = new \AI_BotKit\Core\Text_Chunker();
+            $embeddings_generator = new \AI_BotKit\Core\Embeddings_Generator($llm_client);
+            $vector_database = new \AI_BotKit\Core\Vector_Database();
+            $retriever = new \AI_BotKit\Core\Retriever($vector_database, $embeddings_generator);
+            $rag_engine = new \AI_BotKit\Core\RAG_Engine(
+                $document_loader,
+                $text_chunker,
+                $embeddings_generator,
+                $vector_database,
+                $retriever,
+                $llm_client
+            );
+            
+            $migration_manager = new \AI_BotKit\Core\Migration_Manager(
+                $rag_engine,
+                $vector_database
+            );
+
+            $result = $migration_manager->start_migration($options);
+            wp_send_json_success($result);
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle clearing database
+     */
+    public function handle_clear_database() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        try {
+            $database = sanitize_text_field($_POST['database'] ?? '');
+            
+            if (empty($database) || !in_array($database, ['local', 'pinecone'])) {
+                wp_send_json_error(['message' => esc_html__('Invalid database specified.', 'ai-botkit-for-lead-generation')]);
+            }
+
+            // Additional server-side validation
+            if ($database === 'pinecone') {
+                // Check if Pinecone is configured
+                $pinecone_api_key = get_option('ai_botkit_pinecone_api_key');
+                $pinecone_environment = get_option('ai_botkit_pinecone_environment');
+                $pinecone_index = get_option('ai_botkit_pinecone_index');
+                
+                if (empty($pinecone_api_key) || empty($pinecone_environment) || empty($pinecone_index)) {
+                    wp_send_json_error(['message' => esc_html__('Pinecone is not properly configured.', 'ai-botkit-for-lead-generation')]);
+                }
+            }
+
+            // Create required dependencies
+            $llm_client = new \AI_BotKit\Core\LLM_Client();
+            $document_loader = new \AI_BotKit\Core\Document_Loader();
+            $text_chunker = new \AI_BotKit\Core\Text_Chunker();
+            $embeddings_generator = new \AI_BotKit\Core\Embeddings_Generator($llm_client);
+            $vector_database = new \AI_BotKit\Core\Vector_Database();
+            $retriever = new \AI_BotKit\Core\Retriever($vector_database, $embeddings_generator);
+            $rag_engine = new \AI_BotKit\Core\RAG_Engine(
+                $document_loader,
+                $text_chunker,
+                $embeddings_generator,
+                $vector_database,
+                $retriever,
+                $llm_client
+            );
+
+            $migration_manager = new \AI_BotKit\Core\Migration_Manager(
+                $rag_engine,
+                $vector_database
+            );
+
+            $result = $migration_manager->clear_database($database);
+            wp_send_json_success($result);
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
         }
     }
 } 

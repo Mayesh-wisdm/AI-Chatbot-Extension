@@ -32,7 +32,7 @@ class Embeddings_Generator {
     /**
      * Batch size for processing
      */
-    private $batch_size = 20;
+    private $batch_size;
 
     /**
      * Initialize the generator
@@ -43,6 +43,7 @@ class Embeddings_Generator {
         $this->llm_client = $llm_client;
         $this->cache_manager = new Cache_Manager();
         $this->default_model = get_option('ai_botkit_embedding_model', 'text-embedding-3-small');
+        $this->batch_size = get_option('ai_botkit_batch_size', 20);
     }
 
     /**

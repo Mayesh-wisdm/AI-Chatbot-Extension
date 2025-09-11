@@ -13,13 +13,13 @@ use AI_BotKit\Core\{
 use AI_BotKit\Utils\Cache_Manager;
 use AI_BotKit\Admin\Admin;
 use AI_BotKit\Public\{Ajax_Handler, Shortcode_Handler};
-// use AI_BotKit\Integration\{
-//     WordPress_Content,
-//     WooCommerce,
-//     LearnDash,
-// User_Authentication,
-// REST_API
-// };
+use AI_BotKit\Integration\{
+    WordPress_Content
+    // WooCommerce,
+    // LearnDash,
+    // User_Authentication,
+    // REST_API
+};
 use AI_BotKit\Monitoring\{
     Health_Checks,
     // Performance_Monitor,
@@ -53,7 +53,7 @@ class AI_BotKit {
      * Integration components
      * For future use
      */
-    // private $wp_content;
+    private $wp_content;
     // private $woocommerce;
     // private $learndash;
     // private $user_auth;
@@ -103,9 +103,12 @@ class AI_BotKit {
 
         // Pinecone database class
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-pinecone-database.php';
+        
+        // Migration manager
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-migration-manager.php';
 
         // Integration components
-        // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-wordpress-content.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-wordpress-content.php';
         // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-woocommerce-assistant.php';
         // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-woocommerce.php';
         // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-learndash.php';
@@ -174,7 +177,7 @@ class AI_BotKit {
 
         // Initialize integration components
         // $this->user_auth = new User_Authentication($this->rag_engine);
-        // $this->wp_content = new WordPress_Content($this->rag_engine, $this->document_loader);
+        $this->wp_content = new WordPress_Content($this->rag_engine, $this->document_loader);
         // $this->woocommerce = new WooCommerce($this->rag_engine, $this->document_loader, $this->cache_manager);
         // $this->learndash = new LearnDash($this->rag_engine, $this->document_loader);
         // $this->rest_api = new REST_API($this->rag_engine, $this->user_auth);

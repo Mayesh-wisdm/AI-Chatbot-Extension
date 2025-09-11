@@ -59,6 +59,9 @@ $post_types = get_post_types(['public' => true], 'objects');
 $nonce = wp_create_nonce('ai_botkit_chatbots');
 ?>
 
+<!-- Hidden nonce for migration AJAX -->
+<input type="hidden" id="ai_botkit_migration_nonce" value="<?php echo wp_create_nonce('ai_botkit_admin'); ?>" />
+
 <div class="ai-botkit-knowledge-container">
 
 	<!-- Page Heading and Upload Buttons -->
@@ -110,6 +113,53 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 			</div>
 			<div class="ai-botkit-stats-icon">
 				<i class="ti ti-file-text"></i>
+			</div>
+		</div>
+	</div>
+
+	<!-- Database Migration Section -->
+	<div class="ai-botkit-migration-section">
+		<div class="ai-botkit-migration-header">
+			<h3><?php esc_html_e('Database Management', 'ai-botkit-for-lead-generation'); ?></h3>
+			<p><?php esc_html_e('Migrate data between local database and Pinecone vector storage', 'ai-botkit-for-lead-generation'); ?></p>
+		</div>
+
+		<div class="ai-botkit-migration-status">
+			<h4><?php esc_html_e('Current Status', 'ai-botkit-for-lead-generation'); ?></h4>
+			<div id="migration-status-display">
+				<div class="ai-botkit-status-item">
+					<span class="ai-botkit-status-label"><?php esc_html_e('Local Database:', 'ai-botkit-for-lead-generation'); ?></span>
+					<span class="ai-botkit-status-value" id="local-db-status"><?php esc_html_e('Loading...', 'ai-botkit-for-lead-generation'); ?></span>
+				</div>
+				<div class="ai-botkit-status-item">
+					<span class="ai-botkit-status-label"><?php esc_html_e('Pinecone Database:', 'ai-botkit-for-lead-generation'); ?></span>
+					<span class="ai-botkit-status-value" id="pinecone-db-status"><?php esc_html_e('Loading...', 'ai-botkit-for-lead-generation'); ?></span>
+				</div>
+				<div class="ai-botkit-status-item">
+					<span class="ai-botkit-status-label"><?php esc_html_e('Migration Status:', 'ai-botkit-for-lead-generation'); ?></span>
+					<span class="ai-botkit-status-value" id="migration-status"><?php esc_html_e('Loading...', 'ai-botkit-for-lead-generation'); ?></span>
+				</div>
+				<div class="ai-botkit-status-item">
+					<span class="ai-botkit-status-label"><?php esc_html_e('Last Migration:', 'ai-botkit-for-lead-generation'); ?></span>
+					<span class="ai-botkit-status-value" id="last-migration"><?php esc_html_e('Loading...', 'ai-botkit-for-lead-generation'); ?></span>
+				</div>
+			</div>
+		</div>
+
+		<div class="ai-botkit-migration-controls">
+			<button type="button" id="ai-botkit-migration-btn" class="ai-botkit-btn ai-botkit-btn-secondary">
+				<?php esc_html_e('Start Migration', 'ai-botkit-for-lead-generation'); ?>
+			</button>
+			<button type="button" id="ai-botkit-refresh-status-btn" class="ai-botkit-btn ai-botkit-btn-outline">
+				<?php esc_html_e('Refresh Status', 'ai-botkit-for-lead-generation'); ?>
+			</button>
+			<div class="ai-botkit-clear-controls">
+				<button type="button" id="ai-botkit-clear-local-btn" class="ai-botkit-btn ai-botkit-btn-danger">
+					<?php esc_html_e('Clear Local DB', 'ai-botkit-for-lead-generation'); ?>
+				</button>
+				<button type="button" id="ai-botkit-clear-pinecone-btn" class="ai-botkit-btn ai-botkit-btn-danger">
+					<?php esc_html_e('Clear Pinecone', 'ai-botkit-for-lead-generation'); ?>
+				</button>
 			</div>
 		</div>
 	</div>
@@ -402,5 +452,135 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 		</form>
     </div>
   </div>
+</div>
+
+<!-- Migration Wizard Modal -->
+<div id="ai-botkit-migration-modal" class="ai-botkit-modal" style="display: none;">
+    <div class="ai-botkit-modal-content">
+        <div class="ai-botkit-modal-header">
+            <h3><?php esc_html_e('Database Migration Wizard', 'ai-botkit-for-lead-generation'); ?></h3>
+            <button type="button" class="ai-botkit-modal-close">&times;</button>
+        </div>
+        
+        <div class="ai-botkit-modal-body">
+            <!-- Step 1: Migration Direction -->
+            <div class="ai-botkit-migration-step" data-step="1">
+                <h4><?php esc_html_e('Step 1: Choose Migration Direction', 'ai-botkit-for-lead-generation'); ?></h4>
+                <div class="ai-botkit-form-group">
+                    <label class="ai-botkit-radio-label">
+                        <input type="radio" name="migration_direction" value="to_pinecone" checked>
+                        <span class="ai-botkit-radio-text">
+                            <strong><?php esc_html_e('Local to Pinecone', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <br><?php esc_html_e('Migrate data from local database to Pinecone', 'ai-botkit-for-lead-generation'); ?>
+                        </span>
+                    </label>
+                </div>
+                <div class="ai-botkit-form-group">
+                    <label class="ai-botkit-radio-label">
+                        <input type="radio" name="migration_direction" value="to_local">
+                        <span class="ai-botkit-radio-text">
+                            <strong><?php esc_html_e('Pinecone to Local', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <br><?php esc_html_e('Migrate data from Pinecone to local database', 'ai-botkit-for-lead-generation'); ?>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 2: Migration Scope -->
+            <div class="ai-botkit-migration-step" data-step="2" style="display: none;">
+                <h4><?php esc_html_e('Step 2: Choose Migration Scope', 'ai-botkit-for-lead-generation'); ?></h4>
+                <div class="ai-botkit-form-group">
+                    <label class="ai-botkit-radio-label">
+                        <input type="radio" name="migration_scope" value="all" checked>
+                        <span class="ai-botkit-radio-text">
+                            <strong><?php esc_html_e('All Data', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <br><?php esc_html_e('Migrate all available data', 'ai-botkit-for-lead-generation'); ?>
+                        </span>
+                    </label>
+                </div>
+                <div class="ai-botkit-form-group">
+                    <label class="ai-botkit-radio-label">
+                        <input type="radio" name="migration_scope" value="by_type">
+                        <span class="ai-botkit-radio-text">
+                            <strong><?php esc_html_e('By Content Type', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <br><?php esc_html_e('Select specific content types to migrate', 'ai-botkit-for-lead-generation'); ?>
+                        </span>
+                    </label>
+                </div>
+                <div class="ai-botkit-form-group">
+                    <label class="ai-botkit-radio-label">
+                        <input type="radio" name="migration_scope" value="by_date">
+                        <span class="ai-botkit-radio-text">
+                            <strong><?php esc_html_e('By Date Range', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <br><?php esc_html_e('Migrate data from a specific date range', 'ai-botkit-for-lead-generation'); ?>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 3: Content Type Selection -->
+            <div class="ai-botkit-migration-step" data-step="3" style="display: none;">
+                <h4><?php esc_html_e('Step 3: Select Content Types', 'ai-botkit-for-lead-generation'); ?></h4>
+                <div id="content-types-selection">
+                    <p><?php esc_html_e('Loading content types...', 'ai-botkit-for-lead-generation'); ?></p>
+                </div>
+            </div>
+
+            <!-- Step 4: Date Range Selection -->
+            <div class="ai-botkit-migration-step" data-step="4" style="display: none;">
+                <h4><?php esc_html_e('Step 4: Select Date Range', 'ai-botkit-for-lead-generation'); ?></h4>
+                <div class="ai-botkit-form-group">
+                    <label for="migration_date_start"><?php esc_html_e('Start Date', 'ai-botkit-for-lead-generation'); ?></label>
+                    <input type="date" id="migration_date_start" name="migration_date_start">
+                </div>
+                <div class="ai-botkit-form-group">
+                    <label for="migration_date_end"><?php esc_html_e('End Date', 'ai-botkit-for-lead-generation'); ?></label>
+                    <input type="date" id="migration_date_end" name="migration_date_end">
+                </div>
+            </div>
+
+            <!-- Step 5: Confirmation -->
+            <div class="ai-botkit-migration-step" data-step="5" style="display: none;">
+                <h4><?php esc_html_e('Step 5: Confirm Migration', 'ai-botkit-for-lead-generation'); ?></h4>
+                <div id="migration-summary">
+                    <p><?php esc_html_e('Review your migration settings:', 'ai-botkit-for-lead-generation'); ?></p>
+                    <ul id="migration-summary-list"></ul>
+                </div>
+                <div class="ai-botkit-form-group">
+                    <label class="ai-botkit-checkbox-label">
+                        <input type="checkbox" id="migration_confirm" required>
+                        <span class="ai-botkit-checkbox-text"><?php esc_html_e('I understand that this migration may take some time and I have backed up my data', 'ai-botkit-for-lead-generation'); ?></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Progress Step -->
+            <div class="ai-botkit-migration-step" data-step="progress" style="display: none;">
+                <h4><?php esc_html_e('Migration in Progress', 'ai-botkit-for-lead-generation'); ?></h4>
+                <div class="ai-botkit-progress-container">
+                    <div class="ai-botkit-progress-bar">
+                        <div class="ai-botkit-progress-fill" id="migration-progress-fill"></div>
+                    </div>
+                    <div class="ai-botkit-progress-text" id="migration-progress-text"><?php esc_html_e('Starting migration...', 'ai-botkit-for-lead-generation'); ?></div>
+                </div>
+                <div id="migration-log" class="ai-botkit-migration-log"></div>
+            </div>
+        </div>
+        
+        <div class="ai-botkit-modal-footer">
+            <button type="button" id="ai-botkit-migration-prev" class="ai-botkit-btn ai-botkit-btn-outline" style="display: none;">
+                <?php esc_html_e('Previous', 'ai-botkit-for-lead-generation'); ?>
+            </button>
+            <button type="button" id="ai-botkit-migration-next" class="ai-botkit-btn">
+                <?php esc_html_e('Next', 'ai-botkit-for-lead-generation'); ?>
+            </button>
+            <button type="button" id="ai-botkit-migration-start" class="ai-botkit-btn ai-botkit-btn-primary" style="display: none;">
+                <?php esc_html_e('Start Migration', 'ai-botkit-for-lead-generation'); ?>
+            </button>
+            <button type="button" id="ai-botkit-migration-close" class="ai-botkit-btn ai-botkit-btn-outline" style="display: none;">
+                <?php esc_html_e('Close', 'ai-botkit-for-lead-generation'); ?>
+            </button>
+        </div>
+    </div>
 </div>
 

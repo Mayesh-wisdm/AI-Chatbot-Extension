@@ -91,6 +91,7 @@ $engines = $this->get_engines();
     <form method="post" action="">
         <div class="ai-botkit-tabs-content">
             <?php wp_nonce_field('ai_botkit_settings'); ?>
+            <input type="hidden" id="ai_botkit_migration_nonce" value="<?php echo wp_create_nonce('ai_botkit_admin'); ?>" />
 
             <!-- API Keys Tab -->
             <div class="ai-botkit-tab-pane ai-botkit-card" data-tab-content="api">

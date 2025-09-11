@@ -32,13 +32,11 @@ class Ajax_Handler {
             
             if (class_exists('AI_BotKit\Core\Rate_Limiter')) {
                 $this->rate_limiter = new \AI_BotKit\Core\Rate_Limiter();
-                //error_log('AI BotKit: Successfully initialized Rate_Limiter in Ajax_Handler');
             } else {
-                //error_log('AI BotKit Rate_Limiter class not found after explicit require');
                 $this->rate_limiter = null;
             }
         } catch (\Exception $e) {
-            error_log('AI BotKit Rate_Limiter initialization error: ' . $e->getMessage());
+            error_log('AI BotKit Public AJAX Error: Rate_Limiter initialization failed - ' . $e->getMessage());
             $this->rate_limiter = null;
         }
         
@@ -153,7 +151,7 @@ class Ajax_Handler {
             // Return response data
             wp_send_json_success($response_data);
         } catch (\Exception $e) {
-            error_log('AI BotKit AJAX Error: ' . $e->getMessage());
+            error_log('AI BotKit Public AJAX Error: Request processing failed - ' . $e->getMessage());
             wp_send_json_error([
                 'message' => $e->getMessage(),
                 'code' => $e->getCode()
@@ -383,7 +381,6 @@ class Ajax_Handler {
     private function is_ip_blocked(): bool {
         // Get user's IP address
         $user_ip = $_SERVER['REMOTE_ADDR'];
-        //error_log(print_r($user_ip, true));
         
         // Get blocked IPs from options
         $blocked_ips_json = get_option('ai_botkit_blocked_ips', '[]');
