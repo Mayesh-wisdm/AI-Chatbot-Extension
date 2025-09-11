@@ -172,9 +172,10 @@ class Wdm_Ai_Botkit_Extension_Admin {
 		}
 		
 		$action = sanitize_text_field($_POST['sync_action'] ?? 'start');
+		$bot_id = intval($_POST['bot_id'] ?? 0);
 		
 		if ($action === 'start') {
-			$result = $this->start_learndash_sync();
+			$result = $this->start_learndash_sync($bot_id);
 		} elseif ($action === 'process') {
 			$result = $this->process_learndash_sync_batch();
 		} else {
@@ -191,19 +192,41 @@ class Wdm_Ai_Botkit_Extension_Admin {
 	/**
 	 * Start LearnDash sync process
 	 */
-	private function start_learndash_sync() {
-		// Get all LearnDash courses
-		$courses = get_posts([
-			'post_type' => 'sfwd-courses',
-			'post_status' => 'publish',
-			'posts_per_page' => -1,
-			'fields' => 'ids'
-		]);
+	private function start_learndash_sync($bot_id = 0) {
+		global $wpdb;
+		
+		// If no bot_id provided, get the first available bot
+		if ($bot_id === 0) {
+			$bot_id = $wpdb->get_var("SELECT id FROM {$wpdb->prefix}ai_botkit_chatbots LIMIT 1");
+			if (!$bot_id) {
+				return [
+					'success' => false,
+					'message' => 'No chatbots found. Please create a chatbot first.'
+				];
+			}
+		}
+		
+		// Get LearnDash courses that are already in the bot's knowledge base
+		$courses = $wpdb->get_col($wpdb->prepare(
+			"SELECT d.source_id 
+			 FROM {$wpdb->prefix}ai_botkit_documents d
+			 JOIN {$wpdb->prefix}ai_botkit_content_relationships cr ON cr.target_id = d.id
+			 WHERE cr.source_type = 'chatbot' 
+			 AND cr.source_id = %d 
+			 AND cr.relationship_type = 'knowledge_base'
+			 AND d.source_type = 'post'
+			 AND d.source_id IN (
+				 SELECT ID FROM {$wpdb->posts} 
+				 WHERE post_type = 'sfwd-courses' 
+				 AND post_status = 'publish'
+			 )",
+			$bot_id
+		));
 		
 		if (empty($courses)) {
 			return [
 				'success' => false,
-				'message' => 'No LearnDash courses found'
+				'message' => 'No LearnDash courses found in your knowledge base. Please add LearnDash courses to your chatbot\'s knowledge base first.'
 			];
 		}
 		
@@ -219,7 +242,8 @@ class Wdm_Ai_Botkit_Extension_Admin {
 		return [
 			'success' => true,
 			'total_courses' => count($courses),
-			'message' => sprintf('Found %d courses to sync', count($courses))
+			'bot_id' => $bot_id,
+			'message' => sprintf('Found %d LearnDash courses in your knowledge base to upgrade', count($courses))
 		];
 	}
 

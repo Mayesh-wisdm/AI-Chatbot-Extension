@@ -664,7 +664,7 @@
                     this.performDatabaseClear(database, databaseName);
                 }
             }
-        },
+        }
 
         performDatabaseClear(database, databaseName) {
             // Show loading state

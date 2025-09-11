@@ -238,6 +238,10 @@ class RAG_Engine {
                 ];
             }
 
+            // Process context for enrollment status
+            $current_user_id = get_current_user_id();
+            $context = $this->process_context_for_enrollment($context, $current_user_id);
+
             // Format context for prompt
             $formatted_context = $this->format_context_for_prompt($context);
 
@@ -384,6 +388,10 @@ class RAG_Engine {
                 //     'metadata' => []
                 // ];
             }
+
+            // Process context for enrollment status
+            $current_user_id = get_current_user_id();
+            $context = $this->process_context_for_enrollment($context, $current_user_id);
 
             // Format context for prompt
             $formatted_context = $this->format_context_for_prompt($context);
@@ -699,6 +707,107 @@ class RAG_Engine {
             'retriever' => $this->retriever->get_settings(),
             'default_settings' => self::DEFAULT_SETTINGS
         ];
+    }
+
+    /**
+     * Check if a document is a LearnDash course
+     * 
+     * @param int $document_id Document ID
+     * @return bool True if it's a LearnDash course
+     */
+    private function is_learndash_course($document_id) {
+        $post_type = get_post_type($document_id);
+        return $post_type === 'sfwd-courses';
+    }
+
+    /**
+     * Check if user is enrolled in a specific course
+     * 
+     * @param int $user_id User ID
+     * @param int $course_id Course ID
+     * @return bool True if user is enrolled
+     */
+    private function is_user_enrolled_in_course($user_id, $course_id) {
+        if (!function_exists('learndash_user_get_enrolled_courses')) {
+            return false;
+        }
+        
+        $enrolled_courses = learndash_user_get_enrolled_courses($user_id);
+        return in_array($course_id, $enrolled_courses);
+    }
+
+    /**
+     * Generate course enrollment message for non-enrolled users
+     * 
+     * @param int $course_id Course ID
+     * @return string Enrollment message
+     */
+    private function get_course_enrollment_message($course_id) {
+        $course = get_post($course_id);
+        if (!$course) {
+            return 'Course information is not available.';
+        }
+        
+        $course_url = get_permalink($course_id);
+        $course_description = wp_strip_all_tags($course->post_content);
+        
+        // Limit description length
+        if (strlen($course_description) > 200) {
+            $course_description = substr($course_description, 0, 200) . '...';
+        }
+        
+        return "Course: <b>{$course->post_title}</b><br>" .
+               "Description: {$course_description}<br><br>" .
+               "To access the full course content including lessons, topics, and quizzes, " .
+               "you need to enroll in this course first.<br><br>" .
+               "<a href='{$course_url}' target='_blank'><b>Click here to enroll in this course</b></a>";
+    }
+
+    /**
+     * Process context chunks based on enrollment status
+     * 
+     * @param array $context Context chunks
+     * @param int $user_id User ID
+     * @return array Processed context
+     */
+    private function process_context_for_enrollment($context, $user_id) {
+        $processed_context = [];
+        
+        foreach ($context as $chunk) {
+            $document_id = $chunk['document_id'] ?? null;
+            $source_id = $chunk['source_id'] ?? $document_id;
+            
+            // Check if this is a LearnDash course
+            if ($this->is_learndash_course($source_id)) {
+                // Check enrollment status from metadata or direct check
+                $user_enrolled = $chunk['user_enrolled'] ?? $this->is_user_enrolled_in_course($user_id, $source_id);
+                
+                if ($user_enrolled) {
+                    // User is enrolled - include full content
+                    $processed_context[] = $chunk;
+                } else {
+                    // User not enrolled - replace with enrollment message
+                    $enrollment_message = $this->get_course_enrollment_message($source_id);
+                    $processed_context[] = [
+                        'chunk_id' => 'enrollment_' . $source_id,
+                        'content' => $enrollment_message,
+                        'document_id' => $source_id,
+                        'document_title' => get_the_title($source_id),
+                        'similarity' => $chunk['similarity'] ?? 1.0,
+                        'metadata' => [
+                            'type' => 'enrollment_message',
+                            'course_id' => $source_id,
+                            'user_enrolled' => false
+                        ]
+                    ];
+                }
+            } else {
+                // Not a LearnDash course - include normal content
+                $processed_context[] = $chunk;
+            }
+        }
+        
+        return $processed_context;
     }
 }
 

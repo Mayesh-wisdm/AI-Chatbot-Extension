@@ -166,13 +166,11 @@ class Pinecone_Database {
                 }
             }
 
+            // Get user enrollment context but don't filter results
             $user_aware_context = apply_filters( 'ai_botkit_user_aware_context', false, $bot_id );
+            $enrolled_course_ids = [];
             if ($user_aware_context && is_array($user_aware_context)) {
-                // Only apply user-aware context filter if we don't already have document_id filter
-                // This prevents conflicting filters that would return no results
-                if (!isset($filter['document_id'])) {
-                    $filter['course_id'] = array('$in' => $user_aware_context);
-                }
+                $enrolled_course_ids = array_map('intval', $user_aware_context);
             }
 
             $request_body = [
@@ -216,15 +214,26 @@ class Pinecone_Database {
                 );
             }
 
-            // Process and format results
+            // Process and format results with enrollment metadata
             $results = array();
             if (isset($data['matches']) && is_array($data['matches'])) {
                 foreach ($data['matches'] as $match) {
                     if ($match['score'] >= $min_similarity) {
+                        $metadata = $match['metadata'] ?? array();
+                        
+                        // Add enrollment metadata
+                        if (!empty($enrolled_course_ids) && isset($metadata['source_id'])) {
+                            $metadata['user_enrolled'] = in_array(intval($metadata['source_id']), $enrolled_course_ids);
+                            $metadata['enrolled_course_ids'] = $enrolled_course_ids;
+                        } else {
+                            $metadata['user_enrolled'] = true; // No enrollment filtering, treat as enrolled
+                            $metadata['enrolled_course_ids'] = [];
+                        }
+                        
                         $results[] = array(
                             'id' => $match['id'],
                             'score' => $match['score'],
-                            'metadata' => $match['metadata'] ?? array(),
+                            'metadata' => $metadata,
                         );
                     }
                 }

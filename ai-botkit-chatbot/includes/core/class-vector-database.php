@@ -166,42 +166,36 @@ class Vector_Database {
                 // Use local database for vector search
                 $user_aware_context = apply_filters('ai_botkit_user_aware_context', false, $bot_id);
 
-                // Get all embeddings and chunks
+                // Get all embeddings and chunks with enrollment metadata
+                $query = "SELECT 
+                    c.id as chunk_id,
+                    c.content,
+                    c.metadata,
+                    e.embedding,
+                    d.id as document_id,
+                    d.title as document_title,
+                    d.source_id,
+                    d.source_type
+                    FROM {$this->table_prefix}embeddings e
+                    JOIN {$this->table_prefix}chunks c ON e.chunk_id = c.id
+                    JOIN {$this->table_prefix}documents d ON c.document_id = d.id
+                    JOIN {$this->table_prefix}content_relationships cr ON cr.target_id = d.id
+                    WHERE cr.source_id = %d";
+                
+                $results = $wpdb->get_results($wpdb->prepare($query, $bot_id), ARRAY_A);
+                
+                // Add enrollment metadata to results
                 if ($user_aware_context && is_array($user_aware_context)) {
-                    // Sanitize and ensure all are integers
-                    $document_ids = array_map('intval', $user_aware_context);
-
-                    // Create placeholders based on count
-                    $placeholders = implode(', ', array_fill(0, count($document_ids), '%d'));
-                    $query = "SELECT 
-                        c.id as chunk_id,
-                        c.content,
-                        c.metadata,
-                        e.embedding,
-                        d.id as document_id,
-                        d.title as document_title
-                        FROM {$this->table_prefix}embeddings e
-                        JOIN {$this->table_prefix}chunks c ON e.chunk_id = c.id
-                        JOIN {$this->table_prefix}documents d ON c.document_id = d.id
-                        JOIN {$this->table_prefix}content_relationships cr ON cr.target_id = d.id
-                        WHERE cr.source_id = %d AND d.source_id IN ($placeholders)";
-                    
-                    $results = $wpdb->get_results($wpdb->prepare($query, $bot_id, ...$document_ids), ARRAY_A);
+                    $enrolled_course_ids = array_map('intval', $user_aware_context);
+                    foreach ($results as &$result) {
+                        $result['user_enrolled'] = in_array($result['source_id'], $enrolled_course_ids);
+                        $result['enrolled_course_ids'] = $enrolled_course_ids;
+                    }
                 } else {
-                    $query = "SELECT 
-                        c.id as chunk_id,
-                        c.content,
-                        c.metadata,
-                        e.embedding,
-                        d.id as document_id,
-                        d.title as document_title
-                        FROM {$this->table_prefix}embeddings e
-                        JOIN {$this->table_prefix}chunks c ON e.chunk_id = c.id
-                        JOIN {$this->table_prefix}documents d ON c.document_id = d.id
-                        JOIN {$this->table_prefix}content_relationships cr ON cr.target_id = d.id
-                        WHERE cr.source_id = %d";
-                    
-                    $results = $wpdb->get_results($wpdb->prepare($query, $bot_id), ARRAY_A);
+                    foreach ($results as &$result) {
+                        $result['user_enrolled'] = true; // No enrollment filtering, treat as enrolled
+                        $result['enrolled_course_ids'] = [];
+                    }
                 }
                 
                 if ($results === null) {

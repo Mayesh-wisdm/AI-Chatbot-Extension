@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Smart User Awareness System**: Enhanced user awareness logic for better course discovery and enrollment
+  - Modified Vector Database to retrieve all relevant content while adding enrollment metadata
+  - Updated Pinecone Database to include enrollment status in search results
+  - Added intelligent response processing in RAG Engine for different content types
+  - Implemented course enrollment detection and enrollment message generation
+  - Users now get course information and enrollment links for non-enrolled courses instead of no response
+  - Non-LearnDash content remains fully accessible regardless of enrollment status
+  - Enrolled users continue to receive full course content including lessons, topics, and quizzes
+- **Targeted LearnDash Sync**: Enhanced LearnDash course sync to only process courses already in knowledge base
+  - Modified sync functionality to only upgrade LearnDash courses that are already in the bot's knowledge base
+  - Added bot_id parameter to sync functions for proper targeting
+  - Updated UI messaging to reflect targeted content upgrade instead of wholesale sync
+  - Improved user experience with clear messaging about what will be processed
+  - Sync now respects existing knowledge base configuration and doesn't add new courses
+
 ### Fixed
 - **Critical Metadata Consistency**: Fixed major inconsistencies in migration system metadata structure
   - Migration now includes ALL metadata fields from normal plugin flow (source, mime_type, extension, size, original_size, last_modified, total_chunks, has_previous, has_next, has_overlap_prev, has_overlap_next)

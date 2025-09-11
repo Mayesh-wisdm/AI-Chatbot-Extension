@@ -114,7 +114,7 @@ try {
                 </div>
             <?php else: ?>
                 <p class="description">
-                    <?php _e('Sync your existing LearnDash courses to update them with comprehensive content (lessons, topics, quizzes) instead of basic post data.', 'wdm-ai-botkit-extension'); ?>
+                    <?php _e('Upgrade LearnDash courses that are already in your chatbot\'s knowledge base with comprehensive content (lessons, topics, quizzes) instead of basic post data.', 'wdm-ai-botkit-extension'); ?>
                 </p>
             <?php endif; ?>
             
@@ -128,7 +128,7 @@ try {
                     if ($upgrade_available) {
                         _e('Upgrade LearnDash Content', 'wdm-ai-botkit-extension');
                     } else {
-                        _e('Sync LearnDash Courses', 'wdm-ai-botkit-extension');
+                        _e('Upgrade LearnDash Content in Knowledge Base', 'wdm-ai-botkit-extension');
                     }
                     ?>
                 </button>
@@ -138,14 +138,14 @@ try {
                         <div class="ai-botkit-progress-fill" style="width: 0%;"></div>
                     </div>
                     <div class="ai-botkit-progress-text">
-                        <span id="sync-status"><?php _e('Preparing sync...', 'wdm-ai-botkit-extension'); ?></span>
+                        <span id="sync-status"><?php _e('Preparing content upgrade...', 'wdm-ai-botkit-extension'); ?></span>
                         <span id="sync-count">0 / 0</span>
                     </div>
                 </div>
             </div>
             
             <div id="sync-results" class="ai-botkit-sync-results" style="display: none;">
-                <h4><?php _e('Sync Results', 'wdm-ai-botkit-extension'); ?></h4>
+                <h4><?php _e('Content Upgrade Results', 'wdm-ai-botkit-extension'); ?></h4>
                 <div id="sync-results-content"></div>
             </div>
         </div>
@@ -227,14 +227,15 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'learndash_sync_courses',
                 sync_action: 'start',
+                bot_id: 0, // Will auto-detect first bot if not specified
                 nonce: nonce
             },
             success: function(response) {
                 if (response.success) {
-                    updateProgress(0, response.data.total_courses, 'Starting sync...');
+                    updateProgress(0, response.data.total_courses, 'Starting content upgrade...');
                     processSyncBatch(nonce, response.data.total_courses);
                 } else {
-                    showError(response.data.message || 'Failed to start sync');
+                    showError(response.data.message || 'Failed to start content upgrade');
                 }
             },
             error: function() {
