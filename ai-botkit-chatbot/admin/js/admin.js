@@ -7,79 +7,332 @@
 jQuery(document).ready(function($) {
     'use strict';
 
-    // Toast notification system
+    // Enhanced Toast notification system
     var AiBotkitToast = {
         container: null,
+        toasts: [],
+        maxToasts: 5,
         
         init: function() {
-            this.container = $('<div class="ai-botkit-toast-container"></div>');
+            this.container = $('<div class="ai-botkit-toast-container" role="alert" aria-live="polite" aria-atomic="true" aria-label="Notifications"></div>');
             $('body').append(this.container);
+            
+            // Add keyboard support
+            $(document).on('keydown', (e) => {
+                if (e.key === 'Escape' && this.toasts.length > 0) {
+                    this.hideAll();
+                }
+                
+                // Focus management for toasts
+                if (e.key === 'Tab' && this.toasts.length > 0) {
+                    const activeToast = this.toasts[this.toasts.length - 1];
+                    const focusableElements = activeToast.find('button, [tabindex]:not([tabindex="-1"])');
+                    if (focusableElements.length > 0) {
+                        e.preventDefault();
+                        focusableElements.first().focus();
+                    }
+                }
+            });
+            
+            // Announce new toasts to screen readers
+            this.announcer = $('<div class="ai-botkit-screen-reader-only" aria-live="assertive" aria-atomic="true"></div>');
+            $('body').append(this.announcer);
         },
         
-        show: function(message, type, duration) {
+        show: function(message, type, options) {
             type = type || 'info';
-            duration = duration || 5000;
+            options = options || {};
             
-            var icons = {
+            const duration = options.duration || 5000;
+            const persistent = options.persistent || false;
+            const actions = options.actions || [];
+            const title = options.title || '';
+            const progress = options.progress !== undefined ? options.progress : null;
+            
+            // Limit number of toasts
+            if (this.toasts.length >= this.maxToasts) {
+                this.hide(this.toasts[0]);
+            }
+            
+            const icons = {
                 success: 'dashicons dashicons-yes-alt',
                 error: 'dashicons dashicons-dismiss',
                 warning: 'dashicons dashicons-warning',
-                info: 'dashicons dashicons-info'
+                info: 'dashicons dashicons-info',
+                loading: 'dashicons dashicons-update ai-botkit-spinning'
             };
             
-            var toast = $('<div class="ai-botkit-toast ' + type + '">' +
-                '<div class="toast-content">' +
-                '<span class="toast-icon ' + icons[type] + '"></span>' +
-                '<span class="toast-message">' + message + '</span>' +
-                '<button class="toast-close dashicons dashicons-no-alt"></button>' +
-                '</div>' +
-                '<div class="toast-progress">' +
-                '<div class="toast-progress-bar"></div>' +
-                '</div>' +
-                '</div>');
+            const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            
+            let actionsHtml = '';
+            if (actions.length > 0) {
+                actionsHtml = '<div class="toast-actions">';
+                actions.forEach(action => {
+                    actionsHtml += `<button class="toast-action-btn" data-action="${action.action}">${action.text}</button>`;
+                });
+                actionsHtml += '</div>';
+            }
+            
+            let progressHtml = '';
+            if (progress !== null) {
+                progressHtml = `<div class="toast-progress-container">
+                    <div class="toast-progress-bar" style="width: ${progress}%"></div>
+                </div>`;
+            } else if (!persistent) {
+                progressHtml = '<div class="toast-progress-container"><div class="toast-progress-bar"></div></div>';
+            }
+            
+            const toast = $(`
+                <div class="ai-botkit-toast ${type}" id="${toastId}" role="alert" aria-live="assertive" aria-labelledby="${toastId}-title" aria-describedby="${toastId}-message">
+                    <div class="toast-content">
+                        <div class="toast-icon-container" aria-hidden="true">
+                            <span class="toast-icon ${icons[type]}"></span>
+                        </div>
+                        <div class="toast-body">
+                            ${title ? `<div class="toast-title" id="${toastId}-title">${title}</div>` : ''}
+                            <div class="toast-message" id="${toastId}-message">${message}</div>
+                            ${actionsHtml}
+                        </div>
+                        <button class="toast-close dashicons dashicons-no-alt" aria-label="Close notification" tabindex="0"></button>
+                    </div>
+                    ${progressHtml}
+                </div>
+            `);
             
             this.container.append(toast);
+            this.toasts.push(toast);
             
             // Trigger animation
-            setTimeout(function() {
+            setTimeout(() => {
                 toast.addClass('show');
+                
+                // Announce to screen readers
+                if (this.announcer) {
+                    const announcement = `${title ? title + ': ' : ''}${message}`;
+                    this.announcer.text(announcement);
+                    setTimeout(() => {
+                        this.announcer.text('');
+                    }, 1000);
+                }
+                
+                // Focus management
+                if (actions.length > 0) {
+                    toast.find('.toast-action-btn').first().focus();
+                } else {
+                    toast.find('.toast-close').focus();
+                }
             }, 10);
             
-            // Auto-hide
-            var self = this;
-            setTimeout(function() {
-                self.hide(toast);
+            // Auto-hide (unless persistent or has progress)
+            if (!persistent && progress === null) {
+                setTimeout(() => {
+                    this.hide(toast);
             }, duration);
+            }
             
             // Manual close
-            toast.find('.toast-close').on('click', function() {
-                self.hide(toast);
+            toast.find('.toast-close').on('click', () => {
+                this.hide(toast);
             });
+            
+            // Action buttons
+            toast.find('.toast-action-btn').on('click', (e) => {
+                const action = $(e.target).data('action');
+                if (options.onAction) {
+                    options.onAction(action, toast);
+                }
+            });
+            
+            // Update progress if provided
+            if (progress !== null && options.onProgressUpdate) {
+                options.onProgressUpdate = (newProgress) => {
+                    toast.find('.toast-progress-bar').css('width', newProgress + '%');
+                };
+            }
             
             return toast;
         },
         
         hide: function(toast) {
             toast.removeClass('show');
-            setTimeout(function() {
+            setTimeout(() => {
                 toast.remove();
+                const index = this.toasts.indexOf(toast);
+                if (index > -1) {
+                    this.toasts.splice(index, 1);
+                }
             }, 300);
         },
         
-        success: function(message, duration) {
-            return this.show(message, 'success', duration);
+        hideAll: function() {
+            this.toasts.forEach(toast => {
+                this.hide(toast);
+            });
         },
         
-        error: function(message, duration) {
-            return this.show(message, 'error', duration);
+        updateProgress: function(toast, progress) {
+            toast.find('.toast-progress-bar').css('width', progress + '%');
         },
         
-        warning: function(message, duration) {
-            return this.show(message, 'warning', duration);
+        success: function(message, options) {
+            return this.show(message, 'success', options);
         },
         
-        info: function(message, duration) {
-            return this.show(message, 'info', duration);
+        error: function(message, options) {
+            return this.show(message, 'error', { ...options, persistent: options?.persistent || true });
+        },
+        
+        warning: function(message, options) {
+            return this.show(message, 'warning', options);
+        },
+        
+        info: function(message, options) {
+            return this.show(message, 'info', options);
+        },
+        
+        loading: function(message, options) {
+            return this.show(message, 'loading', { ...options, persistent: true });
+        },
+        
+        // Smart confirmation with undo capability
+        confirm: function(message, options) {
+            options = options || {};
+            const title = options.title || 'Confirm Action';
+            const confirmText = options.confirmText || 'Confirm';
+            const cancelText = options.cancelText || 'Cancel';
+            const type = options.type || 'warning';
+            const undoDuration = options.undoDuration || 5000;
+            
+            return new Promise((resolve) => {
+                const toast = this.show(message, type, {
+                    persistent: true,
+                    title: title,
+                    actions: [
+                        { text: confirmText, action: 'confirm' },
+                        { text: cancelText, action: 'cancel' }
+                    ],
+                    onAction: (action, toastElement) => {
+                        if (action === 'confirm') {
+                            this.hide(toastElement);
+                            resolve(true);
+                        } else if (action === 'cancel') {
+                            this.hide(toastElement);
+                            resolve(false);
+                        }
+                    }
+                });
+                
+                // Auto-cancel after timeout
+                setTimeout(() => {
+                    if (this.toasts.includes(toast)) {
+                        this.hide(toast);
+                        resolve(false);
+                    }
+                }, undoDuration);
+            });
+        },
+        
+        // Smart confirmation with undo capability for destructive actions
+        confirmWithUndo: function(message, options) {
+            options = options || {};
+            const title = options.title || 'Confirm Action';
+            const confirmText = options.confirmText || 'Delete';
+            const undoText = options.undoText || 'Undo';
+            const undoDuration = options.undoDuration || 5000;
+            const onConfirm = options.onConfirm || (() => {});
+            const onUndo = options.onUndo || (() => {});
+            
+            return new Promise((resolve) => {
+                // Show confirmation first
+                const confirmToast = this.show(message, 'warning', {
+                    persistent: true,
+                    title: title,
+                    actions: [
+                        { text: confirmText, action: 'confirm' },
+                        { text: 'Cancel', action: 'cancel' }
+                    ],
+                    onAction: (action, toastElement) => {
+                        if (action === 'confirm') {
+                            this.hide(toastElement);
+                            
+                            // Execute the action
+                            onConfirm();
+                            
+                            // Show undo toast
+                            const undoToast = this.show('Action completed successfully', 'success', {
+                                persistent: true,
+                                title: 'Success',
+                                actions: [
+                                    { text: undoText, action: 'undo' }
+                                ],
+                                onAction: (undoAction, undoToastElement) => {
+                                    if (undoAction === 'undo') {
+                                        this.hide(undoToastElement);
+                                        onUndo();
+                                        
+                                        // Show undo confirmation
+                                        this.success('Action undone successfully', {
+                                            title: 'Undone',
+                                            duration: 3000
+                                        });
+                                    }
+                                }
+                            });
+                            
+                            // Auto-hide undo toast
+                            setTimeout(() => {
+                                if (this.toasts.includes(undoToast)) {
+                                    this.hide(undoToast);
+                                }
+                            }, undoDuration);
+                            
+                            resolve(true);
+                        } else if (action === 'cancel') {
+                            this.hide(toastElement);
+                            resolve(false);
+                        }
+                    }
+                });
+                
+                // Auto-cancel confirmation after timeout
+                setTimeout(() => {
+                    if (this.toasts.includes(confirmToast)) {
+                        this.hide(confirmToast);
+                        resolve(false);
+                    }
+                }, 10000); // Longer timeout for confirmation
+            });
+        },
+        
+        // Batch operation confirmation
+        confirmBatch: function(items, action, options) {
+            options = options || {};
+            const title = options.title || `Confirm ${action}`;
+            const itemType = options.itemType || 'items';
+            const showPreview = options.showPreview !== false;
+            
+            let message = `Are you sure you want to ${action} ${items.length} ${itemType}?`;
+            
+            if (showPreview && items.length <= 5) {
+                message += '<br><br><strong>Items to be affected:</strong><ul>';
+                items.forEach(item => {
+                    message += `<li>${item.name || item.title || item.id}</li>`;
+                });
+                message += '</ul>';
+            } else if (items.length > 5) {
+                message += `<br><br><strong>First 5 items:</strong><ul>`;
+                items.slice(0, 5).forEach(item => {
+                    message += `<li>${item.name || item.title || item.id}</li>`;
+                });
+                message += `</ul><br>... and ${items.length - 5} more items`;
+            }
+            
+            return this.confirm(message, {
+                title: title,
+                confirmText: `Yes, ${action} ${items.length} ${itemType}`,
+                cancelText: 'Cancel',
+                type: 'warning'
+            });
         }
     };
     

@@ -737,7 +737,7 @@ class Migration_Manager {
     /**
      * Clear data from specified database
      * 
-     * @param string $database Database to clear ('local' or 'pinecone')
+     * @param string $database Database to clear ('local', 'pinecone', or 'knowledge_base')
      * @param array $options Clear options
      * @return array Clear result
      */
@@ -747,6 +747,8 @@ class Migration_Manager {
                 return $this->clear_local_database($options);
             } elseif ($database === 'pinecone') {
                 return $this->clear_pinecone_database($options);
+            } elseif ($database === 'knowledge_base') {
+                return $this->clear_knowledge_base($options);
             } else {
                 return [
                     'success' => false,
@@ -763,7 +765,7 @@ class Migration_Manager {
     }
 
     /**
-     * Clear local database
+     * Clear local database (chunks and embeddings only)
      * 
      * @param array $options Clear options
      * @return array Clear result
@@ -771,9 +773,9 @@ class Migration_Manager {
     private function clear_local_database(array $options): array {
         global $wpdb;
 
+        // Only clear chunks and embeddings, preserve document metadata for knowledge base display
         $tables = [
             $wpdb->prefix . 'ai_botkit_chunks',
-            $wpdb->prefix . 'ai_botkit_documents',
             $wpdb->prefix . 'ai_botkit_embeddings'
         ];
 
@@ -788,7 +790,42 @@ class Migration_Manager {
         return [
             'success' => $cleared_count > 0,
             'message' => sprintf(
-                __('Cleared %d tables from local database', 'ai-botkit-for-lead-generation'),
+                __('Cleared %d vector tables from local database. Document metadata preserved for knowledge base display.', 'ai-botkit-for-lead-generation'),
+                $cleared_count
+            ),
+            'cleared_tables' => $cleared_count
+        ];
+    }
+
+    /**
+     * Clear entire knowledge base (including document metadata)
+     * 
+     * @param array $options Clear options
+     * @return array Clear result
+     */
+    private function clear_knowledge_base(array $options): array {
+        global $wpdb;
+
+        // Clear all knowledge base related tables
+        $tables = [
+            $wpdb->prefix . 'ai_botkit_chunks',
+            $wpdb->prefix . 'ai_botkit_documents',
+            $wpdb->prefix . 'ai_botkit_embeddings',
+            $wpdb->prefix . 'ai_botkit_content_relationships'
+        ];
+
+        $cleared_count = 0;
+        foreach ($tables as $table) {
+            $result = $wpdb->query("TRUNCATE TABLE $table");
+            if ($result !== false) {
+                $cleared_count++;
+            }
+        }
+
+        return [
+            'success' => $cleared_count > 0,
+            'message' => sprintf(
+                __('Cleared entire knowledge base (%d tables). All documents, chunks, embeddings, and chatbot associations removed.', 'ai-botkit-for-lead-generation'),
                 $cleared_count
             ),
             'cleared_tables' => $cleared_count
@@ -810,13 +847,13 @@ class Migration_Manager {
         }
 
         try {
-            // Note: This would require implementing a delete_all method in Pinecone_Database
-            // For now, we'll return a placeholder response
+            $result = $this->pinecone_database->delete_all_vectors();
             return [
-                'success' => false,
-                'message' => __('Pinecone clear functionality is not yet implemented', 'ai-botkit-for-lead-generation')
+                'success' => $result['success'],
+                'message' => $result['message']
             ];
         } catch (\Exception $e) {
+            error_log('AI BotKit Migration Error: Pinecone clear failed - ' . $e->getMessage());
             return [
                 'success' => false,
                 'message' => __('Failed to clear Pinecone: ', 'ai-botkit-for-lead-generation') . $e->getMessage()

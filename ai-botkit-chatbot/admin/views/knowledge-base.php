@@ -154,11 +154,14 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 				<?php esc_html_e('Refresh Status', 'ai-botkit-for-lead-generation'); ?>
 			</button>
 			<div class="ai-botkit-clear-controls">
-				<button type="button" id="ai-botkit-clear-local-btn" class="ai-botkit-btn ai-botkit-btn-danger">
-					<?php esc_html_e('Clear Local DB', 'ai-botkit-for-lead-generation'); ?>
+				<button type="button" id="ai-botkit-clear-local-btn" class="ai-botkit-btn ai-botkit-btn-warning" title="<?php esc_attr_e('Clear only vector data (chunks & embeddings). Preserves document metadata for knowledge base display.', 'ai-botkit-for-lead-generation'); ?>">
+					<?php esc_html_e('Clear Vector Data', 'ai-botkit-for-lead-generation'); ?>
 				</button>
-				<button type="button" id="ai-botkit-clear-pinecone-btn" class="ai-botkit-btn ai-botkit-btn-danger">
+				<button type="button" id="ai-botkit-clear-pinecone-btn" class="ai-botkit-btn ai-botkit-btn-warning" title="<?php esc_attr_e('Clear all data from Pinecone vector database.', 'ai-botkit-for-lead-generation'); ?>">
 					<?php esc_html_e('Clear Pinecone', 'ai-botkit-for-lead-generation'); ?>
+				</button>
+				<button type="button" id="ai-botkit-clear-knowledge-base-btn" class="ai-botkit-btn ai-botkit-btn-danger" title="<?php esc_attr_e('Clear entire knowledge base including all documents, chunks, embeddings, and chatbot associations. This will remove everything from the knowledge base.', 'ai-botkit-for-lead-generation'); ?>">
+					<?php esc_html_e('Clear Knowledge Base', 'ai-botkit-for-lead-generation'); ?>
 				</button>
 			</div>
 		</div>

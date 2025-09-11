@@ -108,6 +108,17 @@ class RAG_Engine {
      */
     public function process_document(string $source, string $source_type, int $document_id, array $options = []): array {
         try {
+            // Check if this is an update (document already exists)
+            $is_update = $this->document_exists($document_id);
+            
+            // If this is an update, clean up old chunks and embeddings first
+            if ($is_update) {
+                $cleanup_result = $this->vector_database->delete_document_embeddings($document_id);
+                error_log('AI BotKit RAG Engine: Cleaned up old chunks for document ' . $document_id . 
+                         ' - Chunks: ' . $cleanup_result['deleted_chunks'] . 
+                         ', Embeddings: ' . $cleanup_result['deleted_embeddings']);
+            }
+
             // Load document based on source type
             $document = match($source_type) {
                 'file' => $this->document_loader->load_from_file($source, $document_id),
@@ -129,7 +140,9 @@ class RAG_Engine {
                 'document_id' => $document_id,
                 'chunk_count' => count($chunks),
                 'embedding_count' => count($embeddings),
-                'metadata' => $document['metadata']
+                'metadata' => $document['metadata'],
+                'is_update' => $is_update,
+                'cleanup_result' => $is_update ? $cleanup_result : null
             ];
 
         } catch (\Exception $e) {
@@ -626,6 +639,23 @@ class RAG_Engine {
                 );
             }
         }
+    }
+
+    /**
+     * Check if a document already exists in the database
+     * 
+     * @param int $document_id Document ID
+     * @return bool True if document exists, false otherwise
+     */
+    private function document_exists(int $document_id): bool {
+        global $wpdb;
+        
+        $count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}ai_botkit_documents WHERE id = %d",
+            $document_id
+        ));
+        
+        return (int)$count > 0;
     }
 
     /**

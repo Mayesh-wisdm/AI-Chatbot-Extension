@@ -190,28 +190,9 @@ class Document_Loader {
                 );
             
             case 'docx':
-                // TODO: Implement DOCX parsing
-                // if (class_exists('\PhpOffice\PhpWord\IOFactory')) {
-                //     $temp_file = tempnam(sys_get_temp_dir(), 'docx_');
-                //     file_put_contents($temp_file, $content);
-                    
-                //     $phpWord = \PhpOffice\PhpWord\IOFactory::load($temp_file);
-                //     $text = '';
-                    
-                //     foreach ($phpWord->getSections() as $section) {
-                //         foreach ($section->getElements() as $element) {
-                //             if (method_exists($element, 'getText')) {
-                //                 $text .= $element->getText() . "\n";
-                //             }
-                //         }
-                //     }
-                    
-                //     unlink($temp_file);
-                //     return $text;
-                // }
-                // throw new \Exception(
-                //     esc_html__('DOCX parsing requires the PHPWord library', 'ai-botkit-for-lead-generation')
-                // );
+                // DOCX parsing requires PhpOffice/PhpWord library
+                // For now, return a helpful error message
+                throw new \Exception(__('DOCX parsing requires additional setup. Please convert to PDF or TXT format, or contact support for DOCX support.', 'ai-botkit-for-lead-generation'));
             
             case 'html':
             case 'htm':

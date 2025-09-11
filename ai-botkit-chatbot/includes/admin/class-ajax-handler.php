@@ -474,7 +474,7 @@ class Ajax_Handler {
      * @throws Exception If connection fails
      */
     private function test_google_connection($api_key) {
-        // Note: Replace with actual Google AI API endpoint when available
+        // Using Google AI API endpoint for model listing
         $response = wp_remote_get('https://generativelanguage.googleapis.com/v1beta/models?key=' . $api_key,
             array(
                 'headers' => array(
@@ -1318,9 +1318,9 @@ class Ajax_Handler {
         try {
             $database = sanitize_text_field($_POST['database'] ?? '');
             
-            if (empty($database) || !in_array($database, ['local', 'pinecone'])) {
-                wp_send_json_error(['message' => esc_html__('Invalid database specified.', 'ai-botkit-for-lead-generation')]);
-            }
+        if (empty($database) || !in_array($database, ['local', 'pinecone', 'knowledge_base'])) {
+            wp_send_json_error(['message' => esc_html__('Invalid database specified.', 'ai-botkit-for-lead-generation')]);
+        }
 
             // Additional server-side validation
             if ($database === 'pinecone') {

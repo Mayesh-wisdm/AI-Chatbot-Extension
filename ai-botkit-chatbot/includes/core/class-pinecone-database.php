@@ -474,5 +474,60 @@ class Pinecone_Database {
             );
         }
     }
+
+    /**
+     * Delete all vectors from Pinecone index
+     * 
+     * @return array Result of the operation
+     * @throws Pinecone_Exception
+     */
+    public function delete_all_vectors() {
+        if (!$this->is_configured()) {
+            throw new Pinecone_Exception('Pinecone is not configured');
+        }
+
+        try {
+            $url = $this->get_base_url() . '/vectors/delete';
+            
+            $data = [
+                'deleteAll' => true
+            ];
+
+            $response = wp_remote_post($url, [
+                'headers' => [
+                    'Api-Key' => $this->api_key,
+                    'Content-Type' => 'application/json'
+                ],
+                'body' => wp_json_encode($data),
+                'timeout' => 30
+            ]);
+
+            if (is_wp_error($response)) {
+                throw new Pinecone_Exception('Failed to delete all vectors: ' . $response->get_error_message());
+            }
+
+            $status_code = wp_remote_retrieve_response_code($response);
+            $body = wp_remote_retrieve_body($response);
+
+            if ($status_code === 200) {
+                return [
+                    'success' => true,
+                    'message' => __('All vectors deleted from Pinecone successfully', 'ai-botkit-for-lead-generation')
+                ];
+            } else {
+                $error_data = json_decode($body, true);
+                $error_message = $error_data['message'] ?? 'Unknown error';
+                throw new Pinecone_Exception("Failed to delete all vectors: {$error_message} (Status: {$status_code})");
+            }
+
+        } catch (\Exception $e) {
+            error_log('AI BotKit Pinecone Error: Delete all vectors failed - ' . $e->getMessage());
+            throw new Pinecone_Exception(
+                'Unexpected error during Pinecone delete all vectors: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+    }
 }
 

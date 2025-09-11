@@ -145,22 +145,6 @@ class Activator {
         ) $charset_collate;";
         dbDelta($sql);
 
-        // Content tracking table
-        // not in use
-        // $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}ai_botkit_wp_content (
-        //     id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-        //     post_id BIGINT(20) UNSIGNED NOT NULL,
-        //     post_type VARCHAR(50) NOT NULL,
-        //     last_processed DATETIME NULL,
-        //     status VARCHAR(20) NOT NULL DEFAULT 'pending',
-        //     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        //     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        //     PRIMARY KEY (id),
-        //     UNIQUE KEY post_id (post_id),
-        //     KEY post_type (post_type),
-        //     KEY status (status)
-        // ) $charset_collate;";
-        // dbDelta($sql);
 
         // Content relationships table
         $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}ai_botkit_content_relationships (

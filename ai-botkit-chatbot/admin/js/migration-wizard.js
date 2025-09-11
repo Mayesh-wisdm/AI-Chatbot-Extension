@@ -40,6 +40,10 @@
                 this.clearDatabase('pinecone');
             });
 
+            $('#ai-botkit-clear-knowledge-base-btn').on('click', () => {
+                this.clearDatabase('knowledge_base');
+            });
+
             // Modal close
             $('.ai-botkit-modal-close, #ai-botkit-migration-close').on('click', () => {
                 this.closeWizard();
@@ -295,6 +299,30 @@
             this.showStep('progress');
             this.updateNavigationButtons();
             
+            // Show progress toast
+            let progressToast = null;
+            if (typeof AiBotkitToast !== 'undefined') {
+                progressToast = AiBotkitToast.loading('Starting migration...', {
+                    title: 'Migration in Progress',
+                    persistent: true
+                });
+            }
+            
+            // Track progress
+            let progressInterval = null;
+            let currentProgress = 0;
+            
+            const updateProgress = () => {
+                currentProgress = Math.min(currentProgress + Math.random() * 10, 90);
+                if (progressToast && typeof AiBotkitToast !== 'undefined') {
+                    AiBotkitToast.updateProgress(progressToast, currentProgress);
+                }
+                this.updateProgress(currentProgress, `Migrating data... ${Math.round(currentProgress)}%`);
+            };
+            
+            // Start progress simulation
+            progressInterval = setInterval(updateProgress, 1000);
+            
             // Start the migration process
             $.ajax({
                 url: aiBotKitMigration.ajaxUrl,
@@ -305,15 +333,61 @@
                     options: this.migrationOptions
                 },
                 success: (response) => {
+                    // Clear progress interval
+                    if (progressInterval) {
+                        clearInterval(progressInterval);
+                    }
+                    
+                    // Complete progress
+                    this.updateProgress(100, 'Migration completed successfully!');
+                    
+                    // Hide progress toast
+                    if (progressToast && typeof AiBotkitToast !== 'undefined') {
+                        AiBotkitToast.hide(progressToast);
+                    }
+                    
                     if (response.success) {
-                        this.updateProgress(100, 'Migration completed successfully!');
                         this.showMigrationResult(response.data);
+                        
+                        // Show success toast
+                        if (typeof AiBotkitToast !== 'undefined') {
+                            AiBotkitToast.success('Migration completed successfully!', {
+                                title: 'Success',
+                                duration: 5000
+                            });
+                        }
                     } else {
                         this.showError('Migration failed: ' + response.data);
+                        
+                        // Show error toast
+                        if (typeof AiBotkitToast !== 'undefined') {
+                            AiBotkitToast.error('Migration failed. Please check the details below.', {
+                                title: 'Migration Failed',
+                                persistent: true
+                            });
+                        }
                     }
                 },
                 error: () => {
+                    // Clear progress interval
+                    if (progressInterval) {
+                        clearInterval(progressInterval);
+                    }
+                    
+                    // Hide progress toast
+                    if (progressToast && typeof AiBotkitToast !== 'undefined') {
+                        AiBotkitToast.hide(progressToast);
+                    }
+                    
                     this.showError('Migration failed due to a server error');
+                    
+                    // Show error toast
+                    if (typeof AiBotkitToast !== 'undefined') {
+                        AiBotkitToast.error('Network error occurred. Please check your connection and try again.', {
+                            title: 'Connection Error',
+                            persistent: true
+                        });
+                    }
                 }
             });
         }
@@ -325,18 +399,66 @@
 
         showMigrationResult(result) {
             const log = $('#migration-log');
+            const statusIcon = result.success ? '✅' : '❌';
+            const statusClass = result.success ? 'success' : 'error';
+            
             log.html(`
-                <div class="ai-botkit-migration-result">
-                    <h5>Migration Results:</h5>
-                    <p><strong>Status:</strong> ${result.success ? 'Success' : 'Failed'}</p>
-                    <p><strong>Message:</strong> ${result.message}</p>
-                    ${result.migrated_count ? `<p><strong>Items Migrated:</strong> ${result.migrated_count}</p>` : ''}
-                    ${result.error_count ? `<p><strong>Errors:</strong> ${result.error_count}</p>` : ''}
+                <div class="ai-botkit-migration-result ${statusClass}">
+                    <div class="ai-botkit-result-header">
+                        <h5>${statusIcon} Migration ${result.success ? 'Completed' : 'Failed'}</h5>
+                    </div>
+                    <div class="ai-botkit-result-details">
+                        <div class="ai-botkit-result-item">
+                            <span class="ai-botkit-result-label">Status:</span>
+                            <span class="ai-botkit-result-value ${statusClass}">${result.success ? 'Success' : 'Failed'}</span>
+                        </div>
+                        <div class="ai-botkit-result-item">
+                            <span class="ai-botkit-result-label">Message:</span>
+                            <span class="ai-botkit-result-value">${result.message}</span>
+                        </div>
+                        ${result.migrated_count ? `
+                            <div class="ai-botkit-result-item">
+                                <span class="ai-botkit-result-label">Items Migrated:</span>
+                                <span class="ai-botkit-result-value success">${result.migrated_count}</span>
+                            </div>
+                        ` : ''}
+                        ${result.error_count ? `
+                            <div class="ai-botkit-result-item">
+                                <span class="ai-botkit-result-label">Errors:</span>
+                                <span class="ai-botkit-result-value error">${result.error_count}</span>
+                            </div>
+                        ` : ''}
+                        ${result.duration ? `
+                            <div class="ai-botkit-result-item">
+                                <span class="ai-botkit-result-label">Duration:</span>
+                                <span class="ai-botkit-result-value">${result.duration}</span>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             `);
             
             // Show close button
             $('#ai-botkit-migration-close').show();
+            
+            // Show success/error notification
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: result.success ? 'Migration Complete!' : 'Migration Failed',
+                    html: `
+                        <div style="text-align: left;">
+                            <p>${result.message}</p>
+                            ${result.migrated_count ? `<p><strong>Items Migrated:</strong> ${result.migrated_count}</p>` : ''}
+                            ${result.error_count ? `<p><strong>Errors:</strong> ${result.error_count}</p>` : ''}
+                        </div>
+                    `,
+                    icon: result.success ? 'success' : 'error',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'ai-botkit-swal-popup'
+                    }
+                });
+            }
         }
 
         showError(message) {
@@ -458,12 +580,93 @@
         }
 
         clearDatabase(database) {
-            const databaseName = database === 'local' ? 'Local Database' : 'Pinecone Database';
+            let databaseName, title, description, actions;
             
-            if (!confirm(`Are you sure you want to clear the ${databaseName}? This action cannot be undone.`)) {
-                return;
+            if (database === 'local') {
+                databaseName = 'Vector Data';
+                title = 'Clear Vector Data?';
+                description = `
+                    <div style="text-align: left;">
+                        <p><strong>Are you sure you want to clear the vector data?</strong></p>
+                        <p>This action will:</p>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Remove all stored vectors and embeddings</li>
+                            <li>Delete all chunk data</li>
+                            <li>Clear migration history</li>
+                        </ul>
+                        <p style="color: #dba617; font-weight: bold;">📋 Document metadata will be preserved for knowledge base display</p>
+                        <p style="color: #d63638; font-weight: bold;">⚠️ This action cannot be undone!</p>
+                    </div>
+                `;
+                actions = ['Remove all vector data', 'Clear migration history'];
+            } else if (database === 'pinecone') {
+                databaseName = 'Pinecone Database';
+                title = 'Clear Pinecone Database?';
+                description = `
+                    <div style="text-align: left;">
+                        <p><strong>Are you sure you want to clear the Pinecone Database?</strong></p>
+                        <p>This action will:</p>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Remove all vectors from Pinecone</li>
+                            <li>Delete all embeddings stored in Pinecone</li>
+                            <li>Clear Pinecone index data</li>
+                        </ul>
+                        <p style="color: #d63638; font-weight: bold;">⚠️ This action cannot be undone!</p>
+                    </div>
+                `;
+                actions = ['Remove all Pinecone vectors', 'Clear Pinecone index'];
+            } else if (database === 'knowledge_base') {
+                databaseName = 'Knowledge Base';
+                title = 'Clear Entire Knowledge Base?';
+                description = `
+                    <div style="text-align: left;">
+                        <p><strong>Are you sure you want to clear the ENTIRE Knowledge Base?</strong></p>
+                        <p>This action will:</p>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Remove all documents and their metadata</li>
+                            <li>Delete all chunks and embeddings</li>
+                            <li>Clear all chatbot associations</li>
+                            <li>Remove all content relationships</li>
+                        </ul>
+                        <p style="color: #d63638; font-weight: bold;">🚨 This will completely empty your knowledge base!</p>
+                        <p style="color: #d63638; font-weight: bold;">⚠️ This action cannot be undone!</p>
+                    </div>
+                `;
+                actions = ['Remove all documents', 'Clear all associations', 'Delete entire knowledge base'];
             }
+            
+            // Use SweetAlert2 for confirmation
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: title,
+                    html: description,
+                    icon: database === 'knowledge_base' ? 'error' : 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: database === 'knowledge_base' ? '#d63638' : '#dba617',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: `Yes, Clear ${databaseName}`,
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true,
+                    focusCancel: true,
+                    customClass: {
+                        popup: 'ai-botkit-swal-popup',
+                        confirmButton: database === 'knowledge_base' ? 'ai-botkit-swal-confirm-danger' : 'ai-botkit-swal-confirm-warning',
+                        cancelButton: 'ai-botkit-swal-cancel'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.performDatabaseClear(database, databaseName);
+                    }
+                });
+            } else {
+                // Fallback to native confirm
+                if (confirm(`Are you sure you want to clear the ${databaseName}? This action cannot be undone.`)) {
+                    this.performDatabaseClear(database, databaseName);
+                }
+            }
+        },
 
+        performDatabaseClear(database, databaseName) {
             // Show loading state
             this.showLoadingState();
 
@@ -478,15 +681,61 @@
                 success: (response) => {
                     this.hideLoadingState();
                     if (response.success) {
-                        alert(`Successfully cleared ${databaseName}`);
+                        // Success notification with SweetAlert2
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                title: 'Database Cleared!',
+                                text: `Successfully cleared ${databaseName}`,
+                                icon: 'success',
+                                timer: 3000,
+                                timerProgressBar: true,
+                                showConfirmButton: false,
+                                customClass: {
+                                    popup: 'ai-botkit-swal-popup'
+                                }
+                            });
+                        } else {
+                            alert(`Successfully cleared ${databaseName}`);
+                        }
                         this.loadMigrationStatus(); // Refresh status
                     } else {
-                        alert(`Failed to clear ${databaseName}: ${response.data.message || 'Unknown error'}`);
+                        // Error notification with SweetAlert2
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                title: 'Clear Failed',
+                                html: `
+                                    <p>Failed to clear ${databaseName}</p>
+                                    <p style="color: #d63638; font-size: 14px; margin-top: 10px;">
+                                        <strong>Error:</strong> ${response.data.message || 'Unknown error'}
+                                    </p>
+                                `,
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                                customClass: {
+                                    popup: 'ai-botkit-swal-popup'
+                                }
+                            });
+                        } else {
+                            alert(`Failed to clear ${databaseName}: ${response.data.message || 'Unknown error'}`);
+                        }
                     }
                 },
                 error: () => {
                     this.hideLoadingState();
-                    alert(`Failed to clear ${databaseName}`);
+                    // Network error notification with SweetAlert2
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Network Error',
+                            text: `Failed to clear ${databaseName}. Please check your connection and try again.`,
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'ai-botkit-swal-popup'
+                            }
+                        });
+                    } else {
+                        alert(`Failed to clear ${databaseName}`);
+                    }
                 }
             });
         }

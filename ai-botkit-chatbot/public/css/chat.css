@@ -544,13 +544,70 @@
     border: 1px solid #e5e5e5;
 }
 
-/* SweetAlert Custom Styling for Chatbot */
+/* Enhanced SweetAlert Custom Styling */
 .ai-botkit-swal-popup {
     z-index: 99999 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    backdrop-filter: blur(20px) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 .ai-botkit-swal-backdrop {
     z-index: 99998 !important;
+    backdrop-filter: blur(4px) !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+}
+
+.ai-botkit-swal-confirm-danger {
+    background: #d63638 !important;
+    border-color: #d63638 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.ai-botkit-swal-confirm-danger:hover {
+    background: #b32d2e !important;
+    border-color: #b32d2e !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(214, 54, 56, 0.3) !important;
+}
+
+.ai-botkit-swal-confirm-warning {
+    background: #dba617 !important;
+    border-color: #dba617 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.ai-botkit-swal-confirm-warning:hover {
+    background: #c2950d !important;
+    border-color: #c2950d !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(219, 166, 23, 0.3) !important;
+}
+
+.ai-botkit-swal-cancel {
+    background: #f0f0f1 !important;
+    border-color: #c3c4c7 !important;
+    color: #1d2327 !important;
+    font-weight: 500 !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.ai-botkit-swal-cancel:hover {
+    background: #e0e0e1 !important;
+    border-color: #8c8f94 !important;
+    transform: translateY(-1px) !important;
 }
 
 /* Ensure SweetAlert appears above chatbot */
@@ -560,6 +617,66 @@
 
 .swal2-popup {
     z-index: 99999 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    backdrop-filter: blur(20px) !important;
+}
+
+.swal2-title {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #1d2327 !important;
+    margin-bottom: 16px !important;
+}
+
+.swal2-html-container {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    color: #50575e !important;
+}
+
+.swal2-actions {
+    gap: 12px !important;
+    margin-top: 24px !important;
+}
+
+.swal2-confirm {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    transition: all 0.2s ease !important;
+}
+
+.swal2-cancel {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    padding: 12px 24px !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Progress bar styling */
+.swal2-timer-progress-bar {
+    background: linear-gradient(90deg, #00a32a 0%, #72aee6 100%) !important;
+    border-radius: 0 0 16px 16px !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .swal2-popup {
+        margin: 20px !important;
+        width: calc(100% - 40px) !important;
+    }
+    
+    .swal2-actions {
+        flex-direction: column !important;
+    }
+    
+    .swal2-confirm,
+    .swal2-cancel {
+        width: 100% !important;
+        margin: 4px 0 !important;
+    }
 }
 
 .swal2-backdrop-show {

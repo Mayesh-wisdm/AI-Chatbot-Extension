@@ -109,28 +109,28 @@ class Admin {
      */
     private function init_hooks() {
         // Admin menu and pages
-        add_action('admin_menu', array($this, 'add_plugin_admin_menu'));
-        add_action('admin_init', array($this, 'register_settings'));
-        add_action('admin_init', array($this, 'handle_activation_redirect'));
-        add_action('admin_footer', array($this, 'add_deactivate_modal'));
+        add_action('admin_menu', [$this, 'add_plugin_admin_menu']);
+        add_action('admin_init', [$this, 'register_settings']);
+        add_action('admin_init', [$this, 'handle_activation_redirect']);
+        add_action('admin_footer', [$this, 'add_deactivate_modal']);
         
         // Add help widget to admin footer (only on AI BotKit pages)
-        add_action('admin_footer', array($this, 'inject_help_widget'));
+        add_action('admin_footer', [$this, 'inject_help_widget']);
 
         // Admin assets
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_styles'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_styles']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts']);
 
         // Debug endpoints
-        add_action('wp_ajax_ai_botkit_debug_rate_limiter', array($this, 'debug_rate_limiter'));
-        add_action('wp_ajax_ai_botkit_debug_class_loading', array($this, 'debug_class_loading'));
+        add_action('wp_ajax_ai_botkit_debug_rate_limiter', [$this, 'debug_rate_limiter']);
+        add_action('wp_ajax_ai_botkit_debug_class_loading', [$this, 'debug_class_loading']);
 
         // Health checks
-        // add_filter('debug_information', array($this->health_checks, 'add_debug_information'));
-        // add_filter('site_status_tests', array($this->health_checks, 'register_tests'));
+        // add_filter('debug_information', [$this->health_checks, 'add_debug_information']);
+        // add_filter('site_status_tests', [$this->health_checks, 'register_tests']);
 
         // add txt and md mime types
-        add_filter('upload_mimes', array($this, 'add_mime_types'));
+        add_filter('upload_mimes', [$this, 'add_mime_types']);
     }
 
     /**

@@ -87,6 +87,7 @@ class Wdm_Ai_Botkit_Extension {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+		$this->initialize_content_transformer();
 
 	}
 
@@ -243,6 +244,19 @@ class Wdm_Ai_Botkit_Extension {
 	 */
 	public function get_version() {
 		return $this->version;
+	}
+
+	/**
+	 * Initialize content transformer
+	 *
+	 * @since     1.0.0
+	 */
+	private function initialize_content_transformer() {
+		// Only initialize if AI BotKit is available
+		if (class_exists('AI_BotKit\Core\RAG_Engine')) {
+			require_once plugin_dir_path(__FILE__) . 'class-wdm-ai-botkit-extension-content-transformer.php';
+			new Wdm_Ai_Botkit_Extension_Content_Transformer();
+		}
 	}
 
 	/**

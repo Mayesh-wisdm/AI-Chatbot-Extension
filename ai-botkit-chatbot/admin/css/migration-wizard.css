@@ -288,18 +288,8 @@
     margin: 10px 0;
 }
 
-/* Button Styles */
-.ai-botkit-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
-}
+/* Button Styles - using main admin.css definition */
+/* .ai-botkit-btn - defined in admin.css */
 
 .ai-botkit-btn-primary {
     background: #007cba;

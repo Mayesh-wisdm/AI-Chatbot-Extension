@@ -15,16 +15,9 @@ use AI_BotKit\Admin\Admin;
 use AI_BotKit\Public\{Ajax_Handler, Shortcode_Handler};
 use AI_BotKit\Integration\{
     WordPress_Content
-    // WooCommerce,
-    // LearnDash,
-    // User_Authentication,
-    // REST_API
 };
 use AI_BotKit\Monitoring\{
     Health_Checks,
-    // Performance_Monitor,
-    // Logging_System,
-    // Backup_Restore,
     Analytics
 };
 
@@ -51,21 +44,13 @@ class AI_BotKit {
 
     /**
      * Integration components
-     * For future use
      */
     private $wp_content;
-    // private $woocommerce;
-    // private $learndash;
-    // private $user_auth;
-    // private $rest_api;
 
     /**
      * Monitoring components
      */
     private $health_checks;
-    // private $performance_monitor;
-    // private $logging_system;
-    // private $backup_restore;
     private $analytics;
 
     /**
@@ -192,33 +177,18 @@ class AI_BotKit {
      * Register admin hooks
      */
     private function define_admin_hooks(): void {
-        // Admin menu and pages
-        add_action('admin_menu', [$this->admin, 'add_plugin_admin_menu']);
-        add_action('admin_init', [$this->admin, 'register_settings']);
-
-        // Admin assets
-        add_action('admin_enqueue_scripts', [$this->admin, 'enqueue_styles']);
-        add_action('admin_enqueue_scripts', [$this->admin, 'enqueue_scripts']);
-
-        // Health checks
-        add_filter('debug_information', [$this->health_checks, 'add_debug_information']);
-        add_filter('site_status_tests', [$this->health_checks, 'register_tests']);
+        // Admin hooks are registered in the Admin class to avoid duplicates
+        // This method is kept for future admin-specific hooks if needed
     }
 
     /**
      * Register public hooks
      */
     private function define_public_hooks(): void {
-        // AJAX handlers
-        add_action('wp_ajax_ai_botkit_chat_message', [$this->ajax_handler, 'handle_chat_message']);
-        add_action('wp_ajax_nopriv_ai_botkit_chat_message', [$this->ajax_handler, 'handle_chat_message']);
-        add_action('wp_ajax_ai_botkit_stream_response', [$this->ajax_handler, 'handle_stream_response']);
-        add_action('wp_ajax_nopriv_ai_botkit_stream_response', [$this->ajax_handler, 'handle_stream_response']);
+        // AJAX handlers are registered in the public AJAX handler class
+        // to avoid duplicate registrations
 
         add_action('wp_footer', [$this->shortcode_handler, 'render_sitewide_chatbot']);
-
-        // REST API
-        // add_action('rest_api_init', [$this->rest_api, 'register_routes']);
     }
 
     /**

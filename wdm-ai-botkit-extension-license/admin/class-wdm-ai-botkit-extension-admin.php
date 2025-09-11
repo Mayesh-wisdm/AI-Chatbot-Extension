@@ -54,6 +54,7 @@ class Wdm_Ai_Botkit_Extension_Admin {
 		
 		// Register AJAX handlers
 		add_action( 'wp_ajax_wdm_ai_botkit_extension_license_action', array( $this, 'process_license_ajax' ) );
+		add_action( 'wp_ajax_learndash_sync_courses', array( $this, 'handle_learndash_sync_ajax' ) );
 	}
 
 	/**
@@ -147,6 +148,262 @@ class Wdm_Ai_Botkit_Extension_Admin {
 			'capability' => 'manage_options'
 		);
 		return $tabs;
+	}
+
+	/**
+	 * AJAX handler for LearnDash course sync
+	 */
+	public function handle_learndash_sync_ajax() {
+		check_ajax_referer('learndash_sync_courses', 'nonce');
+		
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => 'Insufficient permissions']);
+		}
+		
+		// Check if LearnDash is active
+		if (!defined('LEARNDASH_VERSION')) {
+			wp_send_json_error(['message' => 'LearnDash is not active']);
+		}
+		
+		// Check if license is valid
+		$license_manager = new Wdm_Ai_Botkit_Extension_License_Manager();
+		if ($license_manager->get_extension_license_status() !== 'valid') {
+			wp_send_json_error(['message' => 'Extension license is not valid']);
+		}
+		
+		$action = sanitize_text_field($_POST['sync_action'] ?? 'start');
+		
+		if ($action === 'start') {
+			$result = $this->start_learndash_sync();
+		} elseif ($action === 'process') {
+			$result = $this->process_learndash_sync_batch();
+		} else {
+			wp_send_json_error(['message' => 'Invalid sync action']);
+		}
+		
+		if ($result['success']) {
+			wp_send_json_success($result);
+		} else {
+			wp_send_json_error($result);
+		}
+	}
+
+	/**
+	 * Start LearnDash sync process
+	 */
+	private function start_learndash_sync() {
+		// Get all LearnDash courses
+		$courses = get_posts([
+			'post_type' => 'sfwd-courses',
+			'post_status' => 'publish',
+			'posts_per_page' => -1,
+			'fields' => 'ids'
+		]);
+		
+		if (empty($courses)) {
+			return [
+				'success' => false,
+				'message' => 'No LearnDash courses found'
+			];
+		}
+		
+		// Store sync data in transient
+		set_transient('learndash_sync_data', [
+			'courses' => $courses,
+			'current_index' => 0,
+			'total' => count($courses),
+			'processed' => 0,
+			'errors' => []
+		], HOUR_IN_SECONDS);
+		
+		return [
+			'success' => true,
+			'total_courses' => count($courses),
+			'message' => sprintf('Found %d courses to sync', count($courses))
+		];
+	}
+
+	/**
+	 * Process a batch of LearnDash courses
+	 */
+	private function process_learndash_sync_batch() {
+		$sync_data = get_transient('learndash_sync_data');
+		
+		if (!$sync_data) {
+			return [
+				'success' => false,
+				'message' => 'Sync session expired. Please start again.'
+			];
+		}
+		
+		$batch_size = 3; // Process 3 courses at a time
+		$processed = 0;
+		$errors = [];
+		
+		// Process batch
+		for ($i = 0; $i < $batch_size && $sync_data['current_index'] < $sync_data['total']; $i++) {
+			$course_id = $sync_data['courses'][$sync_data['current_index']];
+			
+			try {
+				$this->sync_learndash_course($course_id);
+				$processed++;
+			} catch (Exception $e) {
+				$errors[] = [
+					'course_id' => $course_id,
+					'error' => $e->getMessage()
+				];
+			}
+			
+			$sync_data['current_index']++;
+		}
+		
+		$sync_data['processed'] += $processed;
+		$sync_data['errors'] = array_merge($sync_data['errors'], $errors);
+		
+		// Update transient
+		set_transient('learndash_sync_data', $sync_data, HOUR_IN_SECONDS);
+		
+		$is_complete = $sync_data['current_index'] >= $sync_data['total'];
+		
+		// If sync is complete, mark upgrade as completed
+		if ($is_complete) {
+			$this->mark_upgrade_completed();
+		}
+		
+		return [
+			'success' => true,
+			'processed' => $processed,
+			'total_processed' => $sync_data['processed'],
+			'total_courses' => $sync_data['total'],
+			'current_index' => $sync_data['current_index'],
+			'is_complete' => $is_complete,
+			'errors' => $errors,
+			'message' => $is_complete ? 
+				sprintf('Sync completed! Processed %d courses', $sync_data['processed']) :
+				sprintf('Processed %d courses (%d/%d)', $processed, $sync_data['current_index'], $sync_data['total'])
+		];
+	}
+
+	/**
+	 * Sync a single LearnDash course
+	 */
+	private function sync_learndash_course($course_id) {
+		// Check if AI BotKit is available
+		if (!class_exists('AI_BotKit\Core\RAG_Engine')) {
+			throw new Exception('AI BotKit is not available');
+		}
+		
+		// Get course data
+		$course = get_post($course_id);
+		if (!$course || $course->post_type !== 'sfwd-courses') {
+			throw new Exception('Invalid course ID');
+		}
+		
+		// Build comprehensive course content
+		$content = $this->build_learndash_course_content($course);
+		
+		// Process with RAG engine (this will trigger the cleanup and reprocessing)
+		global $wpdb;
+		
+		// Create or update document record
+		$document_id = $wpdb->get_var($wpdb->prepare(
+			"SELECT id FROM {$wpdb->prefix}ai_botkit_documents 
+			WHERE source_type = 'post' AND source_id = %d",
+			$course_id
+		));
+		
+		if (!$document_id) {
+			// Create new document record
+			$wpdb->insert(
+				$wpdb->prefix . 'ai_botkit_documents',
+				[
+					'source_type' => 'post',
+					'source_id' => $course_id,
+					'status' => 'pending',
+					'created_at' => current_time('mysql')
+				],
+				['%s', '%d', '%s', '%s']
+			);
+			$document_id = $wpdb->insert_id;
+		} else {
+			// Update existing document to trigger reprocessing
+			$wpdb->update(
+				$wpdb->prefix . 'ai_botkit_documents',
+				['status' => 'pending'],
+				['id' => $document_id],
+				['%s'],
+				['%d']
+			);
+		}
+		
+		// Trigger the RAG engine to process this document
+		// This will use the new cleanup functionality we implemented
+		do_action('ai_botkit_process_queue');
+		
+		// Mark upgrade as completed for this course
+		$this->mark_course_upgraded($course_id);
+	}
+
+	/**
+	 * Mark a course as upgraded
+	 */
+	private function mark_course_upgraded($course_id) {
+		$upgraded_courses = get_option('wdm_ai_botkit_extension_upgraded_courses', []);
+		$upgraded_courses[] = $course_id;
+		update_option('wdm_ai_botkit_extension_upgraded_courses', array_unique($upgraded_courses));
+	}
+
+	/**
+	 * Mark upgrade as completed
+	 */
+	private function mark_upgrade_completed() {
+		// Mark upgrade as completed in content transformer
+		if (class_exists('Wdm_Ai_Botkit_Extension_Content_Transformer')) {
+			$transformer = new Wdm_Ai_Botkit_Extension_Content_Transformer();
+			$transformer->mark_upgrade_completed();
+		}
+		
+		// Clear upgraded courses list
+		delete_option('wdm_ai_botkit_extension_upgraded_courses');
+	}
+
+	/**
+	 * Build comprehensive LearnDash course content
+	 */
+	private function build_learndash_course_content($course) {
+		$content = [];
+		
+		// Course information
+		$content[] = "Course: " . $course->post_title;
+		$content[] = "Description: " . wp_strip_all_tags($course->post_content);
+		
+		// Course meta
+		$course_meta = get_post_meta($course->ID);
+		$content[] = "Level: " . ($course_meta['_sfwd-courses_course_level'][0] ?? 'Not specified');
+		$content[] = "Points: " . ($course_meta['_sfwd-courses_course_points'][0] ?? '0');
+		
+		// Get lessons
+		$lessons = learndash_get_course_lessons_list($course);
+		foreach ($lessons as $lesson) {
+			$content[] = "\nLesson: " . $lesson['post']->post_title;
+			$content[] = wp_strip_all_tags($lesson['post']->post_content);
+			
+			// Get topics
+			$topics = learndash_get_topic_list($lesson['post']->ID, $course->ID);
+			foreach ($topics as $topic) {
+				$content[] = "\nTopic: " . $topic->post_title;
+				$content[] = wp_strip_all_tags($topic->post_content);
+			}
+			
+			// Get quizzes
+			$quizzes = learndash_get_lesson_quiz_list($lesson['post']->ID, get_current_user_id(), $course->ID);
+			foreach ($quizzes as $quiz) {
+				$content[] = "\nQuiz: " . $quiz['post']->post_title;
+				$content[] = wp_strip_all_tags($quiz['post']->post_content);
+			}
+		}
+		
+		return implode("\n\n", $content);
 	}
 
 	/**

@@ -30,13 +30,24 @@ if (isset($_POST['submit'])) {
         'together_api_key',
         'enable_pinecone',
         'pinecone_api_key',
-        'pinecone_host'
+        'pinecone_host',
+        'batch_size',
+        'cache_ttl',
+        'wc_product_sync',
+        'wc_order_sync',
+        'wc_customer_sync',
+        'analytics_retention',
+        'performance_monitoring',
+        'health_check_interval',
+        'backup_retention',
+        'post_types',
+        'log_level'
     );
 
     foreach ($settings as $setting) {
         if (isset($_POST['ai_botkit_' . $setting])) {
             // Handle checkbox differently
-            if ($setting === 'enable_pinecone') {
+            if (in_array($setting, ['enable_pinecone', 'wc_product_sync', 'wc_order_sync', 'wc_customer_sync', 'performance_monitoring'])) {
                 update_option('ai_botkit_' . $setting, 1);
             } else {
                 update_option(
@@ -46,7 +57,7 @@ if (isset($_POST['submit'])) {
             }
         } else {
             // Uncheck checkbox if not set
-            if ($setting === 'enable_pinecone') {
+            if (in_array($setting, ['enable_pinecone', 'wc_product_sync', 'wc_order_sync', 'wc_customer_sync', 'performance_monitoring'])) {
                 update_option('ai_botkit_' . $setting, 0);
             }
         }

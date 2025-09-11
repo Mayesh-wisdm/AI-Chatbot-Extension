@@ -93,8 +93,12 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
                 $license_status = $response['status'];
             }
             
+            $old_status = $this->get_extension_license_status();
             update_option($this->extension_license_key, $license_key);
             update_option($this->extension_license_status, $license_status);
+            
+            // Trigger content transformation event
+            do_action('wdm_ai_botkit_extension_license_status_changed', $old_status, $license_status);
             
             // Only schedule license validation if the license is actually valid
             if ($license_status === 'valid') {
@@ -120,7 +124,11 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
     public function deactivate_extension_license($license_key) {
         $response = $this->remote_request('deactivate_license', $license_key);
         if ($response && $response['success']) {
+            $old_status = $this->get_extension_license_status();
             update_option($this->extension_license_status, 'inactive');
+            
+            // Trigger content transformation event
+            do_action('wdm_ai_botkit_extension_license_status_changed', $old_status, 'inactive');
             
             // Clear license validation schedule after deactivation
             $this->clear_license_check_schedule();
@@ -328,6 +336,9 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
                 // Only update if remote validation succeeded and status actually changed
                 if ($remote_status !== false && $current_status !== $remote_status) {
                     update_option($this->extension_license_status, $remote_status);
+                    
+                    // Trigger content transformation event
+                    do_action('wdm_ai_botkit_extension_license_status_changed', $current_status, $remote_status);
                     
                     // If license became invalid, clear the schedule
                     if ($remote_status !== 'valid') {

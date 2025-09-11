@@ -345,30 +345,67 @@ class Vector_Database {
     }
 
     /**
-     * Delete embeddings for a document
+     * Delete all data for a document (chunks and embeddings)
      * 
      * @param int $document_id Document ID
-     * @return int Number of deleted embeddings
+     * @return array Result with deletion counts
      */
-    public function delete_document_embeddings(int $document_id): int {
+    public function delete_document_embeddings(int $document_id): array {
         global $wpdb;
 
         try {
-            // Delete embeddings
-            $deleted = $wpdb->delete(
-                $this->table_prefix . 'embeddings',
-                ['document_id' => $document_id],
-                ['%d']
-            );
+            // Get chunk IDs for this document
+            $chunk_ids = $wpdb->get_col($wpdb->prepare(
+                "SELECT id FROM {$this->table_prefix}chunks WHERE document_id = %d",
+                $document_id
+            ));
+
+            $deleted_chunks = 0;
+            $deleted_embeddings = 0;
+
+            if (!empty($chunk_ids)) {
+                // Delete embeddings for these chunks
+                if ($this->pinecone_database && $this->pinecone_database->is_configured()) {
+                    // Delete from Pinecone
+                    $pinecone_result = $this->pinecone_database->delete_vectors($chunk_ids);
+                    if ($pinecone_result && isset($pinecone_result['deletedCount'])) {
+                        $deleted_embeddings = $pinecone_result['deletedCount'];
+                    } else {
+                        // If no deletedCount in response, assume all were deleted
+                        $deleted_embeddings = count($chunk_ids);
+                    }
+                } else {
+                    // Delete from local embeddings table
+                    $deleted_embeddings = $wpdb->delete(
+                        $this->table_prefix . 'embeddings',
+                        ['chunk_id' => $chunk_ids],
+                        ['%d']
+                    );
+                }
+
+                // Delete chunks
+                $deleted_chunks = $wpdb->delete(
+                    $this->table_prefix . 'chunks',
+                    ['document_id' => $document_id],
+                    ['%d']
+                );
+            }
 
             // Clear caches
             $this->cache_manager->delete('similar_*');
+            foreach ($chunk_ids as $chunk_id) {
+                $this->cache_manager->delete('chunk_' . $chunk_id);
+            }
 
-            return $deleted;
+            return [
+                'deleted_chunks' => $deleted_chunks,
+                'deleted_embeddings' => $deleted_embeddings,
+                'success' => true
+            ];
 
         } catch (\Exception $e) {
             throw new Vector_Database_Exception(
-                esc_html__('Failed to delete document embeddings: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to delete document data: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
                 0,
                 $e
             );
