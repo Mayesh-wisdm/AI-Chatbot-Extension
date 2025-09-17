@@ -18,7 +18,8 @@ class Migration_Manager {
      * Get migration batch size from configuration
      */
     private function get_batch_size(): int {
-        return get_option('ai_botkit_batch_size', 20);
+        // Use smaller batch size to prevent memory issues and 504 errors
+        return get_option('ai_botkit_batch_size', 10);
     }
 
     /**
@@ -139,12 +140,20 @@ class Migration_Manager {
 
         // Set migration in progress
         set_transient('ai_botkit_migration_in_progress', true, 3600); // 1 hour timeout
+        
+        // Increase memory limit and execution time for migration
+        ini_set('memory_limit', '512M');
+        set_time_limit(300); // 5 minutes
+        
+        // Optimize database connection for migration
+        global $wpdb;
+        $wpdb->query("SET SESSION wait_timeout = 300");
+        $wpdb->query("SET SESSION interactive_timeout = 300");
 
         try {
             $direction = $options['direction'] ?? 'to_pinecone';
             $scope = $options['scope'] ?? 'all';
             $content_types = $options['content_types'] ?? [];
-            $date_range = $options['date_range'] ?? [];
 
             // Validate options
             if (!$this->validate_migration_options($options)) {
@@ -156,9 +165,9 @@ class Migration_Manager {
 
             // Start migration based on direction
             if ($direction === 'to_pinecone') {
-                $result = $this->migrate_to_pinecone($scope, $content_types, $date_range);
+                $result = $this->migrate_to_pinecone($scope, $content_types);
             } else {
-                $result = $this->migrate_to_local($scope, $content_types, $date_range);
+                $result = $this->migrate_to_local($scope, $content_types);
             }
 
             // Update last migration time
@@ -175,6 +184,13 @@ class Migration_Manager {
         } finally {
             // Clear migration in progress flag
             delete_transient('ai_botkit_migration_in_progress');
+            
+            // Restore original memory and time limits
+            ini_restore('memory_limit');
+            ini_restore('max_execution_time');
+            
+            // Force garbage collection
+            gc_collect_cycles();
         }
     }
 
@@ -183,14 +199,13 @@ class Migration_Manager {
      * 
      * @param string $scope Migration scope
      * @param array $content_types Content types to migrate
-     * @param array $date_range Date range for migration
      * @return array Migration result
      */
-    private function migrate_to_pinecone(string $scope, array $content_types, array $date_range): array {
+    private function migrate_to_pinecone(string $scope, array $content_types): array {
         global $wpdb;
 
         // Get chunks to migrate
-        $chunks = $this->get_chunks_for_migration($scope, $content_types, $date_range);
+        $chunks = $this->get_chunks_for_migration($scope, $content_types);
         
         if (empty($chunks)) {
             return [
@@ -205,8 +220,20 @@ class Migration_Manager {
 
         // Process chunks in batches
         $batches = array_chunk($chunks, $this->get_batch_size());
+        $total_batches = count($batches);
+        $processed_batches = 0;
 
         foreach ($batches as $batch) {
+            $processed_batches++;
+            
+            // Log progress and check memory usage
+            error_log("AI BotKit Migration: Processing batch {$processed_batches}/{$total_batches} (Memory: " . memory_get_usage(true) . " bytes)");
+            
+            // Check if we're approaching memory limit
+            if (memory_get_usage(true) > 400 * 1024 * 1024) { // 400MB
+                error_log('AI BotKit Migration: Memory usage high, forcing garbage collection');
+                gc_collect_cycles();
+            }
             try {
                 $vectors = [];
                 
@@ -255,10 +282,9 @@ class Migration_Manager {
      * 
      * @param string $scope Migration scope
      * @param array $content_types Content types to migrate
-     * @param array $date_range Date range for migration
      * @return array Migration result
      */
-    private function migrate_to_local(string $scope, array $content_types, array $date_range): array {
+    private function migrate_to_local(string $scope, array $content_types): array {
         if (!$this->pinecone_database || !$this->pinecone_database->is_configured()) {
             return [
                 'success' => false,
@@ -268,7 +294,9 @@ class Migration_Manager {
 
         try {
             // Get vectors from Pinecone based on scope
-            $vectors = $this->get_vectors_from_pinecone($scope, $content_types, $date_range);
+            $vectors = $this->get_vectors_from_pinecone($scope, $content_types);
+            
+            error_log('AI BotKit Migration: Retrieved ' . count($vectors) . ' vectors from Pinecone');
             
             if (empty($vectors)) {
                 return [
@@ -283,8 +311,20 @@ class Migration_Manager {
 
             // Process vectors in batches
             $batches = array_chunk($vectors, $this->get_batch_size());
+            $total_batches = count($batches);
+            $processed_batches = 0;
 
             foreach ($batches as $batch) {
+                $processed_batches++;
+                
+                // Log progress and check memory usage
+                error_log("AI BotKit Migration: Processing batch {$processed_batches}/{$total_batches} (Memory: " . memory_get_usage(true) . " bytes)");
+                
+                // Check if we're approaching memory limit
+                if (memory_get_usage(true) > 400 * 1024 * 1024) { // 400MB
+                    error_log('AI BotKit Migration: Memory usage high, forcing garbage collection');
+                    gc_collect_cycles();
+                }
                 try {
                     foreach ($batch as $vector) {
                         $result = $this->store_vector_to_local($vector);
@@ -326,10 +366,9 @@ class Migration_Manager {
      * 
      * @param string $scope Migration scope
      * @param array $content_types Content types to migrate
-     * @param array $date_range Date range for migration
      * @return array Array of vector data
      */
-    private function get_vectors_from_pinecone(string $scope, array $content_types, array $date_range): array {
+    private function get_vectors_from_pinecone(string $scope, array $content_types): array {
         try {
             // Build filters based on scope
             $filters = [];
@@ -338,24 +377,35 @@ class Migration_Manager {
                 $filters['post_type'] = ['$in' => $content_types];
             }
             
-            if ($scope === 'by_date' && !empty($date_range)) {
-                if (!empty($date_range['start'])) {
-                    $filters['created_at'] = ['$gte' => $date_range['start']];
-                }
-                if (!empty($date_range['end'])) {
-                    $filters['created_at'] = ['$lte' => $date_range['end']];
-                }
-            }
             
-            // Query Pinecone for vectors
-            $query_result = $this->pinecone_database->query_vectors(
+            // Query Pinecone for vectors with values included
+            $query_result = $this->pinecone_database->query_vectors_with_values(
                 [0.0], // Dummy vector for query
                 10000, // Large limit to get all vectors
-                0.0,   // Low similarity threshold
-                $filters
+                null,  // No bot_id filter for migration
+                0.0    // Low similarity threshold
             );
             
-            return $query_result['matches'] ?? [];
+            error_log('AI BotKit Migration: Raw query result count: ' . count($query_result));
+            
+            // Filter results based on scope if needed
+            $filtered_results = [];
+            foreach ($query_result as $result) {
+                $metadata = $result['metadata'] ?? [];
+                
+                // Apply scope filters
+                if ($scope === 'by_type' && !empty($content_types)) {
+                    $post_type = $metadata['post_type'] ?? '';
+                    if (!in_array($post_type, $content_types)) {
+                        continue;
+                    }
+                }
+                
+                
+                $filtered_results[] = $result;
+            }
+            
+            return $filtered_results;
             
         } catch (\Exception $e) {
             error_log('AI BotKit Migration Error: Failed to get vectors from Pinecone - ' . $e->getMessage());
@@ -378,6 +428,7 @@ class Migration_Manager {
             $content = $metadata['content'] ?? '';
             $document_id = $metadata['document_id'] ?? 0;
             $chunk_index = $metadata['chunk_index'] ?? 0;
+            $vector_values = $vector['values'] ?? [];
             
             if (empty($content) || empty($document_id)) {
                 return [
@@ -504,10 +555,9 @@ class Migration_Manager {
      * 
      * @param string $scope Migration scope
      * @param array $content_types Content types
-     * @param array $date_range Date range
      * @return array Chunks to migrate
      */
-    private function get_chunks_for_migration(string $scope, array $content_types, array $date_range): array {
+    private function get_chunks_for_migration(string $scope, array $content_types): array {
         global $wpdb;
 
         $where_conditions = [];
@@ -520,12 +570,6 @@ class Migration_Manager {
             $where_values = array_merge($where_values, $content_types);
         }
 
-        // Add date range filter
-        if (!empty($date_range['start']) && !empty($date_range['end'])) {
-            $where_conditions[] = "d.created_at BETWEEN %s AND %s";
-            $where_values[] = $date_range['start'];
-            $where_values[] = $date_range['end'];
-        }
 
         $where_clause = '';
         if (!empty($where_conditions)) {
@@ -666,7 +710,7 @@ class Migration_Manager {
      */
     private function validate_migration_options(array $options): bool {
         $valid_directions = ['to_pinecone', 'to_local'];
-        $valid_scopes = ['all', 'selected', 'by_type', 'by_date'];
+        $valid_scopes = ['all', 'selected', 'by_type'];
 
         if (!isset($options['direction']) || !in_array($options['direction'], $valid_directions)) {
             return false;

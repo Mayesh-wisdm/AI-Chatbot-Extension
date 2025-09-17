@@ -612,16 +612,39 @@ jQuery(document).ready(function($) {
     }
 
     $('#ai-botkit-hamburger-menu').click(function(e) {
-        e.stopPropagation()
+        e.stopPropagation();
+        
+        // Check if we're on mobile or desktop
+        if (window.innerWidth <= 768) {
+            // Mobile behavior: toggle 'open' class
         $('.ai-botkit-sidebar-wrapper').toggleClass('open');
+        } else {
+            // Desktop behavior: toggle 'collapsed' class
+            $('.ai-botkit-sidebar-wrapper').toggleClass('collapsed');
+            $('.ai-botkit-main-content').toggleClass('sidebar-collapsed');
+        }
     });
 
-    // close sidebar when clicking outside
+    // close sidebar when clicking outside (mobile only)
     $(document).on('click', function(e) {
+        if (window.innerWidth <= 768) {
         if ( $('.ai-botkit-sidebar-wrapper').hasClass('open') ) {
             if ( !$(e.target).closest('.ai-botkit-sidebar-wrapper').length ) {
                 $('.ai-botkit-sidebar-wrapper').removeClass('open');
+                }
             }
+        }
+    });
+
+    // Handle window resize
+    $(window).on('resize', function() {
+        if (window.innerWidth > 768) {
+            // On desktop, remove mobile classes
+            $('.ai-botkit-sidebar-wrapper').removeClass('open');
+        } else {
+            // On mobile, remove desktop classes
+            $('.ai-botkit-sidebar-wrapper').removeClass('collapsed');
+            $('.ai-botkit-main-content').removeClass('sidebar-collapsed');
         }
     });
 
@@ -911,6 +934,11 @@ jQuery(document).ready(function($) {
         })
         .get();
 
+        if (selected.length === 0) {
+            AiBotkitToast.error('Please select at least one item to import');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('action', 'ai_botkit_import_wp_content');
         formData.append('nonce', ai_botkitAdmin.nonce);
@@ -919,7 +947,6 @@ jQuery(document).ready(function($) {
         });
 
         const button = $(this);
-        const buttonHtml = button.html();
 
         $.ajax({
             url: ajaxurl,
@@ -928,28 +955,31 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             beforeSend: function() {
-                button.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i>');
+                button.prop('disabled', true);
+                button.find('.ai-botkit-btn-text').hide();
+                button.find('.ai-botkit-btn-loading').show();
             },
             success: function(response) {
                 if (response.success) {
-                    button.html('<i style="font-size: 1.25rem;" class="ti ti-circle-check"></i>');
+                    AiBotkitToast.success(response.data.message || 'Content imported successfully');
+                    $('#ai-botkit-wordpress-modal').fadeOut();
+                    // Reload the knowledge base data instead of full page reload
+                    if (typeof loadKnowledgeBaseData === 'function') {
+                        loadKnowledgeBaseData();
                 } else {
-                    $('#ai-botkit-wp-error-message').html(response.data.message);
-                    $('#ai-botkit-wp-error-message').show();
+                        window.location.reload();
+                    }
+                } else {
+                    AiBotkitToast.error(response.data.message || 'Failed to import content');
                 }
             },
             error: function() {
-                $('#ai-botkit-wp-error-message').html('Error importing content');
-                $('#ai-botkit-wp-error-message').show();
+                AiBotkitToast.error('Error importing content. Please try again.');
             },
             complete: function() {
-                setTimeout(function() {
-                    button.html(buttonHtml);
-                    $('#ai-botkit-wp-error-message').removeClass('show');
-                    $('#ai-botkit-wp-error-message').html('');
-                    $('#ai-botkit-wordpress-modal').fadeOut();
-                    window.location.reload();
-                }, 2000);
+                button.prop('disabled', false);
+                button.find('.ai-botkit-btn-text').show();
+                button.find('.ai-botkit-btn-loading').hide();
             }
         });
     });
@@ -1968,26 +1998,39 @@ jQuery(document).ready(function($) {
                 $('#ai-botkit-document-uploaded').removeClass('hidden');
                 $('#ai-botkit-document-uploading').addClass('hidden');
                 $('#ai-botkit-document-upload-box').addClass('hidden');
+                AiBotkitToast.success(response.data.message || 'Document uploaded successfully');
+                
+                setTimeout(function() {
+                    $("#ai-botkit-upload-modal").fadeOut();
+                    // Reload the knowledge base data instead of full page reload
+                    if (typeof loadKnowledgeBaseData === 'function') {
+                        loadKnowledgeBaseData();
+                    } else {
                 window.location.reload();
+                    }
+                }, 1500);
             } else {
                 $('#ai-botkit-document-uploading').addClass('error');
                 $('#ai-botkit-document-uploading').removeClass('hidden');
                 $('#ai-botkit-document-uploading').html('<p>'+response.data.message+'</p>');
+                AiBotkitToast.error(response.data.message || 'Failed to upload document');
             }
         },
         error: function() {
             $('#ai-botkit-document-uploading').addClass('error');
             $('#ai-botkit-document-uploading').removeClass('hidden');
             $('#ai-botkit-document-uploading').html('<p>Error uploading file</p>');
+            AiBotkitToast.error('Error uploading file. Please try again.');
         },
         complete: function() {
+            // Reset form after a delay
+            setTimeout(function() {
             $('#ai-botkit-document-uploading').addClass('hidden');
             $('#ai-botkit-document-uploading').removeClass('error');
-            $('#ai-botkit-document-uploading').html(loadingHtml);
-            $('#ai-botkit-document-upload-box').addClass('hidden');
-            setTimeout(function() {
-                $("#ai-botkit-upload-modal").fadeOut();
-                window.location.reload();
+                $('#ai-botkit-document-uploading').html('<p class="ai-botkit-training-pdf-upload"><i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Uploading...</p>');
+                $('#ai-botkit-document-upload-box').removeClass('hidden');
+                $('#ai-botkit-document-uploaded').addClass('hidden');
+                $('#ai-botkit-submit-upload').val(''); // Clear file input
             }, 2000);
         }
     });
@@ -2025,14 +2068,24 @@ jQuery(document).ready(function($) {
   }
 
     $("#ai-botkit-submit-url-btn").click(function () {
+        const $button = $(this);
         const $input = $("#ai-botkit-url");
         const url = $input.val().trim();
+
+        if (!url) {
+            AiBotkitToast.error('Please enter a URL');
+            return;
+        }
+
+        const title = $('#ai-botkit-url-title').val().trim();
+        console.log('URL Import - Title provided:', title, 'Length:', title.length);
 
         const formData = new FormData();
         formData.append('action', 'ai_botkit_import_url');
         formData.append('nonce', ai_botkitAdmin.nonce);
         formData.append('url', url);
-        formData.append('title', $('#ai-botkit-title').val());
+        formData.append('title', title);
+        
         $.ajax({
             url: ajaxurl,
             type: 'POST',
@@ -2040,27 +2093,33 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             beforeSend: function() {
-                $(this).prop('disabled', true);
-                $(this).html('Adding...');
+                $button.prop('disabled', true);
+                $button.find('.ai-botkit-btn-text').hide();
+                $button.find('.ai-botkit-btn-loading').show();
             },
             success: function(response) {
                 if (response.success) {
+                    AiBotkitToast.success(response.data.message || 'URL added successfully');
                     $input.val("");
-                    $('#ai-botkit-title').val("");
+                    $('#ai-botkit-url-title').val("");
+                    $("#ai-botkit-add-url-modal").fadeOut();
+                    // Reload the knowledge base data instead of full page reload
+                    if (typeof loadKnowledgeBaseData === 'function') {
+                        loadKnowledgeBaseData();
+                    } else {
                     window.location.reload();
+                    }
                 } else {
-                    $(this).prop('disabled', false);
-                    $(this).html('Add URL');
+                    AiBotkitToast.error(response.data.message || 'Failed to add URL');
                 }
             },
             error: function() {
-                $(this).prop('disabled', false);
-                $(this).html('Add URL');
+                AiBotkitToast.error('Error adding URL. Please try again.');
             },
             complete: function() {
-                $(this).prop('disabled', false);
-                $(this).html('Add URL');
-                $("#ai-botkit-add-url-modal").fadeOut();
+                $button.prop('disabled', false);
+                $button.find('.ai-botkit-btn-text').show();
+                $button.find('.ai-botkit-btn-loading').hide();
             }
         });
     });
@@ -2139,18 +2198,190 @@ jQuery(document).ready(function($) {
         
     });
 
-    $('#ai_botkit_analytics_time_range').on('change', function() {
-        // submit the form
-        $('#ai_botkit_analytics_form').submit();
-    });
+    // AJAX function to load analytics data (defined globally)
+    function loadAnalyticsData(timeRange) {
+        if (typeof ai_botkitAnalytics === 'undefined') {
+            console.error('Analytics not initialized');
+            return;
+        }
+        
+        // Show loading state
+        showAnalyticsLoading();
+        
+        $.ajax({
+            url: ai_botkitAnalytics.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'ai_botkit_get_analytics_data',
+                time_range: timeRange,
+                nonce: ai_botkitAnalytics.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    updateAnalyticsData(response.data);
+                    hideAnalyticsLoading();
+                } else {
+                    showAnalyticsError(response.data.message || ai_botkitAnalytics.i18n.error);
+                }
+            },
+            error: function() {
+                showAnalyticsError(ai_botkitAnalytics.i18n.error);
+            }
+        });
+    }
+
+    // Show loading state
+    function showAnalyticsLoading() {
+        if (typeof ai_botkitAnalytics === 'undefined') return;
+        $('.ai-botkit-knowledge-stats-item-value').text(ai_botkitAnalytics.i18n.loading);
+        $('.ai-botkit-chart-card canvas').addClass('loading');
+    }
+
+    // Hide loading state
+    function hideAnalyticsLoading() {
+        $('.ai-botkit-chart-card canvas').removeClass('loading');
+    }
+
+    // Show error state
+    function showAnalyticsError(message) {
+        if (typeof ai_botkitAnalytics === 'undefined') return;
+        $('.ai-botkit-knowledge-stats-item-value').text(message);
+        hideAnalyticsLoading();
+    }
+
+    // Update analytics data and charts
+    function updateAnalyticsData(data) {
+        if (typeof ai_botkitAnalytics === 'undefined') return;
+        
+        // Update overview stats
+        $('.ai-botkit-knowledge-stats-item-value').eq(0).text(data.overview.total_interactions.toLocaleString());
+        $('.ai-botkit-knowledge-stats-item-value').eq(1).text(data.overview.total_conversations.toLocaleString());
+        $('.ai-botkit-knowledge-stats-item-value').eq(2).text(data.overview.total_users.toLocaleString());
+        $('.ai-botkit-knowledge-stats-item-value').eq(3).text(data.overview.total_tokens.toLocaleString());
+
+        // Update time series data
+        if (window.analyticsCharts) {
+            window.analyticsCharts.timeSeriesData = data.time_series;
+            window.analyticsCharts.performanceData = data.performance;
+            updateCharts();
+        }
+    }
+
+    // Update all charts with new data
+    function updateCharts() {
+        if (!window.analyticsCharts || !window.analyticsCharts.charts) return;
+        
+        const { charts, timeSeriesData, performanceData } = window.analyticsCharts;
+        
+        if (charts.usageChart) {
+            charts.usageChart.data.labels = timeSeriesData.map(d => d.time_period);
+            charts.usageChart.data.datasets[0].data = timeSeriesData.map(d => d.total_events);
+            charts.usageChart.update();
+        }
+
+        if (charts.responseTimeChart) {
+            charts.responseTimeChart.data.labels = performanceData.map(d => d.date);
+            charts.responseTimeChart.data.datasets[0].data = performanceData.map(d => d.avg_processing_time);
+            charts.responseTimeChart.update();
+        }
+
+        if (charts.errorChart) {
+            charts.errorChart.data.labels = performanceData.map(d => d.date);
+            charts.errorChart.data.datasets[0].data = performanceData.map(d => d.error_count);
+            charts.errorChart.update();
+        }
+
+        if (charts.tokenChart) {
+            charts.tokenChart.data.labels = timeSeriesData.map(d => d.time_period);
+            charts.tokenChart.data.datasets[0].data = timeSeriesData.map(d => d.total_tokens);
+            charts.tokenChart.update();
+        }
+    }
 
     // check if ai_botkitAnalytics is defined
     if (typeof ai_botkitAnalytics !== 'undefined') {
         // Analytics
         const { Chart } = window;
         
-        const timeSeriesData = ai_botkitAnalytics.timeSeriesData;
-        const performanceData = ai_botkitAnalytics.performanceData;
+        let timeSeriesData = ai_botkitAnalytics.timeSeriesData;
+        let performanceData = ai_botkitAnalytics.performanceData;
+        let charts = {};
+
+        // Store charts globally for updates
+        window.analyticsCharts = {
+            charts: charts,
+            timeSeriesData: timeSeriesData,
+            performanceData: performanceData
+        };
+
+        // Show loading state
+        function showAnalyticsLoading() {
+            $('.ai-botkit-knowledge-stats-item-value').text(ai_botkitAnalytics.i18n.loading);
+            $('.ai-botkit-chart-card canvas').addClass('loading');
+        }
+
+        // Hide loading state
+        function hideAnalyticsLoading() {
+            $('.ai-botkit-chart-card canvas').removeClass('loading');
+        }
+
+        // Show error state
+        function showAnalyticsError(message) {
+            $('.ai-botkit-knowledge-stats-item-value').text(message);
+            hideAnalyticsLoading();
+        }
+
+        // Update analytics data and charts
+        function updateAnalyticsData(data) {
+            // Update overview stats
+            $('.ai-botkit-knowledge-stats-item-value').eq(0).text(data.overview.total_interactions.toLocaleString());
+            $('.ai-botkit-knowledge-stats-item-value').eq(1).text(data.overview.total_conversations.toLocaleString());
+            $('.ai-botkit-knowledge-stats-item-value').eq(2).text(data.overview.total_users.toLocaleString());
+            $('.ai-botkit-knowledge-stats-item-value').eq(3).text(data.overview.total_tokens.toLocaleString());
+
+            // Update time series data
+            timeSeriesData = data.time_series;
+            performanceData = data.performance;
+
+            // Update charts
+            updateCharts();
+        }
+
+        // Update all charts with new data
+        function updateCharts() {
+            if (charts.usageChart) {
+                charts.usageChart.data.labels = timeSeriesData.map(d => d.time_period);
+                charts.usageChart.data.datasets[0].data = timeSeriesData.map(d => d.total_events);
+                charts.usageChart.update();
+            }
+
+            if (charts.responseTimeChart) {
+                charts.responseTimeChart.data.labels = performanceData.map(d => d.date);
+                charts.responseTimeChart.data.datasets[0].data = performanceData.map(d => d.avg_processing_time);
+                charts.responseTimeChart.update();
+            }
+
+            if (charts.errorChart) {
+                charts.errorChart.data.labels = performanceData.map(d => d.date);
+                charts.errorChart.data.datasets[0].data = performanceData.map(d => d.error_count);
+                charts.errorChart.update();
+            }
+
+            if (charts.tokenChart) {
+                charts.tokenChart.data.labels = performanceData.map(d => d.date);
+                charts.tokenChart.data.datasets[0].data = performanceData.map(d => d.avg_token_usage);
+                charts.tokenChart.update();
+            }
+        }
+
+        // Event handler for time range changes
+        $('#ai_botkit_analytics_time_range').on('change', function() {
+            const timeRange = $(this).val();
+            loadAnalyticsData(timeRange);
+        });
+
+        // Ensure dropdown always defaults to 7 days on page load
+        $('#ai_botkit_analytics_time_range').val('7 days');
 
         // Common chart options
         const chartOptions = {
@@ -2211,7 +2442,7 @@ jQuery(document).ready(function($) {
         }
 
         // Usage Chart
-        createChart('usageChart', {
+    charts.usageChart = createChart('usageChart', {
             type: 'line',
             data: {
                 labels: timeSeriesData.map(d => d.time_period),
@@ -2228,7 +2459,7 @@ jQuery(document).ready(function($) {
         });
 
         // Response Time Chart
-        createChart('responseTimeChart', {
+    charts.responseTimeChart = createChart('responseTimeChart', {
             type: 'line',
             data: {
                 labels: performanceData.map(d => d.date),
@@ -2245,7 +2476,7 @@ jQuery(document).ready(function($) {
         });
 
         // Error Rate Chart
-        createChart('errorChart', {
+    charts.errorChart = createChart('errorChart', {
             type: 'line',
             data: {
                 labels: performanceData.map(d => d.date),
@@ -2262,7 +2493,7 @@ jQuery(document).ready(function($) {
         });
 
         // Token Usage Chart
-        createChart('tokenChart', {
+    charts.tokenChart = createChart('tokenChart', {
             type: 'line',
             data: {
                 labels: timeSeriesData.map(d => d.time_period),
@@ -2626,6 +2857,44 @@ jQuery(document).ready(function($) {
         });
     });
 
+    // Auto-save functionality for all form fields when editing existing bots
+    function autoSaveChatbot() {
+        const chatbotId = $('#ai-botkit-chatbot-id').val();
+        if (!chatbotId || chatbotId === '') {
+            return; // Don't auto-save for new bots
+        }
+
+        const formData = new FormData($('#ai-botkit-chatbot-form')[0]);
+        formData.append('action', 'ai_botkit_save_chatbot');
+        formData.append('nonce', ai_botkitAdmin.nonce);
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    // Update saved chatbot ID if it changed
+                    if (response.data.chatbot_id) {
+                        $('#saved_chatbot_id').val(response.data.chatbot_id);
+                    }
+                }
+            },
+            error: function() {
+                console.log('Auto-save failed');
+            }
+        });
+    }
+
+    // Auto-save on form field changes (with debounce)
+    let autoSaveTimeout;
+    $('#ai-botkit-chatbot-form input, #ai-botkit-chatbot-form select, #ai-botkit-chatbot-form textarea').on('change input', function() {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(autoSaveChatbot, 1000); // Auto-save after 1 second of inactivity
+    });
+
     $('#chatbot_active_publish').on('change', function() {
         const chatbotId = $('#saved_chatbot_id').val();
         $.ajax({
@@ -2671,6 +2940,358 @@ jQuery(document).ready(function($) {
             $('#ai-botkit-chatbot-wizard-status').removeClass('ai-botkit-status-active');
             $('#ai-botkit-chatbot-wizard-status').addClass('ai-botkit-status-inactive');
         }
+    });
+    
+    // Knowledge Base AJAX functionality
+    if ($('#ai-botkit-knowledge-table').length) {
+        let currentType = 'all';
+        let currentPage = 1;
+        let currentSearch = '';
+        let searchTimeout;
+        
+        // Add delegated click handler for error details (works for both initial load and AJAX updates)
+        $(document).on('click', '.ai-botkit-error-clickable', function() {
+            const documentId = $(this).data('document-id');
+            showErrorDetails(documentId);
+        });
+
+        // Add click handler for reprocess button
+        $(document).on('click', '.ai-botkit-reprocess-btn', function() {
+            const documentId = $(this).data('id');
+            const documentType = $(this).data('type');
+            reprocessDocument(documentId, documentType);
+        });
+        
+        // Get initial values from the page
+        const activeTab = $('.ai-botkit-knowledge-tab.active');
+        if (activeTab.length) {
+            currentType = activeTab.data('type') || 'all';
+        }
+        
+        const pageInfo = $('#ai-botkit-page-info').text();
+        const pageMatch = pageInfo.match(/Page (\d+)/);
+        if (pageMatch) {
+            currentPage = parseInt(pageMatch[1]);
+        }
+
+        // Handle filter tab clicks
+        $('.ai-botkit-knowledge-tab').on('click', function(e) {
+            e.preventDefault();
+            
+            // Update active tab
+            $('.ai-botkit-knowledge-tab').removeClass('active');
+            $(this).addClass('active');
+            
+            // Update current type and reset to page 1
+            currentType = $(this).data('type');
+            currentPage = 1;
+            
+            // Load data
+            loadKnowledgeBaseData();
+        });
+
+        // Handle search input with 3-second delay
+        $('#ai-botkit-search-input').on('input', function() {
+            const searchValue = $(this).val().trim();
+            const $input = $(this);
+            
+            // Clear existing timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Show typing indicator
+            $input.addClass('searching');
+            
+            // Set new timeout for 2 seconds
+            searchTimeout = setTimeout(function() {
+                $input.removeClass('searching');
+                currentSearch = searchValue;
+                currentPage = 1; // Reset to first page when searching
+                loadKnowledgeBaseData();
+            }, 2000);
+        });
+
+        // Handle pagination clicks
+        $('#ai-botkit-prev-page, #ai-botkit-next-page').on('click', function(e) {
+            e.preventDefault();
+            
+            if ($(this).is(':disabled')) return;
+            
+            currentPage = parseInt($(this).data('page'));
+            loadKnowledgeBaseData();
+        });
+
+        // Function to load knowledge base data via AJAX
+        function loadKnowledgeBaseData() {
+            const $tableBody = $('#ai-botkit-table-body');
+            const $pagination = $('#ai-botkit-pagination');
+            const $pageInfo = $('#ai-botkit-page-info');
+            
+            // Show loading state
+            $tableBody.html('<tr><td colspan="6" style="text-align: center; padding: 20px;"><i class="ti ti-loader-2" style="animation: spin 1s linear infinite;"></i> Loading...</td></tr>');
+            $pagination.hide();
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'ai_botkit_get_knowledge_base_data',
+                    type: currentType,
+                    page: currentPage,
+                    search: currentSearch,
+                    nonce: $('#ai_botkit_migration_nonce').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update table body
+                        let tableRows = '';
+                        if (response.data.documents.length > 0) {
+                            response.data.documents.forEach(function(doc) {
+                                tableRows += `
+                                    <tr>
+                                        <td>${doc.name}</td>
+                                        <td>${doc.type}</td>
+                                        <td>${doc.status}</td>
+                                        <td>${doc.date}</td>
+                                        <td>${doc.url}</td>
+                                        <td>
+                                            ${doc.actions || ''}
+                                            <button class="ai-botkit-delete-btn" data-id="${doc.id}" title="Delete document">
+                                                <i class="ti ti-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            tableRows = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No documents found.</td></tr>';
+                        }
+                        $tableBody.html(tableRows);
+
+                        // Update pagination
+                        const pagination = response.data.pagination;
+                        
+                        if (response.data.documents.length > 0) {
+                            // Show pagination when documents are found
+                            $pageInfo.html(`Page ${pagination.current_page} of ${pagination.total_pages}`);
+                            
+                            // Update pagination buttons
+                            $('#ai-botkit-prev-page')
+                                .data('page', Math.max(1, pagination.current_page - 1))
+                                .prop('disabled', pagination.current_page <= 1);
+                            
+                            $('#ai-botkit-next-page')
+                                .data('page', Math.min(pagination.total_pages, pagination.current_page + 1))
+                                .prop('disabled', pagination.current_page >= pagination.total_pages);
+                            
+                            $pagination.show();
+                        } else {
+                            // Hide pagination when no documents found
+                            $pagination.hide();
+                        }
+                    } else {
+                        $tableBody.html('<tr><td colspan="6" style="text-align: center; padding: 20px; color: #e74c3c;">Error loading data: ' + response.data.message + '</td></tr>');
+                        $pagination.hide(); // Hide pagination on error too
+                    }
+                },
+                error: function() {
+                    $tableBody.html('<tr><td colspan="6" style="text-align: center; padding: 20px; color: #e74c3c;">Error loading data. Please try again.</td></tr>');
+                    $pagination.hide(); // Hide pagination on error too
+                }
+            });
+        }
+
+        // Function to show error details modal
+        function showErrorDetails(documentId) {
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'ai_botkit_get_document_error_details',
+                    document_id: documentId,
+                    nonce: $('#ai_botkit_migration_nonce').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const document = response.data.document;
+                        const errorDetails = response.data.error_details;
+                        
+                        let errorMessage = 'No error details available.';
+                        let errorTime = 'Unknown';
+                        let processingTime = 'Unknown';
+                        
+                        if (errorDetails.error) {
+                            errorMessage = errorDetails.error;
+                        }
+                        if (errorDetails.error_time) {
+                            errorTime = errorDetails.error_time;
+                        }
+                        if (errorDetails.processing_time) {
+                            processingTime = Math.round(parseFloat(errorDetails.processing_time) * 1000) + 'ms';
+                        }
+                        
+                        // Show error details in a modal
+                        Swal.fire({
+                            title: 'Error Details',
+                            html: `
+                                <div style="text-align: left;">
+                                    <p><strong>Document:</strong> ${document.title}</p>
+                                    <p><strong>Type:</strong> ${document.source_type}</p>
+                                    <p><strong>URL:</strong> ${document.file_path}</p>
+                                    <p><strong>Error Time:</strong> ${errorTime}</p>
+                                    <p><strong>Processing Time:</strong> ${processingTime}</p>
+                                    <hr>
+                                    <p><strong>Error Message:</strong></p>
+                                    <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; border-left: 4px solid #dc3545;">
+                                        ${errorMessage}
+                                    </div>
+                                </div>
+                            `,
+                            icon: 'error',
+                            confirmButtonText: 'Close',
+                            width: '600px'
+                        });
+                    } else {
+                        AiBotkitToast.error('Failed to load error details: ' + response.data.message);
+                    }
+                },
+                error: function() {
+                    AiBotkitToast.error('Error loading error details. Please try again.');
+                }
+            });
+        }
+
+        // Function to reprocess document
+        function reprocessDocument(documentId, documentType) {
+            // Set dynamic messages based on document type
+            let title, text, confirmText;
+            
+            switch(documentType) {
+                case 'file':
+                    title = 'Reprocess File';
+                    text = 'Are you sure you want to reprocess this file? This will update the content with improved text cleaning.';
+                    confirmText = 'Yes, reprocess file';
+                    break;
+                case 'post':
+                    title = 'Reprocess Post';
+                    text = 'Are you sure you want to reprocess this post? This will update/sync the post content.';
+                    confirmText = 'Yes, reprocess post';
+                    break;
+                case 'url':
+                    title = 'Reprocess URL';
+                    text = 'Are you sure you want to reprocess this URL? This will update/sync the URL content.';
+                    confirmText = 'Yes, reprocess URL';
+                    break;
+                default:
+                    title = 'Reprocess Document';
+                    text = 'Are you sure you want to reprocess this document? This will update/sync the document content.';
+                    confirmText = 'Yes, reprocess document';
+                    break;
+            }
+            
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: confirmText,
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#007cba',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    const $btn = $(`.ai-botkit-reprocess-btn[data-id="${documentId}"]`);
+                    const originalHtml = $btn.html();
+                    $btn.html('<i class="ti ti-loader-2 ai-botkit-spin"></i>').prop('disabled', true);
+
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'ai_botkit_reprocess_document',
+                            document_id: documentId,
+                            nonce: $('#ai_botkit_migration_nonce').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Dynamic success message based on document type
+                                let successMessage;
+                                switch(documentType) {
+                                    case 'file':
+                                        successMessage = 'File reprocessed successfully!';
+                                        break;
+                                    case 'post':
+                                        successMessage = 'Post reprocessed successfully!';
+                                        break;
+                                    case 'url':
+                                        successMessage = 'URL reprocessed successfully!';
+                                        break;
+                                    default:
+                                        successMessage = 'Document reprocessed successfully!';
+                                        break;
+                                }
+                                AiBotkitToast.success(successMessage);
+                                // Reload the knowledge base data
+                                loadKnowledgeBaseData();
+                            } else {
+                                AiBotkitToast.error('Failed to reprocess ' + documentType + ': ' + response.data.message);
+                            }
+                        },
+                        error: function() {
+                            AiBotkitToast.error('Error reprocessing ' + documentType + '. Please try again.');
+                        },
+                        complete: function() {
+                            // Restore button state
+                            $btn.html(originalHtml).prop('disabled', false);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    // Pinecone connection testing
+    $('#ai-botkit-test-pinecone-connection').on('click', function() {
+        const $button = $(this);
+        const $result = $('#ai-botkit-pinecone-validation-result');
+        const apiKey = $('#ai_botkit_pinecone_api_key').val();
+        const host = $('#ai_botkit_pinecone_host').val();
+
+        if (!apiKey || !host) {
+            $result.html('<div class="ai-botkit-error">Please enter both API key and host before testing.</div>').show();
+            return;
+        }
+
+        // Show loading state
+        $button.prop('disabled', true).html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Testing...');
+        $result.hide();
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'ai_botkit_test_pinecone_connection',
+                nonce: aiBotKitAdmin.nonce,
+                api_key: apiKey,
+                host: host
+            },
+            success: function(response) {
+                if (response.success) {
+                    $result.html('<div class="ai-botkit-success"><i class="ti ti-check"></i> ' + response.data.message + '</div>').show();
+                } else {
+                    $result.html('<div class="ai-botkit-error"><i class="ti ti-x"></i> ' + response.data.message + '</div>').show();
+                }
+            },
+            error: function() {
+                $result.html('<div class="ai-botkit-error"><i class="ti ti-x"></i> Failed to test connection. Please try again.</div>').show();
+            },
+            complete: function() {
+                // Restore button state
+                $button.prop('disabled', false).html('<i class="ti ti-check"></i> Test Connection');
+            }
+        });
     });
     
 });

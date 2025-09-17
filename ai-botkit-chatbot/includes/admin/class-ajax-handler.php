@@ -70,6 +70,17 @@ class Ajax_Handler {
         add_action('wp_ajax_ai_botkit_get_content_types', array($this, 'handle_get_content_types'));
         add_action('wp_ajax_ai_botkit_start_migration', array($this, 'handle_start_migration'));
         add_action('wp_ajax_ai_botkit_clear_database', array($this, 'handle_clear_database'));
+
+        // Analytics endpoints
+        add_action('wp_ajax_ai_botkit_get_analytics_data', array($this, 'handle_get_analytics_data'));
+
+        // Knowledge base endpoints
+        add_action('wp_ajax_ai_botkit_get_knowledge_base_data', array($this, 'handle_get_knowledge_base_data'));
+        add_action('wp_ajax_ai_botkit_reprocess_document', array($this, 'handle_reprocess_document'));
+        add_action('wp_ajax_ai_botkit_get_document_error_details', array($this, 'handle_get_document_error_details'));
+
+        // Settings validation endpoints
+        add_action('wp_ajax_ai_botkit_test_pinecone_connection', array($this, 'handle_test_pinecone_connection'));
     }
 
     /**
@@ -149,7 +160,7 @@ class Ajax_Handler {
             'name' => sanitize_text_field($_POST['name']),
             'active' => isset($_POST['active']) ? 1 : 0,
             'avatar' => isset($_POST['chatbot_avatar']) ? sanitize_text_field($_POST['chatbot_avatar']) : esc_url(AI_BOTKIT_PLUGIN_URL . '/public/images/bot-1.png'),
-            'feedback' => isset($_POST['feedback']) ? 1 : 0,
+            'feedback' => isset($_POST['enable_feedback']) ? 1 : 0,
         
             // Combine all style-related fields into JSON
             'style' => wp_json_encode(array(
@@ -674,6 +685,127 @@ class Ajax_Handler {
     }
 
     /**
+     * Handle reprocess document
+     */
+    public function handle_reprocess_document() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        if (!isset($_POST['document_id'])) {
+            wp_send_json_error(['message' => esc_html__('Missing document ID.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        $document_id = intval($_POST['document_id']);
+        
+        try {
+            global $wpdb;
+            
+            // Get document details
+            $document = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}ai_botkit_documents WHERE id = %d",
+                $document_id
+            ));
+            
+            if (!$document) {
+                wp_send_json_error(['message' => esc_html__('Document not found.', 'ai-botkit-for-lead-generation')]);
+            }
+            
+            // Create RAG Engine dependencies
+            $llm_client = new \AI_BotKit\Core\LLM_Client();
+            $document_loader = new \AI_BotKit\Core\Document_Loader();
+            $text_chunker = new \AI_BotKit\Core\Text_Chunker();
+            $embeddings_generator = new \AI_BotKit\Core\Embeddings_Generator($llm_client);
+            $vector_database = new \AI_BotKit\Core\Vector_Database();
+            $retriever = new \AI_BotKit\Core\Retriever($vector_database, $embeddings_generator);
+            $rag_engine = new \AI_BotKit\Core\RAG_Engine(
+                $document_loader,
+                $text_chunker,
+                $embeddings_generator,
+                $vector_database,
+                $retriever,
+                $llm_client
+            );
+            
+            // Reprocess the document
+            $source = $document->file_path ?? $document->source_id;
+            
+            error_log('AI BotKit Reprocess Debug: Starting reprocessing for document ID: ' . $document_id);
+            error_log('AI BotKit Reprocess Debug: Document source: ' . $source);
+            error_log('AI BotKit Reprocess Debug: Document type: ' . $document->source_type);
+            error_log('AI BotKit Reprocess Debug: Document title: ' . $document->title);
+            
+            $result = $rag_engine->process_document($source, $document->source_type, $document_id);
+            
+            error_log('AI BotKit Reprocess Debug: Reprocessing completed successfully');
+            error_log('AI BotKit Reprocess Debug: Result: ' . print_r($result, true));
+            
+            wp_send_json_success([
+                'message' => esc_html__('Document reprocessed successfully.', 'ai-botkit-for-lead-generation'),
+                'result' => $result
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log('AI BotKit Reprocess Debug: Error during reprocessing: ' . $e->getMessage());
+            error_log('AI BotKit Reprocess Debug: Stack trace: ' . $e->getTraceAsString());
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle getting document error details
+     */
+    public function handle_get_document_error_details() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        if (!isset($_POST['document_id'])) {
+            wp_send_json_error(['message' => esc_html__('Missing document ID.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        $document_id = intval($_POST['document_id']);
+        
+        try {
+            global $wpdb;
+            
+            // Get document details
+            $document = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}ai_botkit_documents WHERE id = %d",
+                $document_id
+            ));
+            
+            if (!$document) {
+                wp_send_json_error(['message' => esc_html__('Document not found.', 'ai-botkit-for-lead-generation')]);
+            }
+            
+            // Get error metadata
+            $error_metadata = $wpdb->get_results($wpdb->prepare(
+                "SELECT meta_key, meta_value FROM {$wpdb->prefix}ai_botkit_document_metadata 
+                 WHERE document_id = %d AND meta_key IN ('error', 'error_time', 'processing_time')",
+                $document_id
+            ));
+            
+            $error_details = [];
+            foreach ($error_metadata as $meta) {
+                $error_details[$meta->meta_key] = $meta->meta_value;
+            }
+            
+            wp_send_json_success([
+                'document' => $document,
+                'error_details' => $error_details
+            ]);
+            
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * Handle URL import for knowledge base
      */
     public function handle_url_import() {
@@ -689,19 +821,21 @@ class Ajax_Handler {
 
         $url = esc_url_raw($_POST['url']);
         $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+        
+        // Debug logging
+        error_log('AI BotKit: URL Import - Title received: "' . $title . '" (Length: ' . strlen($title) . ')');
 
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             wp_send_json_error(['message' => esc_html__('Invalid URL.', 'ai-botkit-for-lead-generation')]);
         }
 
-        // Verify URL is accessible
-        $response = wp_remote_head($url);
-        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-            wp_send_json_error(['message' => esc_html__('URL is not accessible.', 'ai-botkit-for-lead-generation')]);
-        }
+        // Skip URL accessibility check for now - many sites block automated requests
+        // The URL will be processed during the actual import process
+        // This prevents 403 errors from academic sites and other protected domains
 
-        if( empty($title) ) {
-            $title = $url;
+        if( empty(trim($title)) ) {
+            // Try to extract title from the URL only if no title provided
+            $title = $this->extract_title_from_url($url);
         }
 
         // Save document in database
@@ -723,10 +857,151 @@ class Ajax_Handler {
             wp_send_json_error(['message' => esc_html__('Failed to save document.', 'ai-botkit-for-lead-generation')]);
         }
 
+        // Try to process the document immediately
+        try {
+            // Create required dependencies for RAG Engine
+            $llm_client = new \AI_BotKit\Core\LLM_Client();
+            $document_loader = new \AI_BotKit\Core\Document_Loader();
+            $text_chunker = new \AI_BotKit\Core\Text_Chunker();
+            $embeddings_generator = new \AI_BotKit\Core\Embeddings_Generator($llm_client);
+            $vector_database = new \AI_BotKit\Core\Vector_Database();
+            $retriever = new \AI_BotKit\Core\Retriever($vector_database, $embeddings_generator);
+            $rag_engine = new \AI_BotKit\Core\RAG_Engine(
+                $document_loader,
+                $text_chunker,
+                $embeddings_generator,
+                $vector_database,
+                $retriever,
+                $llm_client
+            );
+            $rag_engine->process_queue();
+        } catch (\Exception $e) {
+            error_log('AI BotKit: Failed to process document queue: ' . $e->getMessage());
+        }
+
         wp_send_json_success([
             'message' => esc_html__('URL imported successfully.', 'ai-botkit-for-lead-generation'),
             'document_id' => $wpdb->insert_id
         ]);
+    }
+
+    /**
+     * Extract title from URL by fetching the page content
+     * 
+     * @param string $url URL to extract title from
+     * @return string Extracted title or fallback title
+     */
+    private function extract_title_from_url($url) {
+        try {
+            // Fetch the page content
+            $response = wp_remote_get($url, [
+                'timeout' => 15,
+                'sslverify' => true,
+                'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'headers' => [
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language' => 'en-US,en;q=0.5',
+                    'Accept-Encoding' => 'gzip, deflate',
+                    'Connection' => 'keep-alive',
+                    'Upgrade-Insecure-Requests' => '1',
+                ]
+            ]);
+
+            if (is_wp_error($response)) {
+                return $this->get_fallback_title($url);
+            }
+
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code !== 200) {
+                // Log the response code for debugging but don't fail
+                error_log('AI BotKit: URL title extraction failed with HTTP ' . $response_code . ' for URL: ' . $url);
+                return $this->get_fallback_title($url);
+            }
+
+            $content = wp_remote_retrieve_body($response);
+            $content_type = wp_remote_retrieve_header($response, 'content-type');
+
+            // Only process HTML content
+            if (strpos($content_type, 'text/html') === false) {
+                return $this->get_fallback_title($url);
+            }
+
+            // Extract title using regex
+            $title = $this->extract_title_from_html($content);
+            
+            if (!empty($title)) {
+                return $title;
+            }
+
+            return $this->get_fallback_title($url);
+
+        } catch (\Exception $e) {
+            error_log('AI BotKit: Failed to extract title from URL: ' . $e->getMessage());
+            return $this->get_fallback_title($url);
+        }
+    }
+
+    /**
+     * Extract title from HTML content
+     * 
+     * @param string $html HTML content
+     * @return string Extracted title or empty string
+     */
+    private function extract_title_from_html($html) {
+        // Try to find title tag
+        if (preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $matches)) {
+            $title = trim($matches[1]);
+            // Clean up the title
+            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $title = strip_tags($title);
+            $title = preg_replace('/\s+/', ' ', $title);
+            $title = trim($title);
+            
+            // Remove common suffixes like " | Site Name"
+            $title = preg_replace('/\s*[|\-–—]\s*.*$/', '', $title);
+            $title = preg_replace('/\s*:\s*.*$/', '', $title);
+            
+            if (!empty($title) && strlen($title) > 3) {
+                return $title;
+            }
+        }
+
+        // Try to find Open Graph title
+        if (preg_match('/<meta[^>]*property=["\']og:title["\'][^>]*content=["\']([^"\']*)["\'][^>]*>/i', $html, $matches)) {
+            $title = trim($matches[1]);
+            if (!empty($title) && strlen($title) > 3) {
+                return html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+        }
+
+        // Try to find Twitter title
+        if (preg_match('/<meta[^>]*name=["\']twitter:title["\'][^>]*content=["\']([^"\']*)["\'][^>]*>/i', $html, $matches)) {
+            $title = trim($matches[1]);
+            if (!empty($title) && strlen($title) > 3) {
+                return html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Get fallback title from URL
+     * 
+     * @param string $url URL
+     * @return string Fallback title
+     */
+    private function get_fallback_title($url) {
+        $parsed_url = parse_url($url);
+        $host = isset($parsed_url['host']) ? $parsed_url['host'] : 'Unknown Site';
+        
+        // Remove www. prefix
+        $host = preg_replace('/^www\./', '', $host);
+        
+        // Capitalize first letter
+        $host = ucfirst($host);
+        
+        return $host . ' - ' . esc_html__('Web Page', 'ai-botkit-for-lead-generation');
     }
 
     /**
@@ -817,15 +1092,24 @@ class Ajax_Handler {
             ['%d']
         );
 
-        // delete chunks and embeddings
+        // Get chunk IDs for this document
+        $chunk_ids = $wpdb->get_col($wpdb->prepare(
+            "SELECT id FROM {$wpdb->prefix}ai_botkit_chunks WHERE document_id = %d",
+            $document_id
+        ));
+
+        // Delete embeddings for these chunks
+        if (!empty($chunk_ids)) {
+            $chunk_ids_placeholders = implode(',', array_fill(0, count($chunk_ids), '%d'));
+            $wpdb->query($wpdb->prepare(
+                "DELETE FROM {$wpdb->prefix}ai_botkit_embeddings WHERE chunk_id IN ($chunk_ids_placeholders)",
+                $chunk_ids
+            ));
+        }
+
+        // Delete chunks
         $wpdb->delete(
             $wpdb->prefix . 'ai_botkit_chunks',
-            ['document_id' => $document_id],
-            ['%d']
-        );
-
-        $wpdb->delete(
-            $wpdb->prefix . 'ai_botkit_embeddings',
             ['document_id' => $document_id],
             ['%d']
         );
@@ -1182,6 +1466,39 @@ class Ajax_Handler {
             wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
         }
 
+        // Check if Pinecone API key and host exist before proceeding
+        $pinecone_api_key = get_option('ai_botkit_pinecone_api_key', '');
+        $pinecone_host = get_option('ai_botkit_pinecone_host', '');
+        
+        if (empty($pinecone_api_key) || empty($pinecone_host)) {
+            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        // Test Pinecone credentials validity
+        try {
+            $pinecone_database = new \AI_BotKit\Core\Pinecone_Database();
+            if (!$pinecone_database->is_configured()) {
+                wp_send_json_error(['message' => esc_html__('Pinecone is not properly configured. Please check your API key and host in Settings.', 'ai-botkit-for-lead-generation')]);
+            }
+            
+            // Test connection by making a simple API call
+            $test_result = $pinecone_database->test_connection();
+            
+        } catch (\AI_BotKit\Core\Pinecone_Exception $e) {
+            $error_message = $e->getMessage();
+            if (strpos($error_message, '401') !== false || strpos($error_message, 'Unauthorized') !== false) {
+                wp_send_json_error(['message' => esc_html__('Invalid Pinecone API key. Please check your credentials in Settings.', 'ai-botkit-for-lead-generation')]);
+            } elseif (strpos($error_message, '403') !== false || strpos($error_message, 'Forbidden') !== false) {
+                wp_send_json_error(['message' => esc_html__('Pinecone API access denied. Please check your API key permissions in Settings.', 'ai-botkit-for-lead-generation')]);
+            } elseif (strpos($error_message, '404') !== false) {
+                wp_send_json_error(['message' => esc_html__('Invalid Pinecone host URL. Please check your host configuration in Settings.', 'ai-botkit-for-lead-generation')]);
+            } else {
+                wp_send_json_error(['message' => esc_html__('Pinecone connection failed: ', 'ai-botkit-for-lead-generation') . $error_message]);
+            }
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => esc_html__('Failed to validate Pinecone credentials: ', 'ai-botkit-for-lead-generation') . $e->getMessage()]);
+        }
+
         try {
             // Create required dependencies
             $llm_client = new \AI_BotKit\Core\LLM_Client();
@@ -1220,6 +1537,14 @@ class Ajax_Handler {
 
         if (!current_user_can('manage_options')) {
             wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        // Check if Pinecone API key and host exist before proceeding
+        $pinecone_api_key = get_option('ai_botkit_pinecone_api_key', '');
+        $pinecone_host = get_option('ai_botkit_pinecone_host', '');
+        
+        if (empty($pinecone_api_key) || empty($pinecone_host)) {
+            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'ai-botkit-for-lead-generation')]);
         }
 
         try {
@@ -1262,6 +1587,14 @@ class Ajax_Handler {
 
         if (!current_user_can('manage_options')) {
             wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        // Check if Pinecone API key and host exist before proceeding
+        $pinecone_api_key = get_option('ai_botkit_pinecone_api_key', '');
+        $pinecone_host = get_option('ai_botkit_pinecone_host', '');
+        
+        if (empty($pinecone_api_key) || empty($pinecone_host)) {
+            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'ai-botkit-for-lead-generation')]);
         }
 
         if (!isset($_POST['options'])) {
@@ -1315,22 +1648,24 @@ class Ajax_Handler {
             wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
         }
 
-        try {
-            $database = sanitize_text_field($_POST['database'] ?? '');
-            
-        if (empty($database) || !in_array($database, ['local', 'pinecone', 'knowledge_base'])) {
+        // Get database type first to determine if Pinecone check is needed
+        $database = sanitize_text_field($_POST['database'] ?? '');
+        
+        // Only check Pinecone configuration for migration operations, not for clearing
+        if (!in_array($database, ['local', 'pinecone', 'knowledge_base'])) {
             wp_send_json_error(['message' => esc_html__('Invalid database specified.', 'ai-botkit-for-lead-generation')]);
         }
 
-            // Additional server-side validation
+        try {
+
+            // Additional server-side validation for Pinecone operations
             if ($database === 'pinecone') {
                 // Check if Pinecone is configured
                 $pinecone_api_key = get_option('ai_botkit_pinecone_api_key');
-                $pinecone_environment = get_option('ai_botkit_pinecone_environment');
-                $pinecone_index = get_option('ai_botkit_pinecone_index');
+                $pinecone_host = get_option('ai_botkit_pinecone_host');
                 
-                if (empty($pinecone_api_key) || empty($pinecone_environment) || empty($pinecone_index)) {
-                    wp_send_json_error(['message' => esc_html__('Pinecone is not properly configured.', 'ai-botkit-for-lead-generation')]);
+                if (empty($pinecone_api_key) || empty($pinecone_host)) {
+                    wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required to clear Pinecone database.', 'ai-botkit-for-lead-generation')]);
                 }
             }
 
@@ -1360,6 +1695,252 @@ class Ajax_Handler {
 
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle analytics data request
+     */
+    public function handle_get_analytics_data() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        try {
+            $time_range = isset($_POST['time_range']) ? sanitize_text_field($_POST['time_range']) : '7 days';
+            
+            // Calculate date range
+            if ($time_range === '7 days') {
+                $start_date = date('Y-m-d', strtotime('-7 days'));
+                $end_date = current_time('Y-m-d');
+            } elseif ($time_range === '30 days') {
+                $start_date = date('Y-m-d', strtotime('-30 days'));
+                $end_date = current_time('Y-m-d');
+            } elseif ($time_range === '90 days') {
+                $start_date = date('Y-m-d', strtotime('-90 days'));
+                $end_date = current_time('Y-m-d');
+            } elseif ($time_range === '1 year') {
+                $start_date = date('Y-m-d', strtotime('-1 year'));
+                $end_date = current_time('Y-m-d');
+            } else {
+                $start_date = date('Y-m-d', strtotime('-7 days'));
+                $end_date = current_time('Y-m-d');
+            }
+
+            // Get analytics data
+            $analytics = new \AI_BotKit\Monitoring\Analytics(new \AI_BotKit\Utils\Cache_Manager());
+            $data = $analytics->get_dashboard_data([
+                'start_date' => $start_date,
+                'end_date' => $end_date
+            ]);
+
+            wp_send_json_success([
+                'overview' => $data['overview'],
+                'time_series' => $data['time_series'],
+                'top_queries' => $data['top_queries'],
+                'error_rates' => $data['error_rates'],
+                'performance' => $data['performance'],
+                'time_range' => $time_range
+            ]);
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle knowledge base data request
+     */
+    public function handle_get_knowledge_base_data() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        try {
+            $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'all';
+            $current_page = isset($_POST['page']) ? max(1, intval($_POST['page'])) : 1;
+            $search_term = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+            $items_per_page = 20;
+            $offset = ($current_page - 1) * $items_per_page;
+
+            global $wpdb;
+
+            // Build WHERE clause based on filter type and search term
+            $where_conditions = [];
+            $where_values = [];
+            
+            if ($type !== 'all') {
+                $where_conditions[] = "source_type = %s";
+                $where_values[] = $type;
+            }
+            
+            if (!empty($search_term)) {
+                $where_conditions[] = "title LIKE %s";
+                $search_like = '%' . $wpdb->esc_like($search_term) . '%';
+                $where_values[] = $search_like;
+            }
+            
+            $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
+            
+            // Calculate total documents based on filter type and search term
+            $count_query = "SELECT COUNT(*) FROM {$wpdb->prefix}ai_botkit_documents " . $where_clause;
+            if (!empty($where_values)) {
+                $total_documents = $wpdb->get_var($wpdb->prepare($count_query, $where_values));
+            } else {
+                $total_documents = $wpdb->get_var($count_query);
+            }
+            
+            // Get documents with pagination
+            $query = "SELECT * FROM {$wpdb->prefix}ai_botkit_documents " . $where_clause . " ORDER BY created_at DESC LIMIT %d OFFSET %d";
+            $query_values = array_merge($where_values, [$items_per_page, $offset]);
+            
+            if (!empty($query_values)) {
+                $documents = $wpdb->get_results($wpdb->prepare($query, $query_values));
+            } else {
+                $documents = $wpdb->get_results($wpdb->prepare($query, $items_per_page, $offset));
+            }
+
+            $total_pages = ceil($total_documents / $items_per_page);
+
+            // Format documents for response
+            $formatted_documents = [];
+            foreach ($documents as $document) {
+                $document_type = $document->source_type;
+                $document_name = $document->title;
+                $document_date = $document->created_at;
+                
+                if ('post' == $document_type) {
+                    $document_url = '<a href="' . get_permalink($document->source_id) . '" target="_blank">' . get_the_title($document->source_id) . '</a>';
+                } elseif ('url' == $document_type) {
+                    $document_url = '<a href="' . $document->file_path . '" target="_blank">' . esc_html__('Visit URL', 'ai-botkit-for-lead-generation') . '</a>';
+                } elseif ('file' == $document_type) {
+                    $document_url = size_format(filesize($document->file_path), 2);
+                }
+
+                $status_badge = '';
+                if ('pending' == $document->status) {
+                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-warning">' . esc_html__('Pending', 'ai-botkit-for-lead-generation') . '</span>';
+                } elseif ('processing' == $document->status) {
+                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-info">' . esc_html__('Processing', 'ai-botkit-for-lead-generation') . '</span>';
+                } elseif ('completed' == $document->status) {
+                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-success">' . esc_html__('Completed', 'ai-botkit-for-lead-generation') . '</span>';
+                   } elseif ('failed' == $document->status) {
+                       $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-danger ai-botkit-error-clickable" data-document-id="' . $document->id . '" style="cursor: pointer;" title="Click to view error details">' . esc_html__('Failed', 'ai-botkit-for-lead-generation') . '</span>';
+                   }
+
+                // Add reprocess button for completed documents
+                $actions = '';
+                if ('completed' == $document->status) {
+                    // Set appropriate reprocess label based on document type
+                    $reprocess_title = '';
+                    if ( 'file' == $document_type ) {
+                        $reprocess_title = esc_attr__('Reprocess file', 'ai-botkit-for-lead-generation');
+                    } elseif ( 'post' == $document_type ) {
+                        $reprocess_title = esc_attr__('Reprocess post', 'ai-botkit-for-lead-generation');
+                    } elseif ( 'url' == $document_type ) {
+                        $reprocess_title = esc_attr__('Reprocess URL', 'ai-botkit-for-lead-generation');
+                    } else {
+                        $reprocess_title = esc_attr__('Reprocess document', 'ai-botkit-for-lead-generation');
+                    }
+                    $actions = '<button class="ai-botkit-reprocess-btn" data-id="' . esc_attr($document->id) . '" data-type="' . esc_attr($document_type) . '" title="' . $reprocess_title . '"><i class="ti ti-refresh"></i></button>';
+                }
+
+                $formatted_documents[] = [
+                    'id' => $document->id,
+                    'name' => strlen($document_name) > 20 ? substr($document_name, 0, 20) . '...' : esc_html($document_name),
+                    'type' => esc_html($document_type),
+                    'status' => $status_badge,
+                    'date' => esc_html($document_date),
+                    'url' => 'file' == $document_type ? esc_html($document_url) : $document_url,
+                    'actions' => $actions
+                ];
+            }
+
+            wp_send_json_success([
+                'documents' => $formatted_documents,
+                'pagination' => [
+                    'current_page' => $current_page,
+                    'total_pages' => $total_pages,
+                    'total_documents' => $total_documents,
+                    'items_per_page' => $items_per_page
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle testing Pinecone connection
+     */
+    public function handle_test_pinecone_connection() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        // Get credentials from POST data
+        $api_key = sanitize_text_field($_POST['api_key'] ?? '');
+        $host = sanitize_text_field($_POST['host'] ?? '');
+
+        if (empty($api_key) || empty($host)) {
+            wp_send_json_error(['message' => esc_html__('API key and host are required.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        try {
+            // Temporarily set the options for testing
+            $original_api_key = get_option('ai_botkit_pinecone_api_key', '');
+            $original_host = get_option('ai_botkit_pinecone_host', '');
+            
+            update_option('ai_botkit_pinecone_api_key', $api_key);
+            update_option('ai_botkit_pinecone_host', $host);
+
+            // Test the connection
+            $pinecone_database = new \AI_BotKit\Core\Pinecone_Database();
+            
+            if (!$pinecone_database->is_configured()) {
+                wp_send_json_error(['message' => esc_html__('Pinecone is not properly configured.', 'ai-botkit-for-lead-generation')]);
+            }
+            
+            // Test connection by making a simple API call
+            $test_result = $pinecone_database->test_connection();
+            
+            // Restore original values (don't save the test values)
+            update_option('ai_botkit_pinecone_api_key', $original_api_key);
+            update_option('ai_botkit_pinecone_host', $original_host);
+            
+            wp_send_json_success([
+                'message' => esc_html__('Connection successful! Your Pinecone credentials are valid.', 'ai-botkit-for-lead-generation'),
+                'status' => 'success'
+            ]);
+            
+        } catch (\AI_BotKit\Core\Pinecone_Exception $e) {
+            // Restore original values on error
+            update_option('ai_botkit_pinecone_api_key', $original_api_key);
+            update_option('ai_botkit_pinecone_host', $original_host);
+            
+            $error_message = $e->getMessage();
+            if (strpos($error_message, '401') !== false || strpos($error_message, 'Unauthorized') !== false) {
+                wp_send_json_error(['message' => esc_html__('Invalid API key. Please check your Pinecone API key.', 'ai-botkit-for-lead-generation')]);
+            } elseif (strpos($error_message, '403') !== false || strpos($error_message, 'Forbidden') !== false) {
+                wp_send_json_error(['message' => esc_html__('API access denied. Please check your API key permissions.', 'ai-botkit-for-lead-generation')]);
+            } elseif (strpos($error_message, '404') !== false) {
+                wp_send_json_error(['message' => esc_html__('Invalid host URL. Please check your Pinecone host configuration.', 'ai-botkit-for-lead-generation')]);
+            } else {
+                wp_send_json_error(['message' => esc_html__('Connection failed: ', 'ai-botkit-for-lead-generation') . $error_message]);
+            }
+        } catch (\Exception $e) {
+            // Restore original values on error
+            update_option('ai_botkit_pinecone_api_key', $original_api_key);
+            update_option('ai_botkit_pinecone_host', $original_host);
+            
+            wp_send_json_error(['message' => esc_html__('Failed to test connection: ', 'ai-botkit-for-lead-generation') . $e->getMessage()]);
         }
     }
 } 

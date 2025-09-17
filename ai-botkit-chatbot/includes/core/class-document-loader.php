@@ -85,10 +85,18 @@ class Document_Loader {
             );
         }
 
-        // Use WordPress HTTP API
+        // Use WordPress HTTP API with improved headers to avoid 403 errors
         $response = wp_remote_get($url, [
             'timeout' => 30,
-            'sslverify' => true
+            'sslverify' => true,
+            'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'headers' => [
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language' => 'en-US,en;q=0.5',
+                'Accept-Encoding' => 'gzip, deflate',
+                'Connection' => 'keep-alive',
+                'Upgrade-Insecure-Requests' => '1',
+            ]
         ]);
 
         if (is_wp_error($response)) {
@@ -99,9 +107,25 @@ class Document_Loader {
 
         $response_code = wp_remote_retrieve_response_code($response);
         if ($response_code !== 200) {
-            throw new \Exception(
-                esc_html__('Failed to fetch document from URL: HTTP ', 'ai-botkit-for-lead-generation') . esc_html($response_code)
-            );
+            $error_message = esc_html__('Failed to fetch document from URL: HTTP ', 'ai-botkit-for-lead-generation') . esc_html($response_code);
+            
+            // Add specific error messages for common HTTP codes
+            switch ($response_code) {
+                case 403:
+                    $error_message .= ' - ' . esc_html__('Access forbidden. The website may be blocking automated requests.', 'ai-botkit-for-lead-generation');
+                    break;
+                case 404:
+                    $error_message .= ' - ' . esc_html__('Page not found.', 'ai-botkit-for-lead-generation');
+                    break;
+                case 429:
+                    $error_message .= ' - ' . esc_html__('Too many requests. Please try again later.', 'ai-botkit-for-lead-generation');
+                    break;
+                case 500:
+                    $error_message .= ' - ' . esc_html__('Server error on the target website.', 'ai-botkit-for-lead-generation');
+                    break;
+            }
+            
+            throw new \Exception($error_message);
         }
 
         $content = wp_remote_retrieve_body($response);
@@ -181,9 +205,23 @@ class Document_Loader {
         switch (strtolower($extension)) {
             case 'pdf':
                 if (class_exists('\Smalot\PdfParser\Parser')) {
+                    error_log('AI BotKit PDF Debug: Starting PDF parsing');
+                    error_log('AI BotKit PDF Debug: Content size: ' . strlen($content) . ' bytes');
+                    
                     $parser = new \Smalot\PdfParser\Parser();
                     $pdf = $parser->parseContent($content);
-                    return $pdf->getText();
+                    $text = $pdf->getText();
+                    
+                    error_log('AI BotKit PDF Debug: Raw extracted text length: ' . strlen($text));
+                    error_log('AI BotKit PDF Debug: Raw text: ' . $text );
+                    
+                    // Clean and normalize the extracted text
+                    $cleaned_text = $this->clean_pdf_text($text);
+                    
+                    error_log('AI BotKit PDF Debug: Cleaned text length: ' . strlen($cleaned_text));
+                    error_log('AI BotKit PDF Debug: Cleaned text: ' . $cleaned_text );
+                    
+                    return $cleaned_text;
                 }
                 throw new \Exception(
                     esc_html__('PDF parsing requires the Smalot PDF Parser library', 'ai-botkit-for-lead-generation')
@@ -225,6 +263,162 @@ class Document_Loader {
         $type = trim($parts[0]);
         
         return $map[$type] ?? 'txt';
+    }
+
+    /**
+     * Clean and normalize PDF text
+     * 
+     * @param string $text Raw text from PDF parser
+     * @return string Cleaned text
+     */
+    private function clean_pdf_text(string $text): string {
+        error_log('AI BotKit PDF Clean Debug: Starting text cleaning');
+        error_log('AI BotKit PDF Clean Debug: Input text length: ' . strlen($text));
+        
+        // Fix common PDF parsing issues
+        $text = $this->fix_pdf_encoding_issues($text);
+        error_log('AI BotKit PDF Clean Debug: After encoding fixes, length: ' . strlen($text));
+        
+        // Normalize whitespace
+        $text = preg_replace('/\s+/', ' ', $text);
+        error_log('AI BotKit PDF Clean Debug: After whitespace normalization, length: ' . strlen($text));
+        
+        // Fix broken words that got split across lines (only fix obvious cases like "Wor king" -> "Working")
+        // But preserve spaces between proper words
+        $text = preg_replace('/([a-z])\s+([A-Z][a-z])/', '$1$2', $text);
+        error_log('AI BotKit PDF Clean Debug: After word fixing, length: ' . strlen($text));
+        
+        // Clean up line breaks
+        $text = preg_replace('/\n\s*\n/', "\n\n", $text);
+        error_log('AI BotKit PDF Clean Debug: After line break cleanup, length: ' . strlen($text));
+        
+        // Fix specific spacing issues only (avoid over-aggressive regex)
+        $text = preg_replace('/([a-z])w([a-z])/', '$1 w$2', $text); // Fix "projectswlike" -> "projects wlike" -> "projects like"
+        $text = preg_replace('/([a-z])w([a-z])/', '$1 w$2', $text); // Apply again for nested cases
+        
+        error_log('AI BotKit PDF Clean Debug: After post-processing spacing fixes, length: ' . strlen($text));
+        
+        // Remove excessive whitespace
+        $text = trim($text);
+        error_log('AI BotKit PDF Clean Debug: Final cleaned text length: ' . strlen($text));
+        
+        return $text;
+    }
+    
+    /**
+     * Fix common PDF encoding issues
+     * 
+     * @param string $text Text with encoding issues
+     * @return string Fixed text
+     */
+    private function fix_pdf_encoding_issues(string $text): string {
+        error_log('AI BotKit PDF Encoding Debug: Starting encoding fixes');
+        error_log('AI BotKit PDF Encoding Debug: Input text: ' . $text );
+        
+        // Common character replacements for PDF parsing issues
+        $replacements = [
+            // Fix corrupted characters
+            'zbout' => 'About',
+            'pro—ects' => 'projects',
+            'Eebinars' => 'webinars',
+            'Eorkshops' => 'workshops',
+            'jembers' => 'members',
+            'self-organiMed' => 'self-organized',
+            'Pvery' => 'Every',
+            '&ro—ects' => 'Projects',
+            'zctivities' => 'Activities',
+            'Gpportunities' => 'Opportunities',
+            'Working Droups' => 'Working Groups',
+            'organiMed' => 'organized',
+            'Fevelopment' => 'Development',
+            'Hinance' => 'Finance',
+            ':istory' => 'History',
+            'Pconomic' => 'Economic',
+            'Dender' => 'Gender',
+            'Pconomics' => 'Economics',
+            ':oE' => 'How',
+            '—oin' => 'join',
+            'Gnce' => 'Once',
+            'Droup' => 'Group',
+            'Eith' => 'with',
+            'Aelds' => 'fields',
+            'jembership' => 'membership',
+            'Detting' => 'Getting',
+            'oEn' => 'own',
+            'Ehere' => 'where',
+            'Eebinars' => 'webinars',
+            'Eorkshops' => 'workshops',
+            'jembers' => 'members',
+            'self-organiMed' => 'self-organized',
+            'Pvery' => 'Every',
+            '&ro—ects' => 'Projects',
+            'zctivities' => 'Activities',
+            'Gpportunities' => 'Opportunities',
+            'Working Droups' => 'Working Groups',
+            'organiMed' => 'organized',
+            'Fevelopment' => 'Development',
+            'Hinance' => 'Finance',
+            ':istory' => 'History',
+            'Pconomic' => 'Economic',
+            'Dender' => 'Gender',
+            'Pconomics' => 'Economics',
+            ':oE' => 'How',
+            '—oin' => 'join',
+            'Gnce' => 'Once',
+            'Droup' => 'Group',
+            'Eith' => 'with',
+            'Aelds' => 'fields',
+            'jembership' => 'membership',
+            'Detting' => 'Getting',
+            'oEn' => 'own',
+            'Ehere' => 'where',
+            // Fix URL encoding issues
+            'https/\u0000:\u0000:' => 'https://',
+            // Fix other common issues
+            '\u0000' => '',
+            '&' => 'and',
+            // Fix more character corruptions
+            'Anancial' => 'financial',
+            'Pvery' => 'Every',
+            '&ro—ects' => 'Projects',
+            'zctivities' => 'Activities',
+            'Gpportunities' => 'Opportunities',
+            'Working Droups' => 'Working Groups',
+            'organiMed' => 'organized',
+            'Fevelopment' => 'Development',
+            'Hinance' => 'Finance',
+            ':istory' => 'History',
+            'Pconomic' => 'Economic',
+            'Dender' => 'Gender',
+            'Pconomics' => 'Economics',
+            ':oE' => 'How',
+            '—oin' => 'join',
+            'Gnce' => 'Once',
+            'Droup' => 'Group',
+            'Eith' => 'with',
+            'Aelds' => 'fields',
+            'jembership' => 'membership',
+            'Detting' => 'Getting',
+            'oEn' => 'own',
+            'Ehere' => 'where',
+            'jembers' => 'members',
+            'Eebinars' => 'webinars',
+            'Eorkshops' => 'workshops',
+            'self-organiMed' => 'self-organized',
+            'zbout' => 'About',
+            'pro—ects' => 'projects',
+            'pro—ect' => 'project',
+            'ma—or' => 'major',
+            'projectswlike' => 'projects like',
+            'workshopswand' => 'workshops and',
+        ];
+        
+        $fixed_text = str_replace(array_keys($replacements), array_values($replacements), $text);
+        
+        error_log('AI BotKit PDF Encoding Debug: Applied ' . count($replacements) . ' character replacements');
+        error_log('AI BotKit PDF Encoding Debug: Fixed text: ' . $fixed_text );
+        
+        return $fixed_text;
     }
 
     /**

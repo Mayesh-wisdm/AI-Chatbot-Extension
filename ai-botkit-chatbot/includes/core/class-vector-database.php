@@ -167,22 +167,43 @@ class Vector_Database {
                 $user_aware_context = apply_filters('ai_botkit_user_aware_context', false, $bot_id);
 
                 // Get all embeddings and chunks with enrollment metadata
-                $query = "SELECT 
-                    c.id as chunk_id,
-                    c.content,
-                    c.metadata,
-                    e.embedding,
-                    d.id as document_id,
+                    $query = "SELECT 
+                        c.id as chunk_id,
+                        c.content,
+                        c.metadata,
+                        e.embedding,
+                        d.id as document_id,
                     d.title as document_title,
                     d.source_id,
                     d.source_type
-                    FROM {$this->table_prefix}embeddings e
-                    JOIN {$this->table_prefix}chunks c ON e.chunk_id = c.id
-                    JOIN {$this->table_prefix}documents d ON c.document_id = d.id
-                    JOIN {$this->table_prefix}content_relationships cr ON cr.target_id = d.id
+                        FROM {$this->table_prefix}embeddings e
+                        JOIN {$this->table_prefix}chunks c ON e.chunk_id = c.id
+                        JOIN {$this->table_prefix}documents d ON c.document_id = d.id
+                        JOIN {$this->table_prefix}content_relationships cr ON cr.target_id = d.id
                     WHERE cr.source_id = %d";
                 
                 $results = $wpdb->get_results($wpdb->prepare($query, $bot_id), ARRAY_A);
+                error_log('AI BotKit Vector DB Debug: Local query returned ' . count($results) . ' results for bot_id: ' . $bot_id);
+                
+                // If no results from complex query, try simpler query without content_relationships
+                if (empty($results)) {
+                    error_log('AI BotKit Vector DB Debug: No results from complex query, trying simpler query');
+                    $simple_query = "SELECT 
+                        c.id as chunk_id,
+                        c.content,
+                        c.metadata,
+                        e.embedding,
+                        d.id as document_id,
+                        d.title as document_title,
+                        d.source_id,
+                        d.source_type
+                        FROM {$this->table_prefix}embeddings e
+                        JOIN {$this->table_prefix}chunks c ON e.chunk_id = c.id
+                        JOIN {$this->table_prefix}documents d ON c.document_id = d.id";
+                    
+                    $results = $wpdb->get_results($simple_query, ARRAY_A);
+                    error_log('AI BotKit Vector DB Debug: Simple query returned ' . count($results) . ' results');
+                }
                 
                 // Add enrollment metadata to results
                 if ($user_aware_context && is_array($user_aware_context)) {
@@ -220,7 +241,7 @@ class Vector_Database {
                         ];
                     }
                 }
-                
+
                 // Sort by similarity (highest first)
                 usort($similar_results, function($a, $b) {
                     return $b['similarity'] <=> $a['similarity'];
@@ -371,7 +392,7 @@ class Vector_Database {
                 } else {
                     // Delete from local embeddings table
                     $deleted_embeddings = $wpdb->delete(
-                        $this->table_prefix . 'embeddings',
+                $this->table_prefix . 'embeddings',
                         ['chunk_id' => $chunk_ids],
                         ['%d']
                     );
@@ -380,9 +401,9 @@ class Vector_Database {
                 // Delete chunks
                 $deleted_chunks = $wpdb->delete(
                     $this->table_prefix . 'chunks',
-                    ['document_id' => $document_id],
-                    ['%d']
-                );
+                ['document_id' => $document_id],
+                ['%d']
+            );
             }
 
             // Clear caches

@@ -13,7 +13,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 
   <nav class="ai-botkit-sidebar-nav">
     <ul>
-     <li>
+     <!-- <li>
         <?php 
         $is_active = $current_tab === 'dashboard';
         ?>
@@ -21,7 +21,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
           <i class="ti ti-home"></i>
           <?php esc_html_e('Home', 'ai-botkit-for-lead-generation'); ?>
         </a>
-      </li>
+      </li> -->
       <li>
         <a href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=chatbots&nonce=' . $nonce)); ?>" class="ai-botkit-sidebar-link <?php echo $current_tab === 'chatbots' ? esc_attr('active') : ''; ?>">
         <svg width="24" height="25" viewBox="0 0 24 25" xmlns="http://www.w3.org/2000/svg">

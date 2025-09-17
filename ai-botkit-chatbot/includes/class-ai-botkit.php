@@ -200,6 +200,11 @@ class AI_BotKit {
             wp_schedule_event(time(), 'daily', 'ai_botkit_health_check');
         }
 
+        // Schedule document processing
+        if (!wp_next_scheduled('ai_botkit_process_queue')) {
+            wp_schedule_event(time(), '5min', 'ai_botkit_process_queue');
+        }
+
         // Schedule backup
         // if (!wp_next_scheduled('ai_botkit_backup')) {
         //     wp_schedule_event(time(), 'daily', 'ai_botkit_backup');
@@ -212,6 +217,7 @@ class AI_BotKit {
 
         // Add action hooks for scheduled tasks
         add_action('ai_botkit_health_check', [$this->health_checks, 'run_health_check']);
+        add_action('ai_botkit_process_queue', [$this->rag_engine, 'process_queue']);
         // add_action('ai_botkit_backup', [$this->backup_restore, 'create_scheduled_backup']);
         // add_action('ai_botkit_cleanup', [$this->backup_restore, 'cleanup_old_backups']);
     }

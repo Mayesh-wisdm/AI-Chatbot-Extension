@@ -151,7 +151,7 @@
 
 .ai-botkit-radio-label {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     padding: 15px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
@@ -167,7 +167,7 @@
 
 .ai-botkit-radio-label input[type="radio"] {
     margin-right: 12px;
-    margin-top: 2px;
+    flex-shrink: 0;
 }
 
 .ai-botkit-radio-text {
@@ -259,6 +259,11 @@
     font-family: monospace;
     font-size: 12px;
     line-height: 1.4;
+    display: none; /* Hide initially */
+}
+
+.ai-botkit-migration-log.has-content {
+    display: block; /* Show when there's content */
 }
 
 .ai-botkit-migration-result {

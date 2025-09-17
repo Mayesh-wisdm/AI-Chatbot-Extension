@@ -10,8 +10,8 @@ if (!isset($_GET['nonce']) || !wp_verify_nonce( sanitize_text_field( wp_unslash 
     wp_die(__('Invalid request', 'ai-botkit-for-lead-generation'));
 }
 
-// Get date range
-$time_range = isset($_GET['time_range']) ? sanitize_text_field($_GET['time_range']) : '7 days';
+// Get date range - always default to 7 days for consistency
+$time_range = '7 days';
 
 if ($time_range === '7 days') {
     $start_date = date('Y-m-d', strtotime('-7 days'));
@@ -40,13 +40,18 @@ $error_rates = $data['error_rates'];
 $performance = $data['performance'];
 
 wp_localize_script('ai-botkit-chartjs', 'ai_botkitAnalytics', array(
+    'ajaxUrl' => admin_url('admin-ajax.php'),
+    'nonce' => wp_create_nonce('ai_botkit_admin'),
     'timeSeriesData' => $time_series,
     'performanceData' => $performance,
+    'currentTimeRange' => $time_range,
     'i18n' => array(
         'totalEvents' => __('Total Events', 'ai-botkit-for-lead-generation'),
         'avgResponseTime' => __('Avg Response Time (ms)', 'ai-botkit-for-lead-generation'),
         'errorRate' => __('Error Rate (%)', 'ai-botkit-for-lead-generation'),
         'tokenUsage' => __('Token Usage', 'ai-botkit-for-lead-generation'),
+        'loading' => __('Loading...', 'ai-botkit-for-lead-generation'),
+        'error' => __('Error loading data', 'ai-botkit-for-lead-generation'),
     )
 ));
 ?>
@@ -59,19 +64,14 @@ wp_localize_script('ai-botkit-chartjs', 'ai_botkitAnalytics', array(
 		</div>
 
 		<div class="ai-botkit-knowledge-buttons">
-            <form method="get" action="<?php echo esc_url(admin_url('admin.php')); ?>" id="ai_botkit_analytics_form">
-                <input type="hidden" name="page" value="ai-botkit">
-                <input type="hidden" name="tab" value="analytics">
-                <input type="hidden" name="nonce" value="<?php echo esc_attr(wp_create_nonce('ai_botkit_chatbots')); ?>">
-                <div class="ai-botkit-form-group">
-                    <select name="time_range" id="ai_botkit_analytics_time_range">
-                        <option value="7 days"><?php esc_html_e('7 Days', 'ai-botkit-for-lead-generation'); ?></option>
-                        <option value="30 days"><?php esc_html_e('30 Days', 'ai-botkit-for-lead-generation'); ?></option>
-                        <option value="90 days"><?php esc_html_e('90 Days', 'ai-botkit-for-lead-generation'); ?></option>
-                        <option value="1 year"><?php esc_html_e('1 Year', 'ai-botkit-for-lead-generation'); ?></option>
-                    </select>
-                </div>
-            </form>
+            <div class="ai-botkit-form-group">
+                <select id="ai_botkit_analytics_time_range">
+                    <option value="7 days" <?php selected($time_range, '7 days'); ?>><?php esc_html_e('7 Days', 'ai-botkit-for-lead-generation'); ?></option>
+                    <option value="30 days" <?php selected($time_range, '30 days'); ?>><?php esc_html_e('30 Days', 'ai-botkit-for-lead-generation'); ?></option>
+                    <option value="90 days" <?php selected($time_range, '90 days'); ?>><?php esc_html_e('90 Days', 'ai-botkit-for-lead-generation'); ?></option>
+                    <option value="1 year" <?php selected($time_range, '1 year'); ?>><?php esc_html_e('1 Year', 'ai-botkit-for-lead-generation'); ?></option>
+                </select>
+            </div>
 		</div>
 	</div>
 

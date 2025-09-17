@@ -16,11 +16,13 @@ $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : 'all';
 
 // Get documents
 global $wpdb;
-$total_documents = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ai_botkit_documents");
-$total_pages = ceil($total_documents / $items_per_page);
 
-
+// Calculate total documents based on filter type
 if ($type !== 'all') {
+	$total_documents = $wpdb->get_var($wpdb->prepare(
+		"SELECT COUNT(*) FROM {$wpdb->prefix}ai_botkit_documents WHERE source_type = %s",
+		$type
+	));
 	$documents = $wpdb->get_results($wpdb->prepare(
 		"SELECT * FROM {$wpdb->prefix}ai_botkit_documents WHERE source_type = %s ORDER BY created_at DESC LIMIT %d OFFSET %d",
 		$type,
@@ -28,12 +30,15 @@ if ($type !== 'all') {
 		$offset,
 	));
 } else {
+	$total_documents = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ai_botkit_documents");
 	$documents = $wpdb->get_results($wpdb->prepare(
 		"SELECT * FROM {$wpdb->prefix}ai_botkit_documents ORDER BY created_at DESC LIMIT %d OFFSET %d",
 		$items_per_page,
 		$offset,
 	));
 }
+
+$total_pages = ceil($total_documents / $items_per_page);
 
 $stats = $wpdb->get_results("SELECT source_type, COUNT(*) AS total
 FROM {$wpdb->prefix}ai_botkit_documents
@@ -118,6 +123,13 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 	</div>
 
 	<!-- Database Migration Section -->
+	<?php 
+	// Only show migration section if Pinecone API key and host exist
+	$pinecone_api_key = get_option('ai_botkit_pinecone_api_key', '');
+	$pinecone_host = get_option('ai_botkit_pinecone_host', '');
+	$pinecone_configured = !empty($pinecone_api_key) && !empty($pinecone_host);
+	?>
+	<?php if ($pinecone_configured): ?>
 	<div class="ai-botkit-migration-section">
 		<div class="ai-botkit-migration-header">
 			<h3><?php esc_html_e('Database Management', 'ai-botkit-for-lead-generation'); ?></h3>
@@ -134,6 +146,10 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 				<div class="ai-botkit-status-item">
 					<span class="ai-botkit-status-label"><?php esc_html_e('Pinecone Database:', 'ai-botkit-for-lead-generation'); ?></span>
 					<span class="ai-botkit-status-value" id="pinecone-db-status"><?php esc_html_e('Loading...', 'ai-botkit-for-lead-generation'); ?></span>
+				</div>
+				<div class="ai-botkit-status-item">
+					<span class="ai-botkit-status-label"><?php esc_html_e('Pinecone Connection:', 'ai-botkit-for-lead-generation'); ?></span>
+					<span class="ai-botkit-status-value" id="pinecone-connection-status"><?php esc_html_e('Testing...', 'ai-botkit-for-lead-generation'); ?></span>
 				</div>
 				<div class="ai-botkit-status-item">
 					<span class="ai-botkit-status-label"><?php esc_html_e('Migration Status:', 'ai-botkit-for-lead-generation'); ?></span>
@@ -166,15 +182,16 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 			</div>
 		</div>
 	</div>
+	<?php endif; ?>
 
 	<!-- Knowledge Base Table Placeholder -->
 	<div class="ai-botkit-knowledge-table" id="ai-botkit-knowledge-table">
 		<!-- Tabs + Search -->
 		<div class="ai-botkit-knowledge-filters">
 			<div class="ai-botkit-training-tabs-list ai-botkit-tabs">
-				<a class="ai-botkit-knowledge-tab <?php echo $type === 'all' ? 'active' : ''; ?>" data-tab="all" style="margin-bottom: 0;" href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=knowledge&type=all&nonce=' . $nonce)); ?>"><?php esc_html_e('All Resources', 'ai-botkit-for-lead-generation'); ?></a>
-				<a class="ai-botkit-knowledge-tab <?php echo $type === 'file' ? 'active' : ''; ?>" data-tab="documents" style="margin-bottom: 0;" href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=knowledge&type=file&nonce=' . $nonce)); ?>"><?php esc_html_e('Documents', 'ai-botkit-for-lead-generation'); ?></a>
-				<a class="ai-botkit-knowledge-tab <?php echo $type === 'url' ? 'active' : ''; ?>" data-tab="urls" style="margin-bottom: 0;" href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=knowledge&type=url&nonce=' . $nonce)); ?>"><?php esc_html_e('URLs', 'ai-botkit-for-lead-generation'); ?></a>
+				<button class="ai-botkit-knowledge-tab <?php echo $type === 'all' ? 'active' : ''; ?>" data-tab="all" data-type="all" style="margin-bottom: 0;"><?php esc_html_e('All Resources', 'ai-botkit-for-lead-generation'); ?></button>
+				<button class="ai-botkit-knowledge-tab <?php echo $type === 'file' ? 'active' : ''; ?>" data-tab="documents" data-type="file" style="margin-bottom: 0;"><?php esc_html_e('Documents', 'ai-botkit-for-lead-generation'); ?></button>
+				<button class="ai-botkit-knowledge-tab <?php echo $type === 'url' ? 'active' : ''; ?>" data-tab="urls" data-type="url" style="margin-bottom: 0;"><?php esc_html_e('URLs', 'ai-botkit-for-lead-generation'); ?></button>
 			</div>
 
 			<div class="ai-botkit-search-wrapper">
@@ -229,13 +246,30 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 								} elseif ( 'completed' == $document->status ) {
 									echo '<span class="ai-botkit-badge ai-botkit-badge-success">' . esc_html__('Completed', 'ai-botkit-for-lead-generation') . '</span>';
 								} elseif ( 'failed' == $document->status ) {
-									echo '<span class="ai-botkit-badge ai-botkit-badge-danger">' . esc_html__('Failed', 'ai-botkit-for-lead-generation') . '</span>';
+									echo '<span class="ai-botkit-badge ai-botkit-badge-danger ai-botkit-error-clickable" data-document-id="' . esc_attr($document->id) . '" style="cursor: pointer;" title="Click to view error details">' . esc_html__('Failed', 'ai-botkit-for-lead-generation') . '</span>';
 								}
 							?></td>
 							<td><?php echo esc_html($document_date); ?></td>
 							<td><?php echo 'file' == $document_type ? esc_html($document_url) : wp_kses_post($document_url); ?></td>
 							<td>
-								<button class="ai-botkit-delete-btn" data-id="<?php echo esc_attr($document->id); ?>">
+								<?php if ( 'completed' == $document->status ) { 
+									// Set appropriate reprocess label based on document type
+									$reprocess_title = '';
+									if ( 'file' == $document_type ) {
+										$reprocess_title = esc_attr__('Reprocess file', 'ai-botkit-for-lead-generation');
+									} elseif ( 'post' == $document_type ) {
+										$reprocess_title = esc_attr__('Reprocess post', 'ai-botkit-for-lead-generation');
+									} elseif ( 'url' == $document_type ) {
+										$reprocess_title = esc_attr__('Reprocess URL', 'ai-botkit-for-lead-generation');
+									} else {
+										$reprocess_title = esc_attr__('Reprocess document', 'ai-botkit-for-lead-generation');
+									}
+								?>
+									<button class="ai-botkit-reprocess-btn" data-id="<?php echo esc_attr($document->id); ?>" data-type="<?php echo esc_attr($document_type); ?>" title="<?php echo $reprocess_title; ?>">
+										<i class="ti ti-refresh"></i>
+									</button>
+								<?php } ?>
+								<button class="ai-botkit-delete-btn" data-id="<?php echo esc_attr($document->id); ?>" title="<?php esc_attr_e('Delete document', 'ai-botkit-for-lead-generation'); ?>">
 									<i class="ti ti-trash"></i>
 								</button>
 							</td>
@@ -248,18 +282,9 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 		</div>
 
 		<div class="ai-botkit-pagination" id="ai-botkit-pagination">
-			<a class="ai-botkit-btn-outline" href="<?php echo esc_url( add_query_arg(
-				array(
-					'page'  => 'ai-botkit',
-					'tab'   => 'knowledge',
-					'type'  => sanitize_text_field( $type ),
-					'paged' => max( 1, $current_page - 1 ),
-					'nonce' => $nonce,
-				),
-				admin_url( 'admin.php' )
-			) ); ?>">
+			<button class="ai-botkit-btn-outline" id="ai-botkit-prev-page" data-page="<?php echo max(1, $current_page - 1); ?>" <?php echo $current_page <= 1 ? 'disabled' : ''; ?>>
 				<i class="ti ti-chevron-left"></i>
-			</a>
+			</button>
 
 			<span id="ai-botkit-page-info">
 				<?php
@@ -270,25 +295,21 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 				?>
 			</span>
 
-			<a class="ai-botkit-btn-outline" href="<?php echo esc_url( add_query_arg(
-				array(
-					'page'  => 'ai-botkit',
-					'tab'   => 'knowledge',
-					'type'  => sanitize_text_field( $type ),
-					'paged' => min( $total_pages, $current_page + 1 ),
-					'nonce' => $nonce,
-				),
-				admin_url( 'admin.php' )
-			) ); ?>">
+			<button class="ai-botkit-btn-outline" id="ai-botkit-next-page" data-page="<?php echo min($total_pages, $current_page + 1); ?>" <?php echo $current_page >= $total_pages ? 'disabled' : ''; ?>>
 				<i class="ti ti-chevron-right"></i>
-			</a>
+			</button>
 		</div>
 
 		<!-- Confirm Delete Modal -->
 		<div id="ai-botkit-confirm-delete-modal" class="ai-botkit-modal-overlay">
-			<div class="ai-botkit-kb-modal">
+			<div class="ai-botkit-kb-modal ai-botkit-delete-modal">
 				<div class="ai-botkit-modal-header">
+					<div class="ai-botkit-modal-icon">
+						<i class="ti ti-alert-triangle"></i>
+					</div>
 					<h3><?php esc_html_e('Confirm Deletion', 'ai-botkit-for-lead-generation'); ?></h3>
+				</div>
+				<div class="ai-botkit-modal-body">
 					<p><?php esc_html_e('Are you sure you want to delete this resource? This action cannot be undone.', 'ai-botkit-for-lead-generation'); ?></p>
 				</div>
 				<div class="ai-botkit-modal-footer">
@@ -316,11 +337,22 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 			<label for="ai-botkit-url"><?php esc_html_e('URL', 'ai-botkit-for-lead-generation'); ?></label>
 			<input type="text" id="ai-botkit-url" placeholder="https://example.com/page" />
 		</div>
+		<div class="ai-botkit-form-group">
+			<label for="ai-botkit-url-title"><?php esc_html_e('Title (Optional)', 'ai-botkit-for-lead-generation'); ?></label>
+			<input type="text" id="ai-botkit-url-title" placeholder="<?php esc_attr_e('Leave empty to auto-detect from page', 'ai-botkit-for-lead-generation'); ?>" />
+			<small class="ai-botkit-help-text"><?php esc_html_e('If left empty, the page title will be automatically extracted from the URL.', 'ai-botkit-for-lead-generation'); ?></small>
+		</div>
 	</div>
 
 	<div class="ai-botkit-training-modal-footer">
 	  <button class="ai-botkit-btn-outline" id="ai-botkit-cancel-url-btn"><?php esc_html_e('Cancel', 'ai-botkit-for-lead-generation'); ?></button>
-	  <button class="ai-botkit-btn" id="ai-botkit-submit-url-btn"><?php esc_html_e('Add URL', 'ai-botkit-for-lead-generation'); ?></button>
+	  <button class="ai-botkit-btn" id="ai-botkit-submit-url-btn">
+		<span class="ai-botkit-btn-text"><?php esc_html_e('Add URL', 'ai-botkit-for-lead-generation'); ?></span>
+		<span class="ai-botkit-btn-loading" style="display: none;">
+			<i class="ti ti-loader-2 ai-botkit-loading-icon"></i>
+			<?php esc_html_e('Adding...', 'ai-botkit-for-lead-generation'); ?>
+		</span>
+	  </button>
 	</div>
 
   </div>
@@ -412,7 +444,13 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 		<div class="ai-botkit-training-modal-footer">
 			<div class="ai-botkit-error-message" id="ai-botkit-wp-error-message"></div>
 			<button class="ai-botkit-btn-outline" id="ai-botkit-cancel-training-wordpress-modal"><?php esc_html_e('Cancel', 'ai-botkit-for-lead-generation'); ?></button>
-			<button class="ai-botkit-btn" id="ai-botkit-import-wp"><?php esc_html_e('Add Data', 'ai-botkit-for-lead-generation'); ?></button>
+			<button class="ai-botkit-btn" id="ai-botkit-import-wp">
+				<span class="ai-botkit-btn-text"><?php esc_html_e('Add Data', 'ai-botkit-for-lead-generation'); ?></span>
+				<span class="ai-botkit-btn-loading" style="display: none;">
+					<i class="ti ti-loader-2 ai-botkit-loading-icon"></i>
+					<?php esc_html_e('Importing...', 'ai-botkit-for-lead-generation'); ?>
+				</span>
+			</button>
 			<button class="ai-botkit-btn ai-botkit-wp-header-back" ><?php esc_html_e('Add Selected', 'ai-botkit-for-lead-generation'); ?></button>
 		</div>
 	</div>
@@ -458,6 +496,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 </div>
 
 <!-- Migration Wizard Modal -->
+<?php if ($pinecone_configured): ?>
 <div id="ai-botkit-migration-modal" class="ai-botkit-modal" style="display: none;">
     <div class="ai-botkit-modal-content">
         <div class="ai-botkit-modal-header">
@@ -473,7 +512,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                     <label class="ai-botkit-radio-label">
                         <input type="radio" name="migration_direction" value="to_pinecone" checked>
                         <span class="ai-botkit-radio-text">
-                            <strong><?php esc_html_e('Local to Pinecone', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <?php esc_html_e('Local to Pinecone', 'ai-botkit-for-lead-generation'); ?>
                             <br><?php esc_html_e('Migrate data from local database to Pinecone', 'ai-botkit-for-lead-generation'); ?>
                         </span>
                     </label>
@@ -482,7 +521,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                     <label class="ai-botkit-radio-label">
                         <input type="radio" name="migration_direction" value="to_local">
                         <span class="ai-botkit-radio-text">
-                            <strong><?php esc_html_e('Pinecone to Local', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <?php esc_html_e('Pinecone to Local', 'ai-botkit-for-lead-generation'); ?>
                             <br><?php esc_html_e('Migrate data from Pinecone to local database', 'ai-botkit-for-lead-generation'); ?>
                         </span>
                     </label>
@@ -496,7 +535,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                     <label class="ai-botkit-radio-label">
                         <input type="radio" name="migration_scope" value="all" checked>
                         <span class="ai-botkit-radio-text">
-                            <strong><?php esc_html_e('All Data', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <?php esc_html_e('All Data', 'ai-botkit-for-lead-generation'); ?>
                             <br><?php esc_html_e('Migrate all available data', 'ai-botkit-for-lead-generation'); ?>
                         </span>
                     </label>
@@ -505,17 +544,8 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                     <label class="ai-botkit-radio-label">
                         <input type="radio" name="migration_scope" value="by_type">
                         <span class="ai-botkit-radio-text">
-                            <strong><?php esc_html_e('By Content Type', 'ai-botkit-for-lead-generation'); ?></strong>
+                            <?php esc_html_e('By Content Type', 'ai-botkit-for-lead-generation'); ?>
                             <br><?php esc_html_e('Select specific content types to migrate', 'ai-botkit-for-lead-generation'); ?>
-                        </span>
-                    </label>
-                </div>
-                <div class="ai-botkit-form-group">
-                    <label class="ai-botkit-radio-label">
-                        <input type="radio" name="migration_scope" value="by_date">
-                        <span class="ai-botkit-radio-text">
-                            <strong><?php esc_html_e('By Date Range', 'ai-botkit-for-lead-generation'); ?></strong>
-                            <br><?php esc_html_e('Migrate data from a specific date range', 'ai-botkit-for-lead-generation'); ?>
                         </span>
                     </label>
                 </div>
@@ -529,22 +559,10 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                 </div>
             </div>
 
-            <!-- Step 4: Date Range Selection -->
-            <div class="ai-botkit-migration-step" data-step="4" style="display: none;">
-                <h4><?php esc_html_e('Step 4: Select Date Range', 'ai-botkit-for-lead-generation'); ?></h4>
-                <div class="ai-botkit-form-group">
-                    <label for="migration_date_start"><?php esc_html_e('Start Date', 'ai-botkit-for-lead-generation'); ?></label>
-                    <input type="date" id="migration_date_start" name="migration_date_start">
-                </div>
-                <div class="ai-botkit-form-group">
-                    <label for="migration_date_end"><?php esc_html_e('End Date', 'ai-botkit-for-lead-generation'); ?></label>
-                    <input type="date" id="migration_date_end" name="migration_date_end">
-                </div>
-            </div>
 
-            <!-- Step 5: Confirmation -->
-            <div class="ai-botkit-migration-step" data-step="5" style="display: none;">
-                <h4><?php esc_html_e('Step 5: Confirm Migration', 'ai-botkit-for-lead-generation'); ?></h4>
+            <!-- Step 4: Confirmation -->
+            <div class="ai-botkit-migration-step" data-step="4" style="display: none;">
+                <h4><?php esc_html_e('Step 4: Confirm Migration', 'ai-botkit-for-lead-generation'); ?></h4>
                 <div id="migration-summary">
                     <p><?php esc_html_e('Review your migration settings:', 'ai-botkit-for-lead-generation'); ?></p>
                     <ul id="migration-summary-list"></ul>
@@ -583,7 +601,8 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
             <button type="button" id="ai-botkit-migration-close" class="ai-botkit-btn ai-botkit-btn-outline" style="display: none;">
                 <?php esc_html_e('Close', 'ai-botkit-for-lead-generation'); ?>
             </button>
-        </div>
     </div>
+  </div>
 </div>
+<?php endif; ?>
 

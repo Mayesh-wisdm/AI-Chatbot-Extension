@@ -139,7 +139,7 @@ class Admin {
     public function handle_activation_redirect() {
         if (get_transient('_ai_botkit_activation_redirect')) {
             delete_transient('_ai_botkit_activation_redirect');
-            wp_safe_redirect(admin_url('admin.php?page=ai-botkit&tab=dashboard'));
+            wp_safe_redirect(admin_url('admin.php?page=ai-botkit&tab=chatbots'));
             exit;
         }
     }
@@ -452,10 +452,10 @@ class Admin {
     public function display_dashboard_page() {
         // Get registered tabs including extensions
         $registered_tabs = apply_filters('ai_botkit_admin_tabs', array(
-            'dashboard' => array(
-                'title' => __('Dashboard', 'ai-botkit-for-lead-generation'),
-                'capability' => 'manage_options'
-            ),
+            // 'dashboard' => array(
+            //     'title' => __('Dashboard', 'ai-botkit-for-lead-generation'),
+            //     'capability' => 'manage_options'
+            // ),
             'chatbots' => array(
                 'title' => __('My Bots', 'ai-botkit-for-lead-generation'),
                 'capability' => 'manage_options'
@@ -496,14 +496,14 @@ class Admin {
         if (array_key_exists($this->tab, $registered_tabs)) {
             // Check if this is a core tab or an extension tab
             // Core tabs are the ones that have view files in admin/views/
-            $core_tabs = array('dashboard', 'knowledge', 'chatbots', 'analytics', 'settings', 'security');
+            $core_tabs = array('knowledge', 'chatbots', 'analytics', 'settings', 'security');
             
             if (in_array($this->tab, $core_tabs)) {
                 // Handle known core tabs
                 switch ($this->tab) {
-            case 'dashboard':
-                require_once AI_BOTKIT_PLUGIN_DIR . 'admin/views/dashboard.php';
-                break;
+            // case 'dashboard':
+            //     require_once AI_BOTKIT_PLUGIN_DIR . 'admin/views/dashboard.php';
+            //     break;
             case 'knowledge':
                 require_once AI_BOTKIT_PLUGIN_DIR . 'admin/views/knowledge-base.php';
                 break;
@@ -729,15 +729,13 @@ class Admin {
             <div class="ai-botkit-main-content">
                 <!-- Topbar -->
                 <div class="ai-botkit-topbar">
-                    <!-- Hamburger menu -->
-                    <div class="ai-botkit-topbar-left">
+                    <div class="ai-botkit-topbar-content">
+                        <!-- Hamburger menu -->
                         <button id="ai-botkit-hamburger-menu" class="ai-botkit-hamburger-menu">
                             <i class="ti ti-menu-2"></i>
                         </button>
-                    </div>
-                    <!-- Title -->
-                    <div class="ai-botkit-topbar-left">
-                        <h1 class="ai-botkit-topbar-title"><?php esc_html_e('AI BotKit', 'ai-botkit-for-lead-generation'); ?></h1>
+                        <!-- Title -->
+                        <h1 class="ai-botkit-topbar-title"><?php esc_html_e('AI BotKit Beta', 'ai-botkit-for-lead-generation'); ?></h1>
                     </div>
                 </div>
                 <!-- Main Content -->

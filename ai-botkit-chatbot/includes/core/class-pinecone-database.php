@@ -252,6 +252,128 @@ class Pinecone_Database {
     }
 
     /**
+     * Query vectors in Pinecone with values included (for migration)
+     *
+     * @param array $query_vector Query vector
+     * @param int $limit Maximum number of results
+     * @param int $bot_id Bot ID for filtering
+     * @param float $min_similarity Minimum similarity threshold
+     * @return array Query results with vector values
+     * @throws Pinecone_Exception If the request fails.
+     */
+    public function query_vectors_with_values($query_vector, $limit = 5, $bot_id = null, $min_similarity = 0.0) {
+        if (!$this->is_configured()) {
+            throw new Pinecone_Exception( 'Pinecone is not properly configured' );
+        }
+
+        try {
+            $filter = array();
+            
+            // Get document IDs associated with this chatbot (like local database does)
+            if ($bot_id) {
+                global $wpdb;
+                $document_ids = $wpdb->get_col($wpdb->prepare(
+                    "SELECT target_id FROM {$wpdb->prefix}ai_botkit_content_relationships 
+                     WHERE source_type = 'chatbot' AND source_id = %d AND relationship_type = 'knowledge_base'",
+                    $bot_id
+                ));
+                
+                if (!empty($document_ids)) {
+                    // Filter by document_id instead of bot_id (since bot_id doesn't exist in vector metadata)
+                    $filter['document_id'] = array('$in' => array_map('intval', $document_ids));
+                } else {
+                    // No documents associated with this chatbot, return empty results
+                    return array();
+                }
+            }
+
+            // Get user enrollment context but don't filter results
+            $user_aware_context = apply_filters( 'ai_botkit_user_aware_context', false, $bot_id );
+            $enrolled_course_ids = [];
+            if ($user_aware_context && is_array($user_aware_context)) {
+                $enrolled_course_ids = array_map('intval', $user_aware_context);
+            }
+
+            $request_body = [
+                    'vector' => $query_vector,
+                    'topK' => $limit,
+                    'includeMetadata' => true,
+                'includeValues' => true, // Include vector values for migration
+                    'filter' => !empty($filter) ? $filter : null,
+            ];
+
+            $args = array(
+                'headers'     => array(
+                    'Api-Key'      => $this->api_key,
+                    'Content-Type' => 'application/json',
+                ),
+                'body'        => wp_json_encode($request_body),
+            );
+
+            $response = wp_remote_post($this->get_base_url() . '/query', $args);
+
+            if (is_wp_error($response)) {
+                throw new Pinecone_Exception( $response->get_error_message() );
+            }
+
+            $response_code = wp_remote_retrieve_response_code($response);
+            
+            if ($response_code !== 200) {
+                $error_message = wp_remote_retrieve_response_message($response);
+                throw new Pinecone_Exception(
+                    'Pinecone API error: ' . $error_message,
+                    $response_code
+                );
+            }
+
+            $body = wp_remote_retrieve_body($response);
+            $data = json_decode($body, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Pinecone_Exception(
+                    'Invalid JSON response from Pinecone API'
+                );
+            }
+
+            // Process and format results with enrollment metadata and vector values
+            $results = array();
+            if (isset($data['matches']) && is_array($data['matches'])) {
+                foreach ($data['matches'] as $match) {
+                    if ($match['score'] >= $min_similarity) {
+                        $metadata = $match['metadata'] ?? array();
+                        
+                        // Add enrollment metadata
+                        if (!empty($enrolled_course_ids) && isset($metadata['source_id'])) {
+                            $metadata['user_enrolled'] = in_array(intval($metadata['source_id']), $enrolled_course_ids);
+                            $metadata['enrolled_course_ids'] = $enrolled_course_ids;
+                        } else {
+                            $metadata['user_enrolled'] = true; // No enrollment filtering, treat as enrolled
+                            $metadata['enrolled_course_ids'] = [];
+                        }
+                        
+                        $results[] = array(
+                            'id' => $match['id'],
+                            'score' => $match['score'],
+                            'values' => $match['values'] ?? [], // Include vector values
+                            'metadata' => $metadata,
+                        );
+                    }
+                }
+            }
+            return $results;
+
+        } catch (Pinecone_Exception $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new Pinecone_Exception(
+                'Unexpected error during Pinecone query: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+    }
+
+    /**
      * Delete vectors from Pinecone
      *
      * @param array $ids Array of vector IDs to delete
@@ -533,6 +655,51 @@ class Pinecone_Database {
             error_log('AI BotKit Pinecone Error: Delete all vectors failed - ' . $e->getMessage());
             throw new Pinecone_Exception(
                 'Unexpected error during Pinecone delete all vectors: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+    }
+
+    /**
+     * Test Pinecone connection by making a simple API call
+     *
+     * @return bool True if connection is successful
+     * @throws Pinecone_Exception If the connection fails
+     */
+    public function test_connection() {
+        if (!$this->is_configured()) {
+            throw new Pinecone_Exception('Pinecone is not properly configured');
+        }
+
+        try {
+            // Make a simple describe_index_stats call to test connection
+            $args = array(
+                'headers' => array(
+                    'Api-Key' => $this->api_key,
+                    'Content-Type' => 'application/json',
+                ),
+            );
+
+            $response = wp_remote_get($this->get_base_url() . '/describe_index_stats', $args);
+
+            if (is_wp_error($response)) {
+                throw new Pinecone_Exception($response->get_error_message());
+            }
+
+            $response_code = wp_remote_retrieve_response_code($response);
+            
+            if ($response_code !== 200) {
+                $error_message = wp_remote_retrieve_response_message($response);
+                throw new Pinecone_Exception('Pinecone API error: ' . $error_message, $response_code);
+            }
+
+            return true;
+
+        } catch (\Exception $e) {
+            error_log('AI BotKit Pinecone Error: Connection test failed - ' . $e->getMessage());
+            throw new Pinecone_Exception(
+                'Pinecone connection test failed: ' . $e->getMessage(),
                 0,
                 $e
             );

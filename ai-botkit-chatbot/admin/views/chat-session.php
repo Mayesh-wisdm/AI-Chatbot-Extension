@@ -104,7 +104,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 							} else {
 								echo '<div class="ai-botkit-chat-msg bot-msg">';
 							}
-							echo '<p>' . esc_html($message->content) . '</p>';
+							echo '<p>' . wp_kses_post($message->content) . '</p>';
 							echo '</div>';
 						} ?>
 					</div>

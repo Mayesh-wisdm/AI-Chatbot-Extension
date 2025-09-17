@@ -10,14 +10,17 @@
     class MigrationWizard {
         constructor() {
             this.currentStep = 1;
-            this.totalSteps = 5;
+            this.totalSteps = 4;
             this.migrationOptions = {};
             this.init();
         }
 
         init() {
             this.bindEvents();
-            this.loadMigrationStatus();
+            // Only load migration status if migration section is visible (Pinecone configured)
+            if ($('.ai-botkit-migration-section').length > 0) {
+                this.loadMigrationStatus();
+            }
         }
 
         bindEvents() {
@@ -115,9 +118,6 @@
                 if (this.currentStep === 3 && this.migrationOptions.scope !== 'by_type') {
                     this.currentStep++; // Skip to step 4
                 }
-                if (this.currentStep === 4 && this.migrationOptions.scope !== 'by_date') {
-                    this.currentStep++; // Skip to step 5
-                }
                 
                 this.showStep(this.currentStep);
                 this.updateNavigationButtons();
@@ -128,9 +128,6 @@
             this.currentStep--;
             
             // Skip steps based on scope (in reverse)
-            if (this.currentStep === 4 && this.migrationOptions.scope !== 'by_date') {
-                this.currentStep--; // Skip to step 3
-            }
             if (this.currentStep === 3 && this.migrationOptions.scope !== 'by_type') {
                 this.currentStep--; // Skip to step 2
             }
@@ -194,14 +191,6 @@
                     }
                     return true;
                 case 4:
-                    const scope2 = $('input[name="migration_scope"]:checked').val();
-                    if (scope2 === 'by_date') {
-                        const startDate = $('#migration_date_start').val();
-                        const endDate = $('#migration_date_end').val();
-                        return startDate && endDate && new Date(startDate) <= new Date(endDate);
-                    }
-                    return true;
-                case 5:
                     return $('#migration_confirm').is(':checked');
                 default:
                     return true;
@@ -224,12 +213,7 @@
                     }
                     break;
                 case 4:
-                    if (this.migrationOptions.scope === 'by_date') {
-                        this.migrationOptions.date_range = {
-                            start: $('#migration_date_start').val(),
-                            end: $('#migration_date_end').val()
-                        };
-                    }
+                    // Confirmation step - no data to collect
                     break;
             }
         }
@@ -308,25 +292,49 @@
                 });
             }
             
-            // Track progress
+            // Track progress with more realistic simulation
             let progressInterval = null;
             let currentProgress = 0;
+            let progressSteps = [
+                { progress: 10, message: 'Initializing migration...' },
+                { progress: 25, message: 'Preparing data for migration...' },
+                { progress: 40, message: 'Processing chunks...' },
+                { progress: 60, message: 'Generating embeddings...' },
+                { progress: 80, message: 'Storing data...' },
+                { progress: 95, message: 'Finalizing migration...' }
+            ];
+            let currentStep = 0;
             
             const updateProgress = () => {
-                currentProgress = Math.min(currentProgress + Math.random() * 10, 90);
-                if (progressToast && typeof AiBotkitToast !== 'undefined') {
-                    AiBotkitToast.updateProgress(progressToast, currentProgress);
+                if (currentStep < progressSteps.length) {
+                    const step = progressSteps[currentStep];
+                    currentProgress = step.progress;
+                    this.updateProgress(currentProgress, step.message);
+                    
+                    if (progressToast && typeof AiBotkitToast !== 'undefined') {
+                        AiBotkitToast.updateProgress(progressToast, currentProgress);
+                    }
+                    
+                    currentStep++;
+                } else {
+                    // If we've gone through all steps, just show 95% until completion
+                    currentProgress = 95;
+                    this.updateProgress(currentProgress, 'Almost complete...');
+                    
+                    if (progressToast && typeof AiBotkitToast !== 'undefined') {
+                        AiBotkitToast.updateProgress(progressToast, currentProgress);
+                    }
                 }
-                this.updateProgress(currentProgress, `Migrating data... ${Math.round(currentProgress)}%`);
             };
             
-            // Start progress simulation
-            progressInterval = setInterval(updateProgress, 1000);
+            // Start progress simulation with longer intervals for more realistic feel
+            progressInterval = setInterval(updateProgress, 2000);
             
-            // Start the migration process
+            // Start the migration process with timeout
             $.ajax({
                 url: aiBotKitMigration.ajaxUrl,
                 type: 'POST',
+                timeout: 300000, // 5 minutes timeout
                 data: {
                     action: 'ai_botkit_start_migration',
                     nonce: aiBotKitMigration.nonce,
@@ -348,27 +356,11 @@
                     
                     if (response.success) {
                         this.showMigrationResult(response.data);
-                        
-                        // Show success toast
-                        if (typeof AiBotkitToast !== 'undefined') {
-                            AiBotkitToast.success('Migration completed successfully!', {
-                                title: 'Success',
-                                duration: 5000
-                            });
-                        }
                     } else {
                         this.showError('Migration failed: ' + response.data);
-                        
-                        // Show error toast
-                        if (typeof AiBotkitToast !== 'undefined') {
-                            AiBotkitToast.error('Migration failed. Please check the details below.', {
-                                title: 'Migration Failed',
-                                persistent: true
-                            });
-                        }
                     }
                 },
-                error: () => {
+                error: (xhr, status, error) => {
                     // Clear progress interval
                     if (progressInterval) {
                         clearInterval(progressInterval);
@@ -379,15 +371,22 @@
                         AiBotkitToast.hide(progressToast);
                     }
                     
-                    this.showError('Migration failed due to a server error');
+                    let errorMessage = 'Migration failed due to a server error';
                     
-                    // Show error toast
-                    if (typeof AiBotkitToast !== 'undefined') {
-                        AiBotkitToast.error('Network error occurred. Please check your connection and try again.', {
-                            title: 'Connection Error',
-                            persistent: true
-                        });
+                    // Provide more specific error messages
+                    if (status === 'timeout') {
+                        errorMessage = 'Migration timed out. This may be due to a large amount of data. Please try again or contact support.';
+                    } else if (status === 'abort') {
+                        errorMessage = 'Migration was cancelled.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error occurred during migration. Please check the server logs and try again.';
+                    } else if (xhr.status === 403) {
+                        errorMessage = 'Access denied. Please check your permissions and try again.';
+                    } else if (xhr.status === 0) {
+                        errorMessage = 'Network connection lost. Please check your internet connection and try again.';
                     }
+                    
+                    this.showError(errorMessage);
                 }
             });
         }
@@ -401,6 +400,9 @@
             const log = $('#migration-log');
             const statusIcon = result.success ? '✅' : '❌';
             const statusClass = result.success ? 'success' : 'error';
+            
+            // Show the log section when there's content
+            log.addClass('has-content');
             
             log.html(`
                 <div class="ai-botkit-migration-result ${statusClass}">
@@ -438,35 +440,29 @@
                 </div>
             `);
             
-            // Show close button
+            // Hide start button and show close button
+            $('#ai-botkit-migration-start').hide();
             $('#ai-botkit-migration-close').show();
-            
-            // Show success/error notification
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: result.success ? 'Migration Complete!' : 'Migration Failed',
-                    html: `
-                        <div style="text-align: left;">
-                            <p>${result.message}</p>
-                            ${result.migrated_count ? `<p><strong>Items Migrated:</strong> ${result.migrated_count}</p>` : ''}
-                            ${result.error_count ? `<p><strong>Errors:</strong> ${result.error_count}</p>` : ''}
-                        </div>
-                    `,
-                    icon: result.success ? 'success' : 'error',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        popup: 'ai-botkit-swal-popup'
-                    }
-                });
-            }
         }
 
         showError(message) {
             const log = $('#migration-log');
+            // Show the log section when there's content
+            log.addClass('has-content');
             log.html(`<div class="ai-botkit-error">${message}</div>`);
+            
+            // Hide start button and show close button
+            $('#ai-botkit-migration-start').hide();
+            $('#ai-botkit-migration-close').show();
         }
 
         loadMigrationStatus() {
+            // Check if migration section exists (Pinecone configured)
+            if ($('.ai-botkit-migration-section').length === 0) {
+                console.log('Migration section not available - Pinecone not configured');
+                return;
+            }
+            
             // Show loading state and disable interactions
             this.showLoadingState();
             
@@ -483,11 +479,19 @@
                     }
                     this.hideLoadingState();
                 },
-                error: () => {
+                error: (xhr) => {
                     $('#local-db-status').text('Error loading status');
                     $('#pinecone-db-status').text('Error loading status');
+                    $('#pinecone-connection-status').text('Connection failed');
                     $('#migration-status').text('Error loading status');
                     $('#last-migration').text('Error loading status');
+                    
+                    // Show specific error message if available
+                    if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                        $('#pinecone-connection-status').text('Invalid credentials - ' + xhr.responseJSON.data.message);
+                        $('#pinecone-connection-status').addClass('ai-botkit-error-text');
+                    }
+                    
                     this.hideLoadingState();
                 }
             });
@@ -496,6 +500,9 @@
         updateStatusDisplay(status) {
             // Update local database status
             const localStatus = status.local_database;
+            
+            // Update Pinecone connection status
+            $('#pinecone-connection-status').text('Connected').removeClass('ai-botkit-error-text');
             $('#local-db-status').html(`
                 <span class="ai-botkit-status-badge ai-botkit-status-${localStatus.status}">
                     ${localStatus.chunk_count} chunks

@@ -32,14 +32,21 @@ class Analytics {
         add_action('ai_botkit_chat_message', [$this, 'track_chat_interaction'], 10, 3);
         add_action('ai_botkit_document_processed', [$this, 'track_document_processing'], 10, 2);
         add_action('ai_botkit_error_occurred', [$this, 'track_error'], 10, 3);
+        
+        // Clear analytics cache when new data is tracked
+        add_action('ai_botkit_chat_message', [$this, 'clear_analytics_cache'], 20);
+        add_action('ai_botkit_document_processed', [$this, 'clear_analytics_cache'], 20);
+        add_action('ai_botkit_error_occurred', [$this, 'clear_analytics_cache'], 20);
     }
 
     /**
      * Get dashboard analytics data
      */
     public function get_dashboard_data($filters = []): array {
-        $cache_key = 'analytics_dashboard_' . md5(serialize($filters));
+        // Create a more specific cache key that includes all filter parameters
+        $cache_key = 'analytics_dashboard_' . md5(json_encode($filters));
         
+        // Reduce cache duration to 5 minutes for more responsive filter changes
         return $this->cache_manager->remember($cache_key, function() use ($filters) {
             return [
                 'overview' => $this->get_overview_stats($filters),
@@ -52,7 +59,7 @@ class Analytics {
                 'error_rates' => $this->analyze_errors($filters),
                 'performance' => $this->analyze_performance($filters)
             ];
-        }, 3600);
+        }, 300); // 5 minutes instead of 1 hour
     }
 
     /**
@@ -310,5 +317,34 @@ class Analytics {
         
         // Normalize to 0-1 scale
         return $quality_score / 4;
+    }
+
+    /**
+     * Clear analytics cache to ensure fresh data
+     */
+    public function clear_analytics_cache(): void {
+        // Clear all analytics dashboard cache entries
+        $this->cache_manager->delete('analytics_dashboard_*');
+    }
+
+    /**
+     * Force refresh analytics data by bypassing cache
+     */
+    public function get_dashboard_data_fresh($filters = []): array {
+        // Clear cache first
+        $this->clear_analytics_cache();
+        
+        // Get fresh data without cache
+        return [
+            'overview' => $this->get_overview_stats($filters),
+            'time_series' => $this->get_time_series_data(
+                $filters['start_date'] ?? gmdate('Y-m-d', strtotime('-30 days')),
+                $filters['end_date'] ?? gmdate('Y-m-d'),
+                $filters['interval'] ?? 'day'
+            ),
+            'top_queries' => $this->analyze_common_questions($filters),
+            'error_rates' => $this->analyze_errors($filters),
+            'performance' => $this->analyze_performance($filters)
+        ];
     }
 } 

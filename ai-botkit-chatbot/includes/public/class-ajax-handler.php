@@ -233,11 +233,16 @@ class Ajax_Handler {
         $this->rag_engine->stream_response($message, $conversation_id, $bot_id, function($chunk) use ($response_id) {
             $response_data = get_transient('ai_botkit_response_' . $response_id);
             if ($response_data) {
-                $response_data['content'] .= $chunk['content'];
-                $response_data['sources'] = array_merge(
-                    $response_data['sources'] ?? [],
-                    $chunk['sources'] ?? []
-                );
+                // Handle both string and array formats for consistency
+                if (is_string($chunk)) {
+                    $response_data['content'] .= $chunk;
+                } elseif (is_array($chunk)) {
+                    $response_data['content'] .= $chunk['content'] ?? '';
+                    $response_data['sources'] = array_merge(
+                        $response_data['sources'] ?? [],
+                        $chunk['sources'] ?? []
+                    );
+                }
                 set_transient('ai_botkit_response_' . $response_id, $response_data, HOUR_IN_SECONDS);
             }
         }, [

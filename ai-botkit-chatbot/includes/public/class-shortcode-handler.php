@@ -57,6 +57,11 @@ class Shortcode_Handler {
         }
 
         $chatbot_data = $chatbot->get_data();
+        
+        // Check if chatbot is active
+        if (!$chatbot_data['active']) {
+            return ''; // Return empty string for inactive chatbots
+        }
 
         $chat_id = uniqid('chat_');
 
@@ -103,6 +108,11 @@ class Shortcode_Handler {
         }
 
         $chatbot_data = $chatbot->get_data();
+        
+        // Check if chatbot is active
+        if (!$chatbot_data['active']) {
+            return ''; // Return empty string for inactive chatbots
+        }
 
         $chat_id = uniqid('chat_');
 

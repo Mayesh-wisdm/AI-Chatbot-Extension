@@ -41,7 +41,11 @@ $styles = array_merge(array(
             <div class="ai-botkit-message assistant">
                 <div class="ai-botkit-message-content">
                     <div class="ai-botkit-message-text">
-                        <?php echo wp_kses_post($chatbot_data['greeting'] ?? __('Hello! How can I help you today?', 'ai-botkit-for-lead-generation')); ?>
+                        <?php 
+                        $messages_template = json_decode($chatbot_data['messages_template'], true);
+                        $greeting = $messages_template['greeting'] ?? __('Hello! How can I help you today?', 'ai-botkit-for-lead-generation');
+                        echo wp_kses_post($greeting); 
+                        ?>
                     </div>
                 </div>
             </div>

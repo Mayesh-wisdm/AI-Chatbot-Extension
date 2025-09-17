@@ -137,11 +137,13 @@ class Activator {
         // Analytics table
         $sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}ai_botkit_analytics (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            chatbot_id BIGINT(20) UNSIGNED NULL,
             event_type VARCHAR(50) NOT NULL,
             event_data JSON NOT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            KEY event_type (event_type)
+            KEY event_type (event_type),
+            KEY chatbot_id (chatbot_id)
         ) $charset_collate;";
         dbDelta($sql);
 

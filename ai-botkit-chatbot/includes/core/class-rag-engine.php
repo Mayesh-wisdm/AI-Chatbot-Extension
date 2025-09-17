@@ -32,7 +32,7 @@ class RAG_Engine {
      */
     private const DEFAULT_SETTINGS = [
         'max_context_chunks' => 5,
-        'min_chunk_relevance' => 0.4,
+        'min_chunk_relevance' => 0.2, // Lowered from 0.4 to help with corrupted text
         'max_conversation_turns' => 10,
         'conversation_expiry' => 3600, // 1 hour
         'system_prompt_template' => "
@@ -113,6 +113,18 @@ class RAG_Engine {
             
             // If this is an update, clean up old chunks and embeddings first
             if ($is_update) {
+                // Get old chunks before cleanup for comparison
+                global $wpdb;
+                $old_chunks = $wpdb->get_results($wpdb->prepare(
+                    "SELECT id, content, chunk_index FROM {$wpdb->prefix}ai_botkit_chunks WHERE document_id = %d ORDER BY chunk_index",
+                    $document_id
+                ));
+                
+                error_log('AI BotKit RAG Engine: BEFORE CLEANUP - Found ' . count($old_chunks) . ' existing chunks:');
+                foreach ($old_chunks as $i => $chunk) {
+                    error_log('AI BotKit RAG Engine: OLD CHUNK ' . ($i + 1) . ' (ID: ' . $chunk->id . ', Index: ' . $chunk->chunk_index . '): ' . substr($chunk->content, 0, 200) . '...');
+                }
+                
                 $cleanup_result = $this->vector_database->delete_document_embeddings($document_id);
                 error_log('AI BotKit RAG Engine: Cleaned up old chunks for document ' . $document_id . 
                          ' - Chunks: ' . $cleanup_result['deleted_chunks'] . 
@@ -120,6 +132,8 @@ class RAG_Engine {
             }
 
             // Load document based on source type
+            error_log('AI BotKit RAG Debug: Loading document from source: ' . $source . ' (type: ' . $source_type . ')');
+            
             $document = match($source_type) {
                 'file' => $this->document_loader->load_from_file($source, $document_id),
                 'url' => $this->document_loader->load_from_url($source, $document_id),
@@ -127,16 +141,41 @@ class RAG_Engine {
                 default => throw new RAG_Engine_Exception("Unsupported source type: $source_type")
             };
 
+            error_log('AI BotKit RAG Debug: Document loaded successfully');
+            error_log('AI BotKit RAG Debug: Document content length: ' . strlen($document['content']));
+            error_log('AI BotKit RAG Debug: Document content sample: ' . substr($document['content'], 0, 200) . '...');
+
             // Split into chunks
             $chunks = $this->text_chunker->split_text($document['content'], $document['metadata']);
+            error_log('AI BotKit RAG Debug: Document split into ' . count($chunks) . ' chunks');
+            
+            // Log each new chunk content
+            error_log('AI BotKit RAG Engine: NEW CHUNKS AFTER PROCESSING:');
+            foreach ($chunks as $i => $chunk) {
+                error_log('AI BotKit RAG Engine: NEW CHUNK ' . ($i + 1) . ' (Index: ' . ($chunk['metadata']['chunk_index'] ?? $i) . '): ' . substr($chunk['content'], 0, 200) . '...');
+            }
             
             // Generate embeddings
             $embeddings = $this->embeddings_generator->generate_embeddings($chunks);
+            error_log('AI BotKit RAG Debug: Generated ' . count($embeddings) . ' embeddings');
 
             // Store in vector database
+            error_log('AI BotKit RAG Debug: Storing embeddings in vector database');
             $stored = $this->vector_database->store_embeddings($embeddings);
+            error_log('AI BotKit RAG Debug: Embeddings stored successfully');
+            
+            // Verify what was actually stored in the database
+            $stored_chunks = $wpdb->get_results($wpdb->prepare(
+                "SELECT id, content, chunk_index FROM {$wpdb->prefix}ai_botkit_chunks WHERE document_id = %d ORDER BY chunk_index",
+                $document_id
+            ));
+            
+            error_log('AI BotKit RAG Engine: AFTER STORAGE - Found ' . count($stored_chunks) . ' chunks in database:');
+            foreach ($stored_chunks as $i => $chunk) {
+                error_log('AI BotKit RAG Engine: STORED CHUNK ' . ($i + 1) . ' (ID: ' . $chunk->id . ', Index: ' . $chunk->chunk_index . '): ' . substr($chunk->content, 0, 200) . '...');
+            }
 
-            return [
+            $result = [
                 'document_id' => $document_id,
                 'chunk_count' => count($chunks),
                 'embedding_count' => count($embeddings),
@@ -144,8 +183,15 @@ class RAG_Engine {
                 'is_update' => $is_update,
                 'cleanup_result' => $is_update ? $cleanup_result : null
             ];
+            
+            error_log('AI BotKit RAG Debug: Document processing completed successfully');
+            error_log('AI BotKit RAG Debug: Final result: ' . print_r($result, true));
+
+            return $result;
 
         } catch (\Exception $e) {
+            error_log('AI BotKit RAG Debug: Error during document processing: ' . $e->getMessage());
+            error_log('AI BotKit RAG Debug: Error stack trace: ' . $e->getTraceAsString());
             throw new RAG_Engine_Exception(
                 esc_html__('Failed to process document: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
                 0,
@@ -191,7 +237,9 @@ class RAG_Engine {
                         );
                         //return that this word is not allowed
                         return [
-                            'content' => $warning_message,
+                            'response' => $warning_message,
+                            'context' => [],
+                            'metadata' => []
                         ];
                     }
                 }
@@ -227,8 +275,17 @@ class RAG_Engine {
             
             $context = $this->retriever->find_context($message, $bot_id, $retrieval_options);
 
+            // Debug logging for context retrieval
+            error_log('AI BotKit RAG Debug: Query: "' . $message . '"');
+            error_log('AI BotKit RAG Debug: Context found: ' . count($context) . ' chunks');
+            error_log('AI BotKit RAG Debug: Min similarity threshold: ' . $retrieval_options['min_similarity']);
+            if (!empty($context)) {
+                error_log('AI BotKit RAG Debug: First chunk similarity: ' . ($context[0]['similarity'] ?? 'N/A'));
+            }
+
             // check if context is empty
             if (empty($context)) {
+                error_log('AI BotKit RAG Debug: No context found, using fallback response');
                 $message_template = json_decode($chatbot_data['messages_template'], true);
                 $message = $message_template['fallback'];
                 return [
@@ -338,10 +395,7 @@ class RAG_Engine {
                             esc_html__('⚠️ The word "%s" is not allowed in this chat.', 'ai-botkit-for-lead-generation'),
                             esc_html($keyword)
                         );
-                        $callback([
-                            'content' => $warning_message,
-                            'sources' => []
-                        ]);
+                        $callback($warning_message);
                         //return that this word is not allowed
                         return;
                     }
