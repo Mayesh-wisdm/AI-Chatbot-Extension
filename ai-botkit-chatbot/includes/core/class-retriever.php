@@ -99,15 +99,11 @@ class Retriever {
             );
 
             // Debug logging for similarity search
-            error_log('AI BotKit Retriever Debug: Found ' . count($similar_chunks) . ' similar chunks');
             if (!empty($similar_chunks)) {
-                error_log('AI BotKit Retriever Debug: Top similarity scores: ' . implode(', ', array_slice(array_column($similar_chunks, 'similarity'), 0, 3)));
             } else {
-                error_log('AI BotKit Retriever Debug: No similar chunks found - checking if embeddings exist in database');
                 // Check if there are any embeddings in the database
                 global $wpdb;
                 $total_embeddings = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ai_botkit_embeddings");
-                error_log('AI BotKit Retriever Debug: Total embeddings in database: ' . $total_embeddings);
             }
 
             // Process and assemble context

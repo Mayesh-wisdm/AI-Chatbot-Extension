@@ -6,7 +6,7 @@
         "guzzlehttp/guzzle": "^7.9",
         "phpfastcache/phpfastcache": "^9.2",
         "fivefilters/readability.php": ">=3.0",
-        "smalot/pdfparser": "^2.12"
+        "smalot/pdfparser": "*"
     },
     "authors": [
         {

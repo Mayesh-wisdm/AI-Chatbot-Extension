@@ -13,11 +13,16 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Get license manager instance
+// Get license manager instance with cache busting
 try {
+    // Clear any WordPress object cache to ensure fresh data
+    wp_cache_flush();
+    
     $license_manager = new Wdm_Ai_Botkit_Extension_License_Manager();
     $license_status = $license_manager->get_license_status_display();
     $license_key = $license_manager->get_extension_license_key();
+    
+    // Log current status for debugging
 } catch (Exception $e) {
     echo '<div class="notice notice-error"><p>Error initializing license manager: ' . esc_html($e->getMessage()) . '</p></div>';
     return;
@@ -82,6 +87,13 @@ try {
                                value="<?php _e('Activate License', 'wdm-ai-botkit-extension'); ?>" 
                                class="button button-primary" />
                     <?php endif; ?>
+                    
+                    <button type="button" 
+                            id="check-license-status" 
+                            class="button button-secondary" 
+                            style="margin-left: 10px;">
+                        <?php _e('Check License Status', 'wdm-ai-botkit-extension'); ?>
+                    </button>
                 </p>
             </form>
         </div>
@@ -102,7 +114,7 @@ try {
                 <div class="ai-botkit-upgrade-notice">
                     <p class="description">
                         <strong><?php _e('Content Upgrade Available!', 'wdm-ai-botkit-extension'); ?></strong><br>
-                        <?php _e('Your LearnDash content was downgraded when the license expired. Click below to upgrade back to comprehensive content.', 'wdm-ai-botkit-extension'); ?>
+                        <?php _e('Your LearnDash content sync was disabled when the license expired. Click below to re-enable comprehensive content sync.', 'wdm-ai-botkit-extension'); ?>
                     </p>
                 </div>
             <?php elseif ($upgrade_completed): ?>
@@ -176,7 +188,8 @@ try {
             </div>
         </div>
         
-        <!-- Support Information -->
+        <!-- Support Information - Hidden for now -->
+        <!-- 
         <div class="ai-botkit-support-section">
             <h2><?php _e('Support & Documentation', 'wdm-ai-botkit-extension'); ?></h2>
             
@@ -197,12 +210,90 @@ try {
                 </a>
             </div>
         </div>
+        -->
     </div>
 </div>
 
 <script type="text/javascript">
 jQuery(document).ready(function($) {
     'use strict';
+    
+    // License status check functionality
+    $('#check-license-status').on('click', function() {
+        var $btn = $(this);
+        var nonce = $('#wdm_extension_license_nonce').val();
+        
+        // Store original button content
+        var originalHtml = $btn.html();
+        
+        // Disable button and show loading state
+        $btn.prop('disabled', true);
+        $btn.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Checking...');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'wdm_ai_botkit_extension_check_license',
+                nonce: nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    var data = response.data;
+                    var message = 'License status checked successfully. Status: ' + data.remote_status;
+                    
+                    if (data.status_changed) {
+                        message += ' (Status changed from ' + data.current_status + ' to ' + data.new_status + ')';
+                        showNotice(message, 'success');
+                        
+                        // Reload page with cache busting to show updated status
+                        setTimeout(function() {
+                            location.href = location.href + (location.href.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
+                        }, 1500);
+                    } else {
+                        message += ' (No change detected)';
+                        showNotice(message, 'info');
+                    }
+                } else {
+                    showNotice('Failed to check license status: ' + response.data.message, 'error');
+                }
+            },
+            error: function() {
+                showNotice('Error checking license status', 'error');
+            },
+            complete: function() {
+                // Restore button
+                $btn.prop('disabled', false);
+                $btn.html(originalHtml);
+            }
+        });
+    });
+    
+    function showNotice(message, type) {
+        var noticeClass;
+        switch(type) {
+            case 'success':
+                noticeClass = 'notice-success';
+                break;
+            case 'error':
+                noticeClass = 'notice-error';
+                break;
+            case 'info':
+                noticeClass = 'notice-info';
+                break;
+            default:
+                noticeClass = 'notice-info';
+        }
+        
+        var $notice = $('<div class="notice ' + noticeClass + ' is-dismissible"><p>' + message + '</p></div>');
+        $('.wrap h1').after($notice);
+        
+        // Auto-dismiss after 5 seconds (except for info notices which stay longer)
+        var dismissTime = type === 'info' ? 8000 : 5000;
+        setTimeout(function() {
+            $notice.fadeOut();
+        }, dismissTime);
+    }
     
     // LearnDash Sync functionality
     $('#learndash-sync-btn').on('click', function() {
@@ -211,16 +302,20 @@ jQuery(document).ready(function($) {
         var $results = $('#sync-results');
         var nonce = $btn.data('nonce');
         
-        // Disable button and show progress
+        // Store original button content
+        var originalHtml = $btn.html();
+        
+        // Disable button and show loading state
         $btn.prop('disabled', true);
+        $btn.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Processing...');
         $progress.show();
         $results.hide();
         
         // Start sync process
-        startLearndashSync(nonce);
+        startLearndashSync(nonce, originalHtml);
     });
     
-    function startLearndashSync(nonce) {
+    function startLearndashSync(nonce, originalHtml) {
         $.ajax({
             url: ajaxurl,
             type: 'POST',
@@ -233,18 +328,18 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     updateProgress(0, response.data.total_courses, 'Starting content upgrade...');
-                    processSyncBatch(nonce, response.data.total_courses);
+                    processSyncBatch(nonce, response.data.total_courses, originalHtml);
                 } else {
-                    showError(response.data.message || 'Failed to start content upgrade');
+                    showError(response.data.message || 'Failed to start content upgrade', originalHtml);
                 }
             },
             error: function() {
-                showError('Network error occurred');
+                showError('Network error occurred', originalHtml);
             }
         });
     }
     
-    function processSyncBatch(nonce, totalCourses) {
+    function processSyncBatch(nonce, totalCourses, originalHtml) {
         $.ajax({
             url: ajaxurl,
             type: 'POST',
@@ -262,19 +357,19 @@ jQuery(document).ready(function($) {
                     
                     if (data.is_complete) {
                         showResults(data);
-                        $('#learndash-sync-btn').prop('disabled', false);
+                        $('#learndash-sync-btn').prop('disabled', false).html(originalHtml);
                     } else {
                         // Continue processing
                         setTimeout(function() {
-                            processSyncBatch(nonce, totalCourses);
+                            processSyncBatch(nonce, totalCourses, originalHtml);
                         }, 1000);
                     }
                 } else {
-                    showError(response.data.message || 'Sync failed');
+                    showError(response.data.message || 'Sync failed', originalHtml);
                 }
             },
             error: function() {
-                showError('Network error occurred during sync');
+                showError('Network error occurred during sync', originalHtml);
             }
         });
     }
@@ -320,9 +415,9 @@ jQuery(document).ready(function($) {
         $('#sync-progress').hide();
     }
     
-    function showError(message) {
+    function showError(message, originalHtml) {
         $('#sync-progress').hide();
-        $('#learndash-sync-btn').prop('disabled', false);
+        $('#learndash-sync-btn').prop('disabled', false).html(originalHtml);
         
         var $results = $('#sync-results');
         var $content = $('#sync-results-content');

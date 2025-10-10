@@ -3,7 +3,7 @@ namespace AI_BotKit\Integration;
 
 use AI_BotKit\Core\Document_Loader;
 use AI_BotKit\Core\RAG_Engine;
-use AI_BotKit\Utils\Cache_Manager;
+use AI_BotKit\Core\Unified_Cache_Manager;
 
 /**
  * WooCommerce Integration
@@ -37,9 +37,9 @@ class WooCommerce {
      * 
      * @param RAG_Engine $rag_engine RAG Engine instance
      * @param Document_Loader $document_loader Document Loader instance
-     * @param Cache_Manager $cache_manager Cache Manager instance
+     * @param Unified_Cache_Manager $cache_manager Cache Manager instance
      */
-    public function __construct(RAG_Engine $rag_engine, Document_Loader $document_loader, Cache_Manager $cache_manager) {
+    public function __construct(RAG_Engine $rag_engine, Document_Loader $document_loader, Unified_Cache_Manager $cache_manager) {
         $this->rag_engine = $rag_engine;
         $this->document_loader = $document_loader;
         

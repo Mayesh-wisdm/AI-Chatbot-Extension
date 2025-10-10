@@ -54,7 +54,11 @@ class Wdm_Ai_Botkit_Extension_Admin {
 		
 		// Register AJAX handlers
 		add_action( 'wp_ajax_wdm_ai_botkit_extension_license_action', array( $this, 'process_license_ajax' ) );
+		add_action( 'wp_ajax_wdm_ai_botkit_extension_check_license', array( $this, 'handle_check_license_ajax' ) );
 		add_action( 'wp_ajax_learndash_sync_courses', array( $this, 'handle_learndash_sync_ajax' ) );
+		
+		// Register auto sync hook
+		add_action( 'wdm_ai_botkit_extension_auto_sync', array( $this, 'handle_auto_sync' ) );
 	}
 
 	/**
@@ -431,6 +435,46 @@ class Wdm_Ai_Botkit_Extension_Admin {
 	}
 
 	/**
+	 * AJAX handler for checking license status
+	 */
+	public function handle_check_license_ajax() {
+		check_ajax_referer('wdm_extension_license_nonce', 'nonce');
+		
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => 'Insufficient permissions']);
+		}
+		
+		$license_manager = new Wdm_Ai_Botkit_Extension_License_Manager();
+		
+		// Get current status before validation
+		$current_status = $license_manager->get_extension_license_status();
+		
+		// Force license validation
+		$remote_status = $license_manager->force_license_validation();
+		
+		if ($remote_status !== false) {
+			// Force WordPress to clear any object cache
+			wp_cache_flush();
+			
+			// Create a new license manager instance to get fresh status
+			$fresh_license_manager = new Wdm_Ai_Botkit_Extension_License_Manager();
+			$status_display = $fresh_license_manager->get_license_status_display();
+			$new_status = $fresh_license_manager->get_extension_license_status();
+			
+			wp_send_json_success([
+				'message' => 'License status checked successfully',
+				'current_status' => $current_status,
+				'remote_status' => $remote_status,
+				'new_status' => $new_status,
+				'status_display' => $status_display,
+				'status_changed' => ($current_status !== $new_status)
+			]);
+		} else {
+			wp_send_json_error(['message' => 'Failed to check license status']);
+		}
+	}
+
+	/**
 	 * AJAX handler for processing license actions
 	 */
 	public function process_license_ajax() {
@@ -668,5 +712,46 @@ class Wdm_Ai_Botkit_Extension_Admin {
 	 */
 	private function clean_sentences( $content ) {
 		return trim( strip_shortcodes( wp_strip_all_tags( $content ) ) );
+	}
+
+	/**
+	 * Handle automatic sync when license is reactivated
+	 */
+	public function handle_auto_sync() {
+		
+		// Check if license is still valid
+		$license_manager = new Wdm_Ai_Botkit_Extension_License_Manager();
+		if ($license_manager->get_extension_license_status() !== 'valid') {
+			return;
+		}
+		
+		// Start the sync process
+		$result = $this->start_learndash_sync(0);
+		
+		if ($result['success']) {
+			
+			// Process the sync in batches
+			$max_batches = 10; // Limit to prevent timeout
+			$batch_count = 0;
+			
+			while ($batch_count < $max_batches) {
+				$batch_result = $this->process_learndash_sync_batch();
+				
+				if (!$batch_result['success']) {
+					break;
+				}
+				
+				
+				if ($batch_result['is_complete']) {
+					break;
+				}
+				
+				$batch_count++;
+				
+				// Small delay between batches
+				sleep(1);
+			}
+		} else {
+		}
 	}
 }

@@ -91,7 +91,6 @@ class Rate_Limiter {
             return true;
         } catch (\Exception $e) {
             // Log the error but don't block the user in case of database issues
-            error_log('AI BotKit Rate Limiter Error: Database operation failed - ' . $e->getMessage());
             return true;
         }
     }
@@ -147,7 +146,6 @@ class Rate_Limiter {
             
             // Log the first message metadata for debugging
             if (!empty($messages) && isset($messages[0])) {
-                // error_log('AI BotKit Message Sample: ' . print_r([
                 //     'id' => $messages[0]->id,
                 //     'conversation_id' => $messages[0]->conversation_id,
                 //     'role' => $messages[0]->role,
@@ -178,7 +176,6 @@ class Rate_Limiter {
                 'time_window' => $time_window
             ];
         } catch (\Exception $e) {
-            error_log('AI BotKit Rate Limiter Error: User usage stats retrieval failed - ' . $e->getMessage());
             // Return safe defaults in case of error
             return [
                 'message_count' => 0,
@@ -219,7 +216,6 @@ class Rate_Limiter {
                 'usage' => $stats
             ];
         } catch (\Exception $e) {
-            error_log('AI BotKit Rate Limiter Error: Remaining limits calculation failed - ' . $e->getMessage());
             // Return safe defaults in case of error
             return [
                 'remaining_tokens' => $this->get_token_bucket_limit(),

@@ -54,7 +54,7 @@ class Chatbot {
      * Check if chatbot exists
      */
     public function exists() {
-        return $this->id !== null;
+        return $this->id !== null && $this->data !== null;
     }
 
     /**

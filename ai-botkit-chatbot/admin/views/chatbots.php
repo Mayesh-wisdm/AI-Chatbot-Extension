@@ -237,7 +237,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
         <div class="ai-botkit-save-chatbot-container">
             <div class="ai-botkit-save-chatbot-status" style="display: none;"></div>
             <button type="submit" id="ai-botkit-save-btn" class="ai-botkit-btn-primary">
-            <?php esc_html_e('Save Chatbot', 'ai-botkit-for-lead-generation'); ?>
+            <?php esc_html_e('Create Bot', 'ai-botkit-for-lead-generation'); ?>
             </button>
         </div>
     </div>
@@ -322,13 +322,12 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                         id="chatbot_active"
                                         class="ai-botkit-input"
                                         type="checkbox"
-                                        name="active"
                                         value="1"
                                         checked
                                     />
                                     <span class="ai-botkit-slider"></span>
                                 </label>
-                                <p class="ai-botkit-help-text"><?php esc_html_e('This will determine if the chatbot is active on your website.', 'ai-botkit-for-lead-generation'); ?></p>
+                                <p class="ai-botkit-help-text"><?php esc_html_e('This will determine if the chatbot is active on your website. (This syncs with Publish tab)', 'ai-botkit-for-lead-generation'); ?></p>
                             </div>
                             <!-- Bot Tone -->
                             <div class="ai-botkit-form-group">
@@ -353,7 +352,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                     <div class="ai-botkit-step-content" data-step="1">
                         <div class="ai-botkit-style-section">
                             <div class="ai-botkit-style-header">
-                                <?php esc_html_e('Import form existing knowledge base', 'ai-botkit-for-lead-generation'); ?>
+                                <?php esc_html_e('Import from existing knowledge base', 'ai-botkit-for-lead-generation'); ?>
                                 <i class="ti ti-chevron-down"></i>
                             </div>
                             <div class="ai-botkit-style-content collapsed">
@@ -383,7 +382,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                         <table class="ai-botkit-table">
                                             <thead>
                                             <tr>
-                                                <th></th>
+                                                <th><input type="checkbox" id="ai-botkit-existing-kb-select-all" class="ai-botkit-checkbox" /></th>
                                                 <th><?php esc_html_e('Name', 'ai-botkit-for-lead-generation'); ?></th>
                                                 <th><?php esc_html_e('Type', 'ai-botkit-for-lead-generation'); ?></th>
                                                 <th><?php esc_html_e('Status', 'ai-botkit-for-lead-generation'); ?></th>
@@ -448,7 +447,6 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                         </div>
                                     </div>
                                     <div class="ai-botkit-kb-footer">
-                                        <button class="ai-botkit-btn-outline" id="ai-botkit-cancel-kb">Cancel</button>
                                         <button class="ai-botkit-btn-primary" id="ai-botkit-add-from-kb">Add Data</button>
                                     </div>
                                     <?php
@@ -558,16 +556,31 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                             <h3><?php esc_html_e('Add URL', 'ai-botkit-for-lead-generation'); ?></h3>
                                             <button id="ai-botkit-cancel-training-url-btn"><i class="ti ti-x"></i></button>
                                         </div>
-                                        <p class="ai-botkit-training-modal-subtext"><?php esc_html_e('Add URLs to train your chatbot. We only train on the specific links you provide — internal or connected pages are not included. If you\'d like to include those, please add them as separate URLs.', 'ai-botkit-for-lead-generation'); ?></p>
+                                        <p><?php esc_html_e('Add a website URL to your chatbot training data', 'ai-botkit-for-lead-generation'); ?></p>
 
-
-                                        <div class="ai-botkit-training-modal-body">
+                                        <div class="ai-botkit-modal-body" style="padding: 0; gap:0;">
                                             <div class="ai-botkit-form-group">
+                                                <label for="ai-botkit-url-input"><?php esc_html_e('URL', 'ai-botkit-for-lead-generation'); ?></label>
                                                 <input type="text" id="ai-botkit-url-input" placeholder="https://example.com/page" />
-                                                <div class="ai-botkit-error-message" id="ai-botkit-url-error-message"></div>
                                             </div>
-                                            <button class="ai-botkit-btn" id="ai-botkit-add-url"><i class="ti ti-plus"></i> <?php esc_html_e('Add', 'ai-botkit-for-lead-generation'); ?></button>
+                                            <div class="ai-botkit-form-group">
+                                                <label for="ai-botkit-url-title-input"><?php esc_html_e('Title (Optional)', 'ai-botkit-for-lead-generation'); ?></label>
+                                                <input type="text" id="ai-botkit-url-title-input" placeholder="<?php esc_attr_e('Leave empty to auto-detect from page', 'ai-botkit-for-lead-generation'); ?>" />
+                                                <small class="ai-botkit-help-text"><?php esc_html_e('If left empty, the page title will be automatically extracted from the URL.', 'ai-botkit-for-lead-generation'); ?></small>
                                         </div>
+                                        </div>
+
+                                        <div class="ai-botkit-training-modal-footer">
+                                            <button class="ai-botkit-btn-outline" id="ai-botkit-cancel-url-training-btn"><?php esc_html_e('Cancel', 'ai-botkit-for-lead-generation'); ?></button>
+                                            <button class="ai-botkit-btn" id="ai-botkit-add-url">
+                                                <span class="ai-botkit-btn-text"><?php esc_html_e('Add URL', 'ai-botkit-for-lead-generation'); ?></span>
+                                                <span class="ai-botkit-btn-loading" style="display: none;">
+                                                    <i class="ti ti-loader-2 ai-botkit-loading-icon"></i>
+                                                    <?php esc_html_e('Adding...', 'ai-botkit-for-lead-generation'); ?>
+                                                </span>
+                                            </button>
+                                        </div>
+
                                     </div>
                                 </div>
 
@@ -578,7 +591,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                             <h3><?php esc_html_e('Add Document', 'ai-botkit-for-lead-generation'); ?></h3>
                                             <button id="ai-botkit-cancel-training-document-btn"><i class="ti ti-x"></i></button>
                                         </div>
-                                        <p class="ai-botkit-training-modal-subtext"><?php esc_html_e('Upload your PDF file to training your chat bot. Pro tip: add a Q&A file for top results', 'ai-botkit-for-lead-generation'); ?></p>
+                                        <p class="ai-botkit-training-modal-subtext"><?php esc_html_e('Upload your PDF file to train your chatbot. Pro tip: add a Q&A file for top results', 'ai-botkit-for-lead-generation'); ?></p>
 
 
                                         <div class="ai-botkit-training-modal-body">
@@ -618,7 +631,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                         <div class="ai-botkit-training-modal-header ai-botkit-wp-header-back">
                                             <h3><i class="ti ti-chevron-left"></i> <?php esc_html_e('All', 'ai-botkit-for-lead-generation'); ?> <span class="ai-botkit-wp-header-post-title"><?php esc_html_e('Posts', 'ai-botkit-for-lead-generation'); ?></span></h3>
                                         </div>
-                                        <p class="ai-botkit-training-modal-subtext"><?php esc_html_e('Add from your WordPress data to train your chat bhot', 'ai-botkit-for-lead-generation'); ?></p>
+                                        <p class="ai-botkit-training-modal-subtext"><?php esc_html_e('Add from your WordPress data to train your chatbot', 'ai-botkit-for-lead-generation'); ?></p>
 
 
                                         <div class="ai-botkit-training-modal-body ai-botkit-wp-types-modal">
@@ -866,16 +879,17 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                 <div class="ai-botkit-form-group">
                                     <label for="ai_botkit_engine" class="ai-botkit-select-label"><?php esc_html_e('AI Engine', 'ai-botkit-for-lead-generation'); ?></label>
                                     <select id="ai_botkit_engine" class="ai-botkit-select-input" name="engine">
-                                        <?php foreach ($all_engines as $engine_id => $engine){
-                                            if ( ! get_option('ai_botkit_'.$engine_id.'_api_key', false) ){
-                                                continue;
-                                            }
-                                            ?>
+                                        <?php foreach ($all_engines as $engine_id => $engine): ?>
+                                            <?php $has_api_key = get_option('ai_botkit_'.$engine_id.'_api_key', false); ?>
                                             <option value="<?php echo esc_attr($engine_id); ?>"
-                                                    <?php selected($selected_engine, $engine_id); ?>>
+                                                    <?php selected($selected_engine, $engine_id); ?>
+                                                    <?php echo $has_api_key ? '' : 'disabled'; ?>>
                                                 <?php echo esc_html($engine['name']); ?>
+                                                <?php if (!$has_api_key): ?>
+                                                    (API Key Required)
+                                                <?php endif; ?>
                                             </option>
-                                        <?php } ?>
+                                        <?php endforeach; ?>
                                     </select>
                                     <p class="ai-botkit-hint"><?php esc_html_e('Select the AI engine you want to use', 'ai-botkit-for-lead-generation'); ?></p>
                                 </div>
@@ -1316,10 +1330,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                         </div>
                                         <input type="hidden" id="chat_bg_color" name="chatbot_bg_color" value="#FFFFFF" data-target=".ai-botkit-chat-body" data-key="background-color">
 
-                                        <!-- Header Color Settings -->
-                                        <input type="hidden" id="header_bg_color" name="chatbot_header_bg_color" value="#FFFFFF" data-target=".ai-botkit-chat-header" data-key="background-color">
-                                        <input type="hidden" id="header_font_color" name="chatbot_header_font_color" value="#333333" data-target=".ai-botkit-chat-header" data-key="color">
-                                        <input type="hidden" id="header_icon_color" name="chatbot_header_icon_color" value="#333333" data-target=".ai-botkit-chat-actions button" data-key="color">
+                                        <!-- DUPLICATE REMOVED: Header color fields are already defined above in the Header section (lines 1253-1255) -->
 
                                         <label class="ai-botkit-label"><?php esc_html_e('AI Message', 'ai-botkit-for-lead-generation'); ?></label>
                                         <div class="ai-botkit-form-row-color border">
@@ -1477,6 +1488,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                 <label class="ai-botkit-switch">
                                     <input
                                         id="chatbot_active_publish"
+                                        name="active"
                                         class="ai-botkit-input"
                                         type="checkbox"
                                         value="1"

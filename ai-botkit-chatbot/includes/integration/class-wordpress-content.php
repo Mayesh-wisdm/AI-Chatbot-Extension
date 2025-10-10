@@ -235,7 +235,6 @@ class WordPress_Content {
 
             } catch (\Exception $e) {
                 // Log error and mark as failed
-                error_log('AI BotKit WordPress Content Error: Content processing failed - ' . $e->getMessage());
                 $this->update_content_status($item->post_id, 'error');
                 
                 // Increment error count for rate limiting

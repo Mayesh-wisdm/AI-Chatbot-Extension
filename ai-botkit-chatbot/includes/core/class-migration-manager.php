@@ -2,6 +2,7 @@
 namespace AI_BotKit\Core;
 
 use AI_BotKit\Utils\Cache_Manager;
+use AI_BotKit\Utils\Migration_Logger;
 use AI_BotKit\Core\Document_Loader;
 use AI_BotKit\Core\Pinecone_Database;
 use AI_BotKit\Core\Embeddings_Generator;
@@ -83,7 +84,6 @@ class Migration_Manager {
                     $stats = $this->pinecone_database->describe_index_stats();
                     $pinecone_count = isset($stats['totalVectorCount']) ? (int) $stats['totalVectorCount'] : 0;
                 } catch (\Exception $e) {
-                    error_log('AI BotKit Migration Error: Failed to get Pinecone stats - ' . $e->getMessage());
                     $pinecone_count = 0;
                 }
             }
@@ -104,7 +104,7 @@ class Migration_Manager {
             ],
             'migration_available' => $this->can_migrate(),
             'last_migration' => get_option('ai_botkit_last_migration_time', ''),
-            'migration_in_progress' => get_transient('ai_botkit_migration_in_progress', false)
+            'migration_in_progress' => get_transient('ai_botkit_migration_in_progress', false) ? true : false
         ];
     }
 
@@ -130,16 +130,52 @@ class Migration_Manager {
      * @return array Migration result
      */
     public function start_migration(array $options = []): array {
-        // Check if migration is already in progress
-        if (get_transient('ai_botkit_migration_in_progress', false)) {
-            return [
-                'success' => false,
-                'message' => __('Migration is already in progress', 'ai-botkit-for-lead-generation')
-            ];
+        // Check if migration is already in progress with timestamp validation
+        $migration_data = get_transient('ai_botkit_migration_in_progress');
+        
+        if ($migration_data) {
+            // Check if migration data has timestamp (new format)
+            if (is_array($migration_data) && isset($migration_data['timestamp'])) {
+                $elapsed_time = time() - $migration_data['timestamp'];
+                
+                // If migration has been running for more than 5 minutes, consider it stale and clear it
+                if ($elapsed_time > 300) {
+                    delete_transient('ai_botkit_migration_in_progress');
+                } else {
+                    // Migration is actively running
+                    return [
+                        'success' => false,
+                        'message' => sprintf(
+                            __('Migration is currently in progress (started %d seconds ago). Please wait for it to complete.', 'ai-botkit-for-lead-generation'),
+                            $elapsed_time
+                        )
+                    ];
+                }
+            } else {
+                // Old format (boolean) - assume stale and clear it
+                delete_transient('ai_botkit_migration_in_progress');
+            }
         }
 
-        // Set migration in progress
-        set_transient('ai_botkit_migration_in_progress', true, 3600); // 1 hour timeout
+        // Set migration in progress with timestamp
+        set_transient('ai_botkit_migration_in_progress', [
+            'timestamp' => time(),
+            'direction' => $options['direction'] ?? 'to_pinecone'
+        ], 600); // 10 minutes timeout (reduced from 1 hour)
+        
+        $direction = $options['direction'] ?? 'to_pinecone';
+        $scope = $options['scope'] ?? 'all';
+        $content_types = $options['content_types'] ?? [];
+        
+        // Initialize logger
+        $logger = new Migration_Logger($direction);
+        $logger->info('Migration started', [
+            'direction' => $direction,
+            'scope' => $scope,
+            'content_types' => $content_types
+        ]);
+        
+        $start_time = microtime(true);
         
         // Increase memory limit and execution time for migration
         ini_set('memory_limit', '512M');
@@ -151,12 +187,9 @@ class Migration_Manager {
         $wpdb->query("SET SESSION interactive_timeout = 300");
 
         try {
-            $direction = $options['direction'] ?? 'to_pinecone';
-            $scope = $options['scope'] ?? 'all';
-            $content_types = $options['content_types'] ?? [];
-
             // Validate options
             if (!$this->validate_migration_options($options)) {
+                $logger->error('Invalid migration options provided');
                 return [
                     'success' => false,
                     'message' => __('Invalid migration options', 'ai-botkit-for-lead-generation')
@@ -165,10 +198,24 @@ class Migration_Manager {
 
             // Start migration based on direction
             if ($direction === 'to_pinecone') {
-                $result = $this->migrate_to_pinecone($scope, $content_types);
+                $result = $this->migrate_to_pinecone($scope, $content_types, $logger);
             } else {
-                $result = $this->migrate_to_local($scope, $content_types);
+                $result = $this->migrate_to_local($scope, $content_types, $logger);
             }
+
+            // Calculate duration
+            $duration = round(microtime(true) - $start_time, 2) . 's';
+            $result['duration'] = $duration;
+            
+            // Write summary to log
+            $logger->write_summary(
+                $result['migrated_count'] ?? 0,
+                $result['error_count'] ?? 0,
+                $duration
+            );
+            
+            // Add log file to result
+            $result['log_file'] = $logger->get_log_file_url();
 
             // Update last migration time
             update_option('ai_botkit_last_migration_time', current_time('mysql'));
@@ -176,12 +223,20 @@ class Migration_Manager {
             return $result;
 
         } catch (\Exception $e) {
-            error_log('AI BotKit Migration Error: ' . $e->getMessage());
+            $logger->error('Migration exception: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
             return [
                 'success' => false,
-                'message' => __('Migration failed: ', 'ai-botkit-for-lead-generation') . $e->getMessage()
+                'message' => __('Migration failed: ', 'ai-botkit-for-lead-generation') . $e->getMessage(),
+                'log_file' => $logger->get_log_file_url()
             ];
         } finally {
+            // Close logger
+            $logger->close();
+            
             // Clear migration in progress flag
             delete_transient('ai_botkit_migration_in_progress');
             
@@ -199,15 +254,22 @@ class Migration_Manager {
      * 
      * @param string $scope Migration scope
      * @param array $content_types Content types to migrate
+     * @param Migration_Logger $logger Logger instance
      * @return array Migration result
      */
-    private function migrate_to_pinecone(string $scope, array $content_types): array {
+    private function migrate_to_pinecone(string $scope, array $content_types, Migration_Logger $logger): array {
         global $wpdb;
+
+        $logger->info('Starting migration to Pinecone', [
+            'scope' => $scope,
+            'content_types' => $content_types
+        ]);
 
         // Get chunks to migrate
         $chunks = $this->get_chunks_for_migration($scope, $content_types);
         
         if (empty($chunks)) {
+            $logger->warning('No chunks found to migrate');
             return [
                 'success' => true,
                 'message' => __('No data to migrate', 'ai-botkit-for-lead-generation'),
@@ -215,6 +277,8 @@ class Migration_Manager {
             ];
         }
 
+        $logger->info(sprintf('Found %d chunks to migrate', count($chunks)));
+        
         $migrated_count = 0;
         $error_count = 0;
 
@@ -223,17 +287,19 @@ class Migration_Manager {
         $total_batches = count($batches);
         $processed_batches = 0;
 
+        $logger->info(sprintf('Processing %d batches', $total_batches));
+
         foreach ($batches as $batch) {
             $processed_batches++;
             
-            // Log progress and check memory usage
-            error_log("AI BotKit Migration: Processing batch {$processed_batches}/{$total_batches} (Memory: " . memory_get_usage(true) . " bytes)");
+            $logger->info(sprintf('Processing batch %d/%d', $processed_batches, $total_batches));
             
             // Check if we're approaching memory limit
             if (memory_get_usage(true) > 400 * 1024 * 1024) { // 400MB
-                error_log('AI BotKit Migration: Memory usage high, forcing garbage collection');
                 gc_collect_cycles();
+                $logger->info('Garbage collection triggered');
             }
+            
             try {
                 $vectors = [];
                 
@@ -250,20 +316,37 @@ class Migration_Manager {
                             'values' => $embedding,
                             'metadata' => $complete_metadata
                         ];
+                    } else {
+                        $logger->warning(sprintf('No embedding found for chunk ID %d', $chunk->id));
                     }
                 }
 
-                // Upsert to Pinecone
+                // Upsert to Pinecone (one at a time)
                 if (!empty($vectors)) {
-                    $result = $this->pinecone_database->upsert_vectors($vectors);
-                    $migrated_count += count($vectors);
+                    foreach ($vectors as $vector) {
+                        try {
+                            $this->pinecone_database->upsert_vectors($vector);
+                            $migrated_count++;
+                        } catch (\Exception $e) {
+                            $error_count++;
+                            $logger->error(sprintf('Failed to upsert vector %s: %s', $vector['id'] ?? 'unknown', $e->getMessage()));
+                        }
+                    }
+                    $logger->success(sprintf('Processed batch %d: migrated %d vectors', $processed_batches, count($vectors)));
                 }
 
             } catch (\Exception $e) {
-                error_log('AI BotKit Migration Error: Batch processing failed - ' . $e->getMessage());
                 $error_count += count($batch);
+                $logger->error(sprintf('Batch %d failed: %s', $processed_batches, $e->getMessage()), [
+                    'batch_number' => $processed_batches,
+                    'batch_size' => count($batch),
+                    'error_file' => $e->getFile(),
+                    'error_line' => $e->getLine()
+                ]);
             }
         }
+
+        $logger->info(sprintf('Migration to Pinecone completed. Migrated: %d, Errors: %d', $migrated_count, $error_count));
 
         return [
             'success' => $error_count === 0,
@@ -282,29 +365,38 @@ class Migration_Manager {
      * 
      * @param string $scope Migration scope
      * @param array $content_types Content types to migrate
+     * @param Migration_Logger $logger Logger instance
      * @return array Migration result
      */
-    private function migrate_to_local(string $scope, array $content_types): array {
+    private function migrate_to_local(string $scope, array $content_types, Migration_Logger $logger): array {
         if (!$this->pinecone_database || !$this->pinecone_database->is_configured()) {
+            $logger->error('Pinecone is not configured');
             return [
                 'success' => false,
                 'message' => __('Pinecone is not configured', 'ai-botkit-for-lead-generation')
             ];
         }
+        
+        $logger->info('Starting migration to local database', [
+            'scope' => $scope,
+            'content_types' => $content_types
+        ]);
 
         try {
             // Get vectors from Pinecone based on scope
             $vectors = $this->get_vectors_from_pinecone($scope, $content_types);
             
-            error_log('AI BotKit Migration: Retrieved ' . count($vectors) . ' vectors from Pinecone');
             
             if (empty($vectors)) {
+                $logger->warning('No vectors found in Pinecone to migrate');
                 return [
                     'success' => true,
                     'message' => __('No data to migrate from Pinecone', 'ai-botkit-for-lead-generation'),
                     'migrated_count' => 0
                 ];
             }
+
+            $logger->info(sprintf('Found %d vectors to migrate from Pinecone', count($vectors)));
 
             $migrated_count = 0;
             $error_count = 0;
@@ -314,16 +406,17 @@ class Migration_Manager {
             $total_batches = count($batches);
             $processed_batches = 0;
 
+            $logger->info(sprintf('Processing %d batches', $total_batches));
+
             foreach ($batches as $batch) {
                 $processed_batches++;
                 
-                // Log progress and check memory usage
-                error_log("AI BotKit Migration: Processing batch {$processed_batches}/{$total_batches} (Memory: " . memory_get_usage(true) . " bytes)");
+                $logger->info(sprintf('Processing batch %d/%d', $processed_batches, $total_batches));
                 
                 // Check if we're approaching memory limit
                 if (memory_get_usage(true) > 400 * 1024 * 1024) { // 400MB
-                    error_log('AI BotKit Migration: Memory usage high, forcing garbage collection');
                     gc_collect_cycles();
+                    $logger->info('Garbage collection triggered');
                 }
                 try {
                     foreach ($batch as $vector) {
@@ -332,14 +425,22 @@ class Migration_Manager {
                             $migrated_count++;
                         } else {
                             $error_count++;
-                            error_log('AI BotKit Migration Error: Failed to store vector to local - ' . $result['message']);
+                            $logger->warning(sprintf('Failed to store vector to local: %s', $result['message'] ?? 'Unknown error'));
                         }
                     }
+                    $logger->success(sprintf('Processed batch %d successfully', $processed_batches));
                 } catch (\Exception $e) {
-                    error_log('AI BotKit Migration Error: Batch processing failed - ' . $e->getMessage());
                     $error_count += count($batch);
+                    $logger->error(sprintf('Batch %d failed: %s', $processed_batches, $e->getMessage()), [
+                        'batch_number' => $processed_batches,
+                        'batch_size' => count($batch),
+                        'error_file' => $e->getFile(),
+                        'error_line' => $e->getLine()
+                    ]);
                 }
             }
+
+            $logger->info(sprintf('Migration to local database completed. Migrated: %d, Errors: %d', $migrated_count, $error_count));
 
             return [
                 'success' => $error_count === 0,
@@ -353,7 +454,11 @@ class Migration_Manager {
             ];
 
         } catch (\Exception $e) {
-            error_log('AI BotKit Migration Error: Pinecone to local failed - ' . $e->getMessage());
+            $logger->error('Migration to local failed with exception: ' . $e->getMessage(), [
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine()
+            ]);
+            
             return [
                 'success' => false,
                 'message' => __('Migration failed: ', 'ai-botkit-for-lead-generation') . $e->getMessage()
@@ -386,7 +491,6 @@ class Migration_Manager {
                 0.0    // Low similarity threshold
             );
             
-            error_log('AI BotKit Migration: Raw query result count: ' . count($query_result));
             
             // Filter results based on scope if needed
             $filtered_results = [];
@@ -408,7 +512,6 @@ class Migration_Manager {
             return $filtered_results;
             
         } catch (\Exception $e) {
-            error_log('AI BotKit Migration Error: Failed to get vectors from Pinecone - ' . $e->getMessage());
             return [];
         }
     }
@@ -551,6 +654,17 @@ class Migration_Manager {
     }
 
     /**
+     * Deserialize vector from JSON string
+     * 
+     * @param string $vector_data Serialized vector
+     * @return array|null Deserialized vector array
+     */
+    private function deserialize_vector(string $vector_data): ?array {
+        $vector = json_decode($vector_data, true);
+        return is_array($vector) ? $vector : null;
+    }
+
+    /**
      * Get chunks for migration based on criteria
      * 
      * @param string $scope Migration scope
@@ -669,35 +783,34 @@ class Migration_Manager {
     }
 
     /**
-     * Get embedding for a chunk
+     * Get embedding for a chunk from database
      * 
      * @param object $chunk Chunk object
      * @return array|null Embedding array or null
      */
     private function get_chunk_embedding($chunk): ?array {
+        global $wpdb;
+        
         try {
-            // Use the embeddings generator to generate embedding
-            $embeddings_generator = new \AI_BotKit\Core\Embeddings_Generator(new \AI_BotKit\Core\LLM_Client());
+            // Get existing embedding from database
+            $embedding_data = $wpdb->get_var($wpdb->prepare(
+                "SELECT embedding FROM {$wpdb->prefix}ai_botkit_embeddings WHERE chunk_id = %d",
+                $chunk->id
+            ));
             
-            // Format chunk data for the embeddings generator
-            $chunk_data = [
-                'content' => $chunk->content,
-                'metadata' => [
-                    'chunk_id' => $chunk->id,
-                    'document_id' => $chunk->document_id,
-                    'chunk_index' => $chunk->chunk_index ?? 0
-                ]
-            ];
+            if (!$embedding_data) {
+                return null;
+            }
             
-            $embeddings = $embeddings_generator->generate_embeddings([$chunk_data]);
+            // Deserialize the embedding
+            $embedding = $this->deserialize_vector($embedding_data);
             
-            if (!empty($embeddings) && isset($embeddings[0]['embedding'])) {
-                return $embeddings[0]['embedding'];
+            if (!empty($embedding) && is_array($embedding)) {
+                return $embedding;
             }
             
             return null;
         } catch (\Exception $e) {
-            error_log('AI BotKit Migration Error: Embedding generation failed - ' . $e->getMessage());
             return null;
         }
     }
@@ -800,7 +913,6 @@ class Migration_Manager {
                 ];
             }
         } catch (\Exception $e) {
-            error_log('AI BotKit Migration Error: Database clear failed - ' . $e->getMessage());
             return [
                 'success' => false,
                 'message' => __('Failed to clear database: ', 'ai-botkit-for-lead-generation') . $e->getMessage()
@@ -897,7 +1009,6 @@ class Migration_Manager {
                 'message' => $result['message']
             ];
         } catch (\Exception $e) {
-            error_log('AI BotKit Migration Error: Pinecone clear failed - ' . $e->getMessage());
             return [
                 'success' => false,
                 'message' => __('Failed to clear Pinecone: ', 'ai-botkit-for-lead-generation') . $e->getMessage()

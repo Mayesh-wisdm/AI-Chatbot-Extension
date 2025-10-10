@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://wisdmlabs.com
- * @since             1.0.1
+ * @since             1.0.0
  * @package           Wdm_Ai_Botkit_Extension
  *
  * @wordpress-plugin
  * Plugin Name:       WDM AI BotKit Extension with License
  * Plugin URI:        https://www.wisdmlabs.com
  * Description:       Adds User Awareness for Learndash enrolled courses with integrated licensing system
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            WisdmLabs
  * Author URI:        https://wisdmlabs.com/
  * License:           GPL-2.0+

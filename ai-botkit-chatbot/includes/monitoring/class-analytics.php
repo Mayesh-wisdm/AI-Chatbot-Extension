@@ -46,20 +46,30 @@ class Analytics {
         // Create a more specific cache key that includes all filter parameters
         $cache_key = 'analytics_dashboard_' . md5(json_encode($filters));
         
-        // Reduce cache duration to 5 minutes for more responsive filter changes
-        return $this->cache_manager->remember($cache_key, function() use ($filters) {
-            return [
-                'overview' => $this->get_overview_stats($filters),
-                'time_series' => $this->get_time_series_data(
-                    $filters['start_date'] ?? gmdate('Y-m-d', strtotime('-30 days')),
-                    $filters['end_date'] ?? gmdate('Y-m-d'),
-                    $filters['interval'] ?? 'day'
-                ),
-                'top_queries' => $this->analyze_common_questions($filters),
-                'error_rates' => $this->analyze_errors($filters),
-                'performance' => $this->analyze_performance($filters)
-            ];
-        }, 300); // 5 minutes instead of 1 hour
+        // Try to get from cache first
+        $cached = $this->cache_manager->get($cache_key, 'performance');
+        
+        if ($cached !== false) {
+            return $cached;
+        }
+        
+        // Generate fresh data
+        $data = [
+            'overview' => $this->get_overview_stats($filters),
+            'time_series' => $this->get_time_series_data(
+                $filters['start_date'] ?? gmdate('Y-m-d', strtotime('-30 days')),
+                $filters['end_date'] ?? gmdate('Y-m-d'),
+                $filters['interval'] ?? 'day'
+            ),
+            'top_queries' => $this->analyze_common_questions($filters),
+            'error_rates' => $this->analyze_errors($filters),
+            'performance' => $this->analyze_performance($filters)
+        ];
+        
+        // Cache for 5 minutes for more responsive filter changes
+        $this->cache_manager->set($cache_key, $data, 'performance', 300);
+        
+        return $data;
     }
 
     /**

@@ -56,9 +56,6 @@ class Embeddings_Generator {
      */
     public function generate_embeddings(array $chunks, ?string $model = null): array {
         $model = $model ?? $this->default_model;
-        error_log('AI BotKit Embeddings Debug: Starting embedding generation');
-        error_log('AI BotKit Embeddings Debug: Processing ' . count($chunks) . ' chunks');
-        error_log('AI BotKit Embeddings Debug: Using model: ' . $model);
         
         $embeddings = [];
         $batch = [];
@@ -83,9 +80,7 @@ class Embeddings_Generator {
 
                 // Process batch if full or last chunk
                 if (count($batch) >= $this->batch_size || $index === count($chunks) - 1) {
-                    error_log('AI BotKit Embeddings Debug: Processing batch of ' . count($batch) . ' texts');
                     $batch_embeddings = $this->process_batch($batch, $model);
-                    error_log('AI BotKit Embeddings Debug: Generated ' . count($batch_embeddings) . ' embeddings for batch');
 
                     // Combine embeddings with metadata and cache
                     foreach ($batch_embeddings as $i => $embedding) {
@@ -116,13 +111,9 @@ class Embeddings_Generator {
                 }
             }
 
-            error_log('AI BotKit Embeddings Debug: Embedding generation completed successfully');
-            error_log('AI BotKit Embeddings Debug: Total embeddings generated: ' . count($embeddings));
             return $embeddings;
 
         } catch (\Exception $e) {
-            error_log('AI BotKit Embeddings Debug: Error during embedding generation: ' . $e->getMessage());
-            error_log('AI BotKit Embeddings Debug: Error stack trace: ' . $e->getTraceAsString());
             throw new Embedding_Generation_Exception(
                 esc_html__('Failed to generate embeddings: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
                 0,

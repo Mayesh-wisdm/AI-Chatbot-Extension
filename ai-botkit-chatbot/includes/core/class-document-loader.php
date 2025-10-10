@@ -205,21 +205,15 @@ class Document_Loader {
         switch (strtolower($extension)) {
             case 'pdf':
                 if (class_exists('\Smalot\PdfParser\Parser')) {
-                    error_log('AI BotKit PDF Debug: Starting PDF parsing');
-                    error_log('AI BotKit PDF Debug: Content size: ' . strlen($content) . ' bytes');
                     
                     $parser = new \Smalot\PdfParser\Parser();
                     $pdf = $parser->parseContent($content);
                     $text = $pdf->getText();
                     
-                    error_log('AI BotKit PDF Debug: Raw extracted text length: ' . strlen($text));
-                    error_log('AI BotKit PDF Debug: Raw text: ' . $text );
                     
                     // Clean and normalize the extracted text
                     $cleaned_text = $this->clean_pdf_text($text);
                     
-                    error_log('AI BotKit PDF Debug: Cleaned text length: ' . strlen($cleaned_text));
-                    error_log('AI BotKit PDF Debug: Cleaned text: ' . $cleaned_text );
                     
                     return $cleaned_text;
                 }
@@ -272,35 +266,27 @@ class Document_Loader {
      * @return string Cleaned text
      */
     private function clean_pdf_text(string $text): string {
-        error_log('AI BotKit PDF Clean Debug: Starting text cleaning');
-        error_log('AI BotKit PDF Clean Debug: Input text length: ' . strlen($text));
         
         // Fix common PDF parsing issues
         $text = $this->fix_pdf_encoding_issues($text);
-        error_log('AI BotKit PDF Clean Debug: After encoding fixes, length: ' . strlen($text));
         
         // Normalize whitespace
         $text = preg_replace('/\s+/', ' ', $text);
-        error_log('AI BotKit PDF Clean Debug: After whitespace normalization, length: ' . strlen($text));
         
         // Fix broken words that got split across lines (only fix obvious cases like "Wor king" -> "Working")
         // But preserve spaces between proper words
         $text = preg_replace('/([a-z])\s+([A-Z][a-z])/', '$1$2', $text);
-        error_log('AI BotKit PDF Clean Debug: After word fixing, length: ' . strlen($text));
         
         // Clean up line breaks
         $text = preg_replace('/\n\s*\n/', "\n\n", $text);
-        error_log('AI BotKit PDF Clean Debug: After line break cleanup, length: ' . strlen($text));
         
         // Fix specific spacing issues only (avoid over-aggressive regex)
         $text = preg_replace('/([a-z])w([a-z])/', '$1 w$2', $text); // Fix "projectswlike" -> "projects wlike" -> "projects like"
         $text = preg_replace('/([a-z])w([a-z])/', '$1 w$2', $text); // Apply again for nested cases
         
-        error_log('AI BotKit PDF Clean Debug: After post-processing spacing fixes, length: ' . strlen($text));
         
         // Remove excessive whitespace
         $text = trim($text);
-        error_log('AI BotKit PDF Clean Debug: Final cleaned text length: ' . strlen($text));
         
         return $text;
     }
@@ -312,8 +298,6 @@ class Document_Loader {
      * @return string Fixed text
      */
     private function fix_pdf_encoding_issues(string $text): string {
-        error_log('AI BotKit PDF Encoding Debug: Starting encoding fixes');
-        error_log('AI BotKit PDF Encoding Debug: Input text: ' . $text );
         
         // Common character replacements for PDF parsing issues
         $replacements = [
@@ -415,8 +399,6 @@ class Document_Loader {
         
         $fixed_text = str_replace(array_keys($replacements), array_values($replacements), $text);
         
-        error_log('AI BotKit PDF Encoding Debug: Applied ' . count($replacements) . ' character replacements');
-        error_log('AI BotKit PDF Encoding Debug: Fixed text: ' . $fixed_text );
         
         return $fixed_text;
     }

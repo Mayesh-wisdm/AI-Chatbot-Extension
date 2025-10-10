@@ -29,15 +29,16 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
      */
     private $plugin_slug = 'wdm-ai-botkit-extension';
     private $plugin_name = 'WDM AI BotKit Extension';
-    private $store_url = 'https://dev1.edwiser.org/';
-    private $item_id = 573656; // Extension product ID
+    private $store_url;
+    private $item_id;
     private $text_domain = 'wdm-ai-botkit-extension';
 
     /**
      * Constructor
      */
     public function __construct() {
-        add_action('admin_init', [$this, 'maybe_process_license_action']);
+        // Set store URL and item ID based on current site URL
+        $this->set_store_configuration();
         add_action('admin_notices', [$this, 'show_license_notices']);
         add_action('plugins_loaded', [$this, 'check_dependencies']);
         
@@ -45,6 +46,25 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
         $this->maybe_schedule_license_check();
         
         add_action('wdm_ai_botkit_extension_license_check_event', [$this, 'maybe_validate_license']);
+    }
+
+    /**
+     * Set store configuration based on current site URL
+     */
+    private function set_store_configuration() {
+        $current_url = home_url();
+        
+        // Check if current site URL contains 'wisdmlabs' or 'local'
+        if (strpos($current_url, 'wisdmlabs.net') !== false || strpos($current_url, 'local') !== false) {
+            // Development/local environment
+            $this->store_url = 'https://wordpress-1496509-5716381.cloudwaysapps.com/';
+            $this->item_id = 483904; // Extension product ID for dev environment
+        } else {
+            // Production environment
+            $this->store_url = 'https://dev1.edwiser.org/';
+            $this->item_id = 573656; // Extension product ID for production
+        }
+        
     }
 
     // Register custom interval for 60 seconds
@@ -130,8 +150,9 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
             // Trigger content transformation event
             do_action('wdm_ai_botkit_extension_license_status_changed', $old_status, 'inactive');
             
-            // Clear license validation schedule after deactivation
+            // Clear license validation schedule and cache after deactivation
             $this->clear_license_check_schedule();
+            $this->clear_extension_cache();
             
             return [
                 'success' => true,
@@ -184,8 +205,9 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
      */
     public function check_extension_license($license_key) {
         $response = $this->remote_request('check_license', $license_key);
-        if ($response && $response['success']) {
-            // Check for different possible field names in the response
+        if ($response) {
+            // Check for license status regardless of success field
+            // Some stores return success=false but still provide license status
             if (isset($response['license'])) {
                 return $response['license'];
             } elseif (isset($response['license_status'])) {
@@ -193,10 +215,22 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
             } elseif (isset($response['status'])) {
                 return $response['status'];
             }
-            // If no expected field found, return false
-            return false;
+            
+            // If we have a response but no license status, log it
+            if (!$response['success']) {
+                
+                // Check for consecutive validation failures
+                $failure_count = get_option('wdm_ai_botkit_extension_validation_failures', 0);
+                $failure_count++;
+                update_option('wdm_ai_botkit_extension_validation_failures', $failure_count);
+                
+                // If we have too many consecutive failures, consider force deactivating
+                if ($failure_count >= 5) {
+                    // Could implement automatic force deactivation here if needed
+                }
+            }
         }
-        // Don't automatically invalidate on remote failure
+        
         return false;
     }
 
@@ -223,15 +257,6 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
         return $data;
-    }
-
-    /**
-     * Process license actions from admin form
-     */
-    public function maybe_process_license_action() {
-        // This method is now handled via AJAX in the admin class
-        // Keeping it for backward compatibility but it's no longer used
-        return;
     }
 
     /**
@@ -337,12 +362,16 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
                 if ($remote_status !== false && $current_status !== $remote_status) {
                     update_option($this->extension_license_status, $remote_status);
                     
+                    // Reset validation failure count on successful validation
+                    delete_option('wdm_ai_botkit_extension_validation_failures');
+                    
                     // Trigger content transformation event
                     do_action('wdm_ai_botkit_extension_license_status_changed', $current_status, $remote_status);
                     
-                    // If license became invalid, clear the schedule
+                    // If license became invalid, clear the schedule and cache
                     if ($remote_status !== 'valid') {
                         $this->clear_license_check_schedule();
+                        $this->clear_extension_cache();
                     }
                 }
                 
@@ -354,10 +383,14 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
     /**
      * Clear extension cache when license becomes invalid
      */
-    private function clear_extension_cache() {
+    public function clear_extension_cache() {
         // Clear any cached data that might be stored
         delete_transient('wdm_ai_botkit_extension_user_courses_cache');
         delete_transient('wdm_ai_botkit_extension_content_cache');
+        
+        // Clear any other cached data
+        delete_option('wdm_ai_botkit_extension_upgrade_available');
+        
     }
     
     /**
@@ -374,9 +407,61 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
     public function force_license_validation() {
         $license_key = $this->get_extension_license_key();
         if (!empty($license_key)) {
-            return $this->check_extension_license($license_key);
+            $remote_status = $this->check_extension_license($license_key);
+            
+            if ($remote_status !== false) {
+                $current_status = $this->get_extension_license_status();
+                
+                // Update status if it changed
+                if ($current_status !== $remote_status) {
+                    update_option($this->extension_license_status, $remote_status);
+                    
+                    // Force WordPress to clear any object cache
+                    wp_cache_flush();
+                    
+                    // Reset validation failure count on successful validation
+                    delete_option('wdm_ai_botkit_extension_validation_failures');
+                    
+                    // Trigger content transformation event
+                    do_action('wdm_ai_botkit_extension_license_status_changed', $current_status, $remote_status);
+                    
+                    // If license became invalid, clear the schedule and cache
+                    if ($remote_status !== 'valid') {
+                        $this->clear_license_check_schedule();
+                        $this->clear_extension_cache();
+                    }
+                    
+                }
+            }
+            
+            return $remote_status;
         }
         return false;
+    }
+    
+    /**
+     * Force immediate deactivation (bypasses remote validation)
+     * Used for critical cases or when remote validation fails
+     */
+    public function force_immediate_deactivation($reason = 'manual') {
+        $old_status = $this->get_extension_license_status();
+        
+        // Update status to inactive
+        update_option($this->extension_license_status, 'inactive');
+        
+        // Clear schedule and cache
+        $this->clear_license_check_schedule();
+        $this->clear_extension_cache();
+        
+        // Trigger content transformation event
+        do_action('wdm_ai_botkit_extension_license_status_changed', $old_status, 'inactive');
+        
+        // Log the forced deactivation
+        
+        return [
+            'success' => true,
+            'message' => __('Extension license force deactivated successfully.', $this->text_domain)
+        ];
     }
     
     /**

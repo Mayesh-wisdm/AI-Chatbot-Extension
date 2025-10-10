@@ -8,9 +8,10 @@ use AI_BotKit\Core\{
     Vector_Database,
     Retriever,
     LLM_Client,
-    RAG_Engine
+    RAG_Engine,
+    AIBotKit_Performance_Manager
 };
-use AI_BotKit\Utils\Cache_Manager;
+use AI_BotKit\Core\Unified_Cache_Manager;
 use AI_BotKit\Admin\Admin;
 use AI_BotKit\Public\{Ajax_Handler, Shortcode_Handler};
 use AI_BotKit\Integration\{
@@ -59,6 +60,12 @@ class AI_BotKit {
     private $admin;
     private $ajax_handler;
     private $shortcode_handler;
+    
+    /**
+     * Performance optimization components
+     */
+    private $performance_manager;
+    private $performance_integration;
 
     /**
      * Initialize the plugin
@@ -85,6 +92,13 @@ class AI_BotKit {
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-llm-client.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-rag-engine.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-rate-limiter.php';
+        
+        // Performance optimization components
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-ai-botkit-performance-manager.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-unified-cache-manager.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-unified-performance-monitor.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-unified-error-handler.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-performance-configuration-manager.php';
 
         // Pinecone database class
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-pinecone-database.php';
@@ -114,18 +128,40 @@ class AI_BotKit {
         require_once AI_BOTKIT_INCLUDES_DIR . 'public/class-ajax-handler.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'public/class-shortcode-handler.php';
 
+        // Core classes that need to be included FIRST
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-cache-configuration.php';
+        
+        // Performance optimization classes
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-database-optimizer.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-content-optimizer.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-ajax-optimizer.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-migration-optimizer.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-admin-interface-optimizer.php';
+        
+        // Additional optimization dependencies
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-wordpress-function-optimizer.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-knowledge-base-interface-optimizer.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-my-bots-interface-optimizer.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-ajax-request-optimizer.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-ajax-response-compressor.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-content-processing-monitor.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-database-migration.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-unified-performance-monitor.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-unified-error-handler.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-performance-configuration-manager.php';
+        
         // Utilities
         require_once AI_BOTKIT_INCLUDES_DIR . 'utils/class-cache-manager.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'utils/class-migration-logger.php';
 
         // Models
         require_once AI_BOTKIT_INCLUDES_DIR . 'models/class-chatbot.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'models/class-conversation.php';
 
-        // vendor dependencies
-        require_once AI_BOTKIT_INCLUDES_DIR . 'vendor/autoload.php';
+        // No external dependencies - using lightweight PDF extraction
 
         // Core dependencies are autoloaded via composer
-        $this->cache_manager = new Cache_Manager();
+        $this->cache_manager = new \AI_BotKit\Core\Unified_Cache_Manager();
         $this->llm_client = new LLM_Client();
         
         // Initialize core components
@@ -171,6 +207,9 @@ class AI_BotKit {
         $this->admin = new Admin($this->get_plugin_name(), $this->get_version(), $this->cache_manager, $this->rag_engine);
         $this->ajax_handler = new Ajax_Handler($this->rag_engine);
         $this->shortcode_handler = new Shortcode_Handler($this->rag_engine);
+        
+        // Initialize performance optimization system
+        $this->performance_manager = AIBotKit_Performance_Manager::get_instance();
     }
 
     /**

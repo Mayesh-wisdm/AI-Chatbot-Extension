@@ -2,7 +2,7 @@
 namespace AI_BotKit\Admin;
 
 use AI_BotKit\Core\RAG_Engine;
-use AI_BotKit\Utils\Cache_Manager;
+use AI_BotKit\Core\Unified_Cache_Manager;
 use AI_BotKit\Models\Chatbot;
 
 /**
@@ -69,6 +69,8 @@ class Ajax_Handler {
         add_action('wp_ajax_ai_botkit_get_migration_status', array($this, 'handle_get_migration_status'));
         add_action('wp_ajax_ai_botkit_get_content_types', array($this, 'handle_get_content_types'));
         add_action('wp_ajax_ai_botkit_start_migration', array($this, 'handle_start_migration'));
+        add_action('wp_ajax_ai_botkit_download_migration_log', array($this, 'handle_download_migration_log'));
+        add_action('wp_ajax_ai_botkit_clear_migration_lock', array($this, 'handle_clear_migration_lock'));
         add_action('wp_ajax_ai_botkit_clear_database', array($this, 'handle_clear_database'));
 
         // Analytics endpoints
@@ -732,15 +734,9 @@ class Ajax_Handler {
             // Reprocess the document
             $source = $document->file_path ?? $document->source_id;
             
-            error_log('AI BotKit Reprocess Debug: Starting reprocessing for document ID: ' . $document_id);
-            error_log('AI BotKit Reprocess Debug: Document source: ' . $source);
-            error_log('AI BotKit Reprocess Debug: Document type: ' . $document->source_type);
-            error_log('AI BotKit Reprocess Debug: Document title: ' . $document->title);
             
             $result = $rag_engine->process_document($source, $document->source_type, $document_id);
             
-            error_log('AI BotKit Reprocess Debug: Reprocessing completed successfully');
-            error_log('AI BotKit Reprocess Debug: Result: ' . print_r($result, true));
             
             wp_send_json_success([
                 'message' => esc_html__('Document reprocessed successfully.', 'ai-botkit-for-lead-generation'),
@@ -748,9 +744,19 @@ class Ajax_Handler {
             ]);
             
         } catch (\Exception $e) {
-            error_log('AI BotKit Reprocess Debug: Error during reprocessing: ' . $e->getMessage());
-            error_log('AI BotKit Reprocess Debug: Stack trace: ' . $e->getTraceAsString());
-            wp_send_json_error(['message' => $e->getMessage()]);
+            
+            // Check if this is a "Not Found" error from Pinecone (which is often expected)
+            if (strpos($e->getMessage(), 'Not Found') !== false) {
+                wp_send_json_error([
+                    'message' => esc_html__('Document reprocessing failed: The document embeddings were not found in the vector database. This may indicate the document was never properly processed or has already been deleted. Please try processing the document again.', 'ai-botkit-for-lead-generation'),
+                    'details' => $e->getMessage()
+                ]);
+            } else {
+                wp_send_json_error([
+                    'message' => esc_html__('Document reprocessing failed: ', 'ai-botkit-for-lead-generation') . $e->getMessage(),
+                    'details' => $e->getMessage()
+                ]);
+            }
         }
     }
 
@@ -821,9 +827,9 @@ class Ajax_Handler {
 
         $url = esc_url_raw($_POST['url']);
         $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+        $chatbot_id = isset($_POST['chatbot_id']) ? intval($_POST['chatbot_id']) : 0;
         
         // Debug logging
-        error_log('AI BotKit: URL Import - Title received: "' . $title . '" (Length: ' . strlen($title) . ')');
 
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             wp_send_json_error(['message' => esc_html__('Invalid URL.', 'ai-botkit-for-lead-generation')]);
@@ -857,6 +863,18 @@ class Ajax_Handler {
             wp_send_json_error(['message' => esc_html__('Failed to save document.', 'ai-botkit-for-lead-generation')]);
         }
 
+        $document_id = $wpdb->insert_id;
+
+        // If chatbot_id is provided, create the relationship
+        if ($chatbot_id > 0) {
+            try {
+                $chatbot = new \AI_BotKit\Core\Chatbot($chatbot_id);
+                $chatbot->add_content('document', $document_id);
+            } catch (\Exception $e) {
+                // Don't fail the import if linking fails
+            }
+        }
+
         // Try to process the document immediately
         try {
             // Create required dependencies for RAG Engine
@@ -876,12 +894,11 @@ class Ajax_Handler {
             );
             $rag_engine->process_queue();
         } catch (\Exception $e) {
-            error_log('AI BotKit: Failed to process document queue: ' . $e->getMessage());
         }
 
         wp_send_json_success([
             'message' => esc_html__('URL imported successfully.', 'ai-botkit-for-lead-generation'),
-            'document_id' => $wpdb->insert_id
+            'document_id' => $document_id  // Fix: Use captured variable instead of stale $wpdb->insert_id after process_queue()
         ]);
     }
 
@@ -914,7 +931,6 @@ class Ajax_Handler {
             $response_code = wp_remote_retrieve_response_code($response);
             if ($response_code !== 200) {
                 // Log the response code for debugging but don't fail
-                error_log('AI BotKit: URL title extraction failed with HTTP ' . $response_code . ' for URL: ' . $url);
                 return $this->get_fallback_title($url);
             }
 
@@ -936,7 +952,6 @@ class Ajax_Handler {
             return $this->get_fallback_title($url);
 
         } catch (\Exception $e) {
-            error_log('AI BotKit: Failed to extract title from URL: ' . $e->getMessage());
             return $this->get_fallback_title($url);
         }
     }
@@ -1573,8 +1588,6 @@ class Ajax_Handler {
             wp_send_json_success($content_types);
 
         } catch (\Exception $e) {
-            error_log('AI BotKit Migration Error: Migration operation failed - ' . $e->getMessage());
-            error_log('AI BotKit Migration Error: Stack trace - ' . $e->getTraceAsString());
             wp_send_json_error(['message' => $e->getMessage()]);
         }
     }
@@ -1636,6 +1649,62 @@ class Ajax_Handler {
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Handle downloading migration log
+     */
+    public function handle_download_migration_log() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions.', 'ai-botkit-for-lead-generation'));
+        }
+
+        $log_file = isset($_GET['log_file']) ? sanitize_file_name($_GET['log_file']) : '';
+        
+        if (empty($log_file)) {
+            wp_die(__('Log file not specified.', 'ai-botkit-for-lead-generation'));
+        }
+
+        $log_path = WP_CONTENT_DIR . '/ai-botkit-logs/' . $log_file;
+        
+        if (!file_exists($log_path)) {
+            wp_die(__('Log file not found.', 'ai-botkit-for-lead-generation'));
+        }
+
+        // Security check - ensure file is within logs directory
+        $real_path = realpath($log_path);
+        $logs_dir = realpath(WP_CONTENT_DIR . '/ai-botkit-logs');
+        
+        if (strpos($real_path, $logs_dir) !== 0) {
+            wp_die(__('Invalid log file path.', 'ai-botkit-for-lead-generation'));
+        }
+
+        // Set headers for download
+        header('Content-Type: text/plain');
+        header('Content-Disposition: attachment; filename="' . basename($log_file) . '"');
+        header('Content-Length: ' . filesize($log_path));
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        // Output file contents
+        readfile($log_path);
+        exit;
+    }
+
+    /**
+     * Handle clearing stuck migration lock
+     */
+    public function handle_clear_migration_lock() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+        }
+
+        delete_transient('ai_botkit_migration_in_progress');
+        wp_send_json_success(['message' => esc_html__('Migration lock cleared successfully.', 'ai-botkit-for-lead-generation')]);
     }
 
     /**
@@ -1713,24 +1782,24 @@ class Ajax_Handler {
             
             // Calculate date range
             if ($time_range === '7 days') {
-                $start_date = date('Y-m-d', strtotime('-7 days'));
-                $end_date = current_time('Y-m-d');
+                $start_date = date('Y-m-d', strtotime('-7 days', current_time('timestamp')));
+                $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
             } elseif ($time_range === '30 days') {
-                $start_date = date('Y-m-d', strtotime('-30 days'));
-                $end_date = current_time('Y-m-d');
+                $start_date = date('Y-m-d', strtotime('-30 days', current_time('timestamp')));
+                $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
             } elseif ($time_range === '90 days') {
-                $start_date = date('Y-m-d', strtotime('-90 days'));
-                $end_date = current_time('Y-m-d');
+                $start_date = date('Y-m-d', strtotime('-90 days', current_time('timestamp')));
+                $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
             } elseif ($time_range === '1 year') {
-                $start_date = date('Y-m-d', strtotime('-1 year'));
-                $end_date = current_time('Y-m-d');
+                $start_date = date('Y-m-d', strtotime('-1 year', current_time('timestamp')));
+                $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
             } else {
-                $start_date = date('Y-m-d', strtotime('-7 days'));
-                $end_date = current_time('Y-m-d');
+                $start_date = date('Y-m-d', strtotime('-7 days', current_time('timestamp')));
+                $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
             }
 
             // Get analytics data
-            $analytics = new \AI_BotKit\Monitoring\Analytics(new \AI_BotKit\Utils\Cache_Manager());
+            $analytics = new \AI_BotKit\Monitoring\Analytics(new \AI_BotKit\Core\Unified_Cache_Manager());
             $data = $analytics->get_dashboard_data([
                 'start_date' => $start_date,
                 'end_date' => $end_date

@@ -3,7 +3,7 @@ namespace AI_BotKit\Monitoring;
 
 use AI_BotKit\Core\LLM_Client;
 use AI_BotKit\Core\RAG_Engine;
-use AI_BotKit\Utils\Cache_Manager;
+use AI_BotKit\Core\Unified_Cache_Manager;
 
 /**
  * Health Checks system for monitoring system health and performance
@@ -37,7 +37,7 @@ class Health_Checks {
     /**
      * Initialize the health checks system
      */
-    public function __construct(RAG_Engine $rag_engine, LLM_Client $llm_client, Cache_Manager $cache_manager) {
+    public function __construct(RAG_Engine $rag_engine, LLM_Client $llm_client, Unified_Cache_Manager $cache_manager) {
         $this->rag_engine = $rag_engine;
         $this->llm_client = $llm_client;
         $this->cache_manager = $cache_manager;

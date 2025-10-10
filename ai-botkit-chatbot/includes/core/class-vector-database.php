@@ -183,11 +183,9 @@ class Vector_Database {
                     WHERE cr.source_id = %d";
                 
                 $results = $wpdb->get_results($wpdb->prepare($query, $bot_id), ARRAY_A);
-                error_log('AI BotKit Vector DB Debug: Local query returned ' . count($results) . ' results for bot_id: ' . $bot_id);
                 
                 // If no results from complex query, try simpler query without content_relationships
                 if (empty($results)) {
-                    error_log('AI BotKit Vector DB Debug: No results from complex query, trying simpler query');
                     $simple_query = "SELECT 
                         c.id as chunk_id,
                         c.content,
@@ -202,7 +200,6 @@ class Vector_Database {
                         JOIN {$this->table_prefix}documents d ON c.document_id = d.id";
                     
                     $results = $wpdb->get_results($simple_query, ARRAY_A);
-                    error_log('AI BotKit Vector DB Debug: Simple query returned ' . count($results) . ' results');
                 }
                 
                 // Add enrollment metadata to results

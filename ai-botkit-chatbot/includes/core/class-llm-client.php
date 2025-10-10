@@ -1,7 +1,7 @@
 <?php
 namespace AI_BotKit\Core;
 
-use AI_BotKit\Utils\Cache_Manager;
+use AI_BotKit\Core\Unified_Cache_Manager;
 
 /**
  * LLM Client for handling interactions with Language Model APIs
@@ -21,7 +21,7 @@ class LLM_Client {
      * Initialize the client
      */
     public function __construct() {
-        $this->cache_manager = new Cache_Manager();
+        $this->cache_manager = new Unified_Cache_Manager();
         $this->load_default_config();
     }
     
@@ -57,7 +57,7 @@ class LLM_Client {
     public function generate_completion(array $messages, array $parameters = []): array {
         // Try to get from cache first
         $cache_key = 'completion_' . md5(serialize($messages) . serialize($parameters));
-        $cached_response = $this->cache_manager->get($cache_key);
+        $cached_response = $this->cache_manager->get($cache_key, 'content');
         
         if ($cached_response !== false) {
             return $cached_response;
@@ -168,7 +168,7 @@ class LLM_Client {
             }
             
             // Cache the response
-            $this->cache_manager->set($cache_key, $response_data, get_option('ai_botkit_cache_ttl', 3600));
+            $this->cache_manager->set($cache_key, $response_data, 'content', get_option('ai_botkit_cache_ttl', 3600));
             
             // Apply filters after response
             do_action('ai_botkit_after_llm_response', $response_data, $request_data);
@@ -291,7 +291,6 @@ class LLM_Client {
                 'stream' => true
             ]);
 
-            error_log(print_r($response, true));
 
             
             $response->getBody()->on('data', function($chunk) use ($callback, $engine) {
@@ -357,7 +356,6 @@ class LLM_Client {
         }, $texts);
 
         if (!$this->is_configured()) {
-            error_log('Warning: LLM client is not configured');
             return [];
         }
         

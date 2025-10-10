@@ -14,20 +14,20 @@ if (!isset($_GET['nonce']) || !wp_verify_nonce( sanitize_text_field( wp_unslash 
 $time_range = '7 days';
 
 if ($time_range === '7 days') {
-    $start_date = date('Y-m-d', strtotime('-7 days'));
-    $end_date = current_time('Y-m-d');
+    $start_date = date('Y-m-d', strtotime('-7 days', current_time('timestamp')));
+    $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
 } elseif ($time_range === '30 days') {
-    $start_date = date('Y-m-d', strtotime('-30 days'));
-    $end_date = current_time('Y-m-d');
+    $start_date = date('Y-m-d', strtotime('-30 days', current_time('timestamp')));
+    $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
 } elseif ($time_range === '90 days') {
-    $start_date = date('Y-m-d', strtotime('-90 days'));
-    $end_date = current_time('Y-m-d');
+    $start_date = date('Y-m-d', strtotime('-90 days', current_time('timestamp')));
+    $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
 } elseif ($time_range === '1 year') {
-    $start_date = date('Y-m-d', strtotime('-1 year'));
-    $end_date = current_time('Y-m-d');
+    $start_date = date('Y-m-d', strtotime('-1 year', current_time('timestamp')));
+    $end_date = date('Y-m-d 23:59:59', current_time('timestamp'));
 }
 // Get analytics data
-$analytics = new AI_BotKit\Monitoring\Analytics(new AI_BotKit\Utils\Cache_Manager());
+$analytics = new AI_BotKit\Monitoring\Analytics(new AI_BotKit\Core\Unified_Cache_Manager());
 $data = $analytics->get_dashboard_data([
     'start_date' => $start_date,
     'end_date' => $end_date

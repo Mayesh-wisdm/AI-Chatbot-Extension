@@ -3,7 +3,7 @@ namespace AI_BotKit\Admin;
 
 use AI_BotKit\Core\RAG_Engine;
 use AI_BotKit\Models\Chatbot;
-use AI_BotKit\Utils\Cache_Manager;
+use AI_BotKit\Core\Unified_Cache_Manager;
 use AI_BotKit\Admin\Ajax_Handler;
 use AI_BotKit\Models\Conversation;
 /**
@@ -58,10 +58,10 @@ class Admin {
      *
      * @param string $plugin_name The name of this plugin.
      * @param string $version The version of this plugin.
-     * @param Cache_Manager|null $cache_manager Optional. Cache manager instance.
+     * @param Unified_Cache_Manager|null $cache_manager Optional. Cache manager instance.
      * @param RAG_Engine|null $rag_engine Optional. RAG engine instance.
      */
-    public function __construct($plugin_name, $version, Cache_Manager $cache_manager = null, RAG_Engine $rag_engine = null) {
+    public function __construct($plugin_name, $version, Unified_Cache_Manager $cache_manager = null, RAG_Engine $rag_engine = null) {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
         $this->cache_manager = $cache_manager;
@@ -406,7 +406,11 @@ class Admin {
         wp_enqueue_script('sweetalert2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11', array(), '11.0.0', true);
 
         // Enqueue migration wizard scripts on knowledge base page
-        if (strpos($hook, 'ai-botkit') !== false && isset($_GET['tab']) && $_GET['tab'] === 'knowledge') {
+        // Check both tab=knowledge and page=ai-botkit-knowledge
+        $is_knowledge_page = (strpos($hook, 'ai-botkit') !== false && isset($_GET['tab']) && $_GET['tab'] === 'knowledge') 
+                          || (strpos($hook, 'ai-botkit-knowledge') !== false);
+        
+        if ($is_knowledge_page) {
             wp_enqueue_script(
                 'ai-botkit-migration-wizard',
                 AI_BOTKIT_PLUGIN_URL . 'admin/js/migration-wizard.js',
@@ -441,6 +445,7 @@ class Admin {
             'i18n' => $this->get_js_translations(),
             'stats' => $this->get_stats(),
             'engines' => $this->get_engines(),
+            'api_key_status' => $this->get_api_key_status(),
             'page' => $this->get_current_page(),
             'site_wide_chatbot_id' => get_option('ai_botkit_chatbot_sitewide_enabled')
         ));
@@ -712,6 +717,20 @@ class Admin {
                 )
             )
         );
+    }
+
+    /**
+     * Get API key status for all engines
+     */
+    private function get_api_key_status() {
+        $engines = $this->get_engines();
+        $status = [];
+        
+        foreach ($engines as $engine_id => $engine) {
+            $status[$engine_id] = !empty(get_option('ai_botkit_'.$engine_id.'_api_key', ''));
+        }
+        
+        return $status;
     }
 
     private function before_main_content() {

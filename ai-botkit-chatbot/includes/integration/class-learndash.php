@@ -200,7 +200,6 @@ class LearnDash {
                 $this->update_content_status($item->id, 'completed');
             } catch (\Exception $e) {
                 $this->update_content_status($item->id, 'error');
-                error_log('LearnDash content processing error: ' . $e->getMessage());
             }
         }
     }

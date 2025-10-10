@@ -243,7 +243,6 @@ jQuery(document).ready(function($) {
     // Append message to chat
     function appendMessage(chatContainer, role, content, sources = []) {
         const template = chatContainer.find('template[id$="-message-template"]').html();
-        console.log(template);
         const message = $(template);
         
         message.addClass(role);

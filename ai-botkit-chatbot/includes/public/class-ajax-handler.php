@@ -36,7 +36,6 @@ class Ajax_Handler {
                 $this->rate_limiter = null;
             }
         } catch (\Exception $e) {
-            error_log('AI BotKit Public AJAX Error: Rate_Limiter initialization failed - ' . $e->getMessage());
             $this->rate_limiter = null;
         }
         
@@ -151,7 +150,6 @@ class Ajax_Handler {
             // Return response data
             wp_send_json_success($response_data);
         } catch (\Exception $e) {
-            error_log('AI BotKit Public AJAX Error: Request processing failed - ' . $e->getMessage());
             wp_send_json_error([
                 'message' => $e->getMessage(),
                 'code' => $e->getCode()

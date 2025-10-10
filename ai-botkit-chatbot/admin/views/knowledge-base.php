@@ -368,7 +368,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 		<div class="ai-botkit-training-modal-header ai-botkit-wp-header-back">
 			<h3><i class="ti ti-chevron-left"></i> <?php esc_html_e('All', 'ai-botkit-for-lead-generation'); ?> <span class="ai-botkit-wp-header-post-title"><?php esc_html_e('Posts', 'ai-botkit-for-lead-generation'); ?></span></h3>
 		</div>
-		<p class="ai-botkit-training-modal-subtext"><?php esc_html_e('Add from your WordPress data to train your chat bhot', 'ai-botkit-for-lead-generation'); ?></p>
+		<p class="ai-botkit-training-modal-subtext"><?php esc_html_e('Add from your WordPress data to train your chatbot', 'ai-botkit-for-lead-generation'); ?></p>
 
 
 		<div class="ai-botkit-training-modal-body ai-botkit-wp-types-modal">
@@ -558,7 +558,6 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                     <p><?php esc_html_e('Loading content types...', 'ai-botkit-for-lead-generation'); ?></p>
                 </div>
             </div>
-
 
             <!-- Step 4: Confirmation -->
             <div class="ai-botkit-migration-step" data-step="4" style="display: none;">

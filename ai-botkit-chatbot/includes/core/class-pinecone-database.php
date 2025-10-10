@@ -78,19 +78,22 @@ class Pinecone_Database {
      * @return array Response from Pinecone
      * @throws Pinecone_Exception If the request fails.
      */
-    public function upsert_vectors($vectors) {
+    public function upsert_vectors($vector) {
         if (!$this->is_configured()) {
             throw new Pinecone_Exception('Pinecone is not properly configured');
         }
 
         try {
+            // Clean vector before sending to Pinecone
+            $cleaned_vector = $this->clean_vector_for_pinecone($vector);
+            
             $args = array(
                 'headers'     => array(
                     'Api-Key'      => $this->api_key,
                     'Content-Type' => 'application/json',
                 ),
                 'body'        => wp_json_encode([
-                    'vectors' => $vectors,
+                    'vectors' => [$cleaned_vector],
                 ]),
             );
 
@@ -102,8 +105,10 @@ class Pinecone_Database {
 
             $response_code = wp_remote_retrieve_response_code($response);
             if ($response_code !== 200) {
+                $error_message = wp_remote_retrieve_response_message($response);
+                $response_body = wp_remote_retrieve_body($response);
                 throw new Pinecone_Exception(
-                    'Pinecone API error: ' . wp_remote_retrieve_response_message($response),
+                    'Pinecone API error: ' . $error_message . ' (Response: ' . $response_body . ')',
                     $response_code
                 );
             }
@@ -128,6 +133,72 @@ class Pinecone_Database {
                 $e
             );
         }
+    }
+
+    /**
+     * Clean vector for Pinecone compatibility
+     * 
+     * @param array $vector Vector to clean
+     * @return array Cleaned vector
+     */
+    private function clean_vector_for_pinecone(array $vector): array {
+        // Validate required fields
+        if (!isset($vector['id'])) {
+            throw new Pinecone_Exception('Vector is missing required "id" field');
+        }
+        
+        if (!isset($vector['values']) || empty($vector['values'])) {
+            throw new Pinecone_Exception('Vector is missing required "values" field or values are empty');
+        }
+        
+        $cleaned_vector = [
+            'id' => (string) $vector['id'],
+            'values' => $vector['values'],
+        ];
+        
+        // Clean metadata - only include essential fields for Pinecone
+        if (isset($vector['metadata']) && is_array($vector['metadata'])) {
+            $cleaned_metadata = [];
+            
+            // Only include essential metadata fields
+            $essential_fields = [
+                'content', 'document_id', 'chunk_index', 'post_type', 'source_type', 'source',
+                'post_id', 'mime_type', 'extension', 'last_modified', 'total_chunks',
+                'has_previous', 'has_next', 'has_overlap_prev', 'has_overlap_next',
+                'size', 'original_size', 'migration_source', 'migration_timestamp'
+            ];
+            
+            foreach ($vector['metadata'] as $key => $value) {
+                // Skip null values and non-essential fields
+                if ($value === null || !in_array($key, $essential_fields)) {
+                    continue;
+                }
+                
+                // Handle arrays by converting to JSON
+                if (is_array($value)) {
+                    $string_value = wp_json_encode($value);
+                } else {
+                    $string_value = (string) $value;
+                }
+                
+                // Truncate if too long
+                if (strlen($string_value) > 1000) {
+                    $string_value = substr($string_value, 0, 1000) . '...';
+                }
+                
+                // Remove any control characters that might cause issues
+                $string_value = preg_replace('/[\x00-\x1F\x7F]/', '', $string_value);
+                
+                // Only include if not empty after cleaning
+                if (!empty(trim($string_value))) {
+                    $cleaned_metadata[$key] = $string_value;
+                }
+            }
+            
+            $cleaned_vector['metadata'] = $cleaned_metadata;
+        }
+        
+        return $cleaned_vector;
     }
 
     /**
@@ -158,10 +229,9 @@ class Pinecone_Database {
                 ));
                 
                 if (!empty($document_ids)) {
-                    // Filter by document_id instead of bot_id (since bot_id doesn't exist in vector metadata)
-                    $filter['document_id'] = array('$in' => array_map('intval', $document_ids));
+                    // Filter by document_id - MUST use strings because metadata values are stored as strings in Pinecone
+                    $filter['document_id'] = array('$in' => array_map('strval', $document_ids));
                 } else {
-                    // No documents associated with this chatbot, return empty results
                     return array();
                 }
             }
@@ -279,12 +349,20 @@ class Pinecone_Database {
                 ));
                 
                 if (!empty($document_ids)) {
-                    // Filter by document_id instead of bot_id (since bot_id doesn't exist in vector metadata)
-                    $filter['document_id'] = array('$in' => array_map('intval', $document_ids));
+                    // Filter by document_id - MUST use strings because metadata values are stored as strings in Pinecone
+                    $filter['document_id'] = array('$in' => array_map('strval', $document_ids));
                 } else {
                     // No documents associated with this chatbot, return empty results
                     return array();
                 }
+            }
+            
+            // For migration (when bot_id is null), we need to handle the case where we want to get all vectors
+            // Create a proper query vector if a dummy one is provided
+            if (is_array($query_vector) && count($query_vector) === 1 && $query_vector[0] === 0.0) {
+                // This is likely a migration request - create a proper query vector
+                // Use a zero vector of the expected dimension (typically 1536 for OpenAI embeddings)
+                $query_vector = array_fill(0, 1536, 0.0);
             }
 
             // Get user enrollment context but don't filter results
@@ -302,12 +380,15 @@ class Pinecone_Database {
                     'filter' => !empty($filter) ? $filter : null,
             ];
 
+            // Log the request for debugging
+
             $args = array(
                 'headers'     => array(
                     'Api-Key'      => $this->api_key,
                     'Content-Type' => 'application/json',
                 ),
                 'body'        => wp_json_encode($request_body),
+                'timeout'      => 30, // Increase timeout for large requests
             );
 
             $response = wp_remote_post($this->get_base_url() . '/query', $args);
@@ -404,8 +485,19 @@ class Pinecone_Database {
 
             $response_code = wp_remote_retrieve_response_code($response);
             if ($response_code !== 200) {
+                // Handle 404 (Not Found) gracefully - vectors may not exist
+                if ($response_code === 404) {
+                    return [
+                        'deletedCount' => 0,
+                        'message' => 'Vectors not found (already deleted or never existed)'
+                    ];
+                }
+                
+                $error_message = wp_remote_retrieve_response_message($response);
+                $response_body = wp_remote_retrieve_body($response);
+                
                 throw new Pinecone_Exception(
-                    'Pinecone API error: ' . wp_remote_retrieve_response_message($response),
+                    'Pinecone API error: ' . $error_message . ' (Response: ' . $response_body . ')',
                     $response_code
                 );
             }
@@ -652,7 +744,6 @@ class Pinecone_Database {
             }
 
         } catch (\Exception $e) {
-            error_log('AI BotKit Pinecone Error: Delete all vectors failed - ' . $e->getMessage());
             throw new Pinecone_Exception(
                 'Unexpected error during Pinecone delete all vectors: ' . $e->getMessage(),
                 0,
@@ -697,7 +788,6 @@ class Pinecone_Database {
             return true;
 
         } catch (\Exception $e) {
-            error_log('AI BotKit Pinecone Error: Connection test failed - ' . $e->getMessage());
             throw new Pinecone_Exception(
                 'Pinecone connection test failed: ' . $e->getMessage(),
                 0,

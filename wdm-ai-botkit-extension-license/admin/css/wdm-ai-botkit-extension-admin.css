@@ -7,6 +7,18 @@
  * @subpackage Wdm_Ai_Botkit_Extension/admin/css
  */
 
+/* Loading Icon Animation */
+.ai-botkit-loading-icon {
+  font-size: 1rem;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* AI BotKit Extension License Container */
 .ai-botkit-extension-license-container {
     max-width: 100%;

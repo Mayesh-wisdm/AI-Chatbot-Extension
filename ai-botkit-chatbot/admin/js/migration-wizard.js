@@ -47,6 +47,11 @@
                 this.clearDatabase('knowledge_base');
             });
 
+            // Clear stuck migration button (dynamically added)
+            $(document).on('click', '#ai-botkit-clear-migration-lock', () => {
+                this.clearMigrationLock();
+            });
+
             // Modal close
             $('.ai-botkit-modal-close, #ai-botkit-migration-close').on('click', () => {
                 this.closeWizard();
@@ -89,11 +94,17 @@
             this.showStep(1);
             $('#ai-botkit-migration-modal').show();
             this.updateNavigationButtons();
+            
+            // Reset button state and hide log
+            $('#ai-botkit-migration-start').prop('disabled', false).removeClass('disabled');
+            $('#migration-log').hide().removeClass('has-content');
         }
 
         closeWizard() {
             $('#ai-botkit-migration-modal').hide();
             this.resetWizard();
+            // Reload migration status when closing to update main page
+            this.loadMigrationStatus();
         }
 
         resetWizard() {
@@ -144,6 +155,35 @@
             if (step === 3) {
                 this.loadContentTypes();
             }
+            
+            // Update migration summary when reaching step 4
+            if (step === 4) {
+                this.updateMigrationSummary();
+            }
+        }
+        
+        updateMigrationSummary() {
+            const summaryList = $('#migration-summary-list');
+            summaryList.empty();
+            
+            // Add direction
+            const directionText = this.migrationOptions.direction === 'to_pinecone' 
+                ? 'Local Database → Pinecone' 
+                : 'Pinecone → Local Database';
+            summaryList.append(`<li><strong>Direction:</strong> ${directionText}</li>`);
+            
+            // Add scope
+            const scopeText = this.migrationOptions.scope === 'all' 
+                ? 'All Data' 
+                : 'By Content Type';
+            summaryList.append(`<li><strong>Scope:</strong> ${scopeText}</li>`);
+            
+            // Add content types if applicable
+            if (this.migrationOptions.scope === 'by_type' && this.migrationOptions.content_types) {
+                const types = this.migrationOptions.content_types.join(', ');
+                summaryList.append(`<li><strong>Content Types:</strong> ${types}</li>`);
+            }
+            
         }
 
         updateNavigationButtons() {
@@ -280,8 +320,23 @@
         }
 
         startMigration() {
+            // Validate confirmation checkbox
+            if (!this.validateCurrentStep()) {
+                if (typeof AiBotkitToast !== 'undefined') {
+                    AiBotkitToast.error('Please confirm that you have backed up your data');
+                } else {
+                    alert('Please confirm that you have backed up your data');
+                }
+                return;
+            }
+            
             this.showStep('progress');
-            this.updateNavigationButtons();
+            
+            // Hide all navigation buttons during migration
+            $('#ai-botkit-migration-prev').hide();
+            $('#ai-botkit-migration-next').hide();
+            $('#ai-botkit-migration-start').prop('disabled', true).addClass('disabled');
+            $('#migration-log').hide().removeClass('has-content');
             
             // Show progress toast
             let progressToast = null;
@@ -354,8 +409,17 @@
                         AiBotkitToast.hide(progressToast);
                     }
                     
+                    // Re-enable start button
+                    $('#ai-botkit-migration-start').prop('disabled', false).removeClass('disabled');
+                    
+                    // Keep Previous button hidden after migration completes
+                    $('#ai-botkit-migration-prev').hide();
+                    
+                    // Show results (progress step stays visible)
                     if (response.success) {
                         this.showMigrationResult(response.data);
+                        // Reload migration status to clear "in progress" indicator
+                        this.loadMigrationStatus();
                     } else {
                         this.showError('Migration failed: ' + response.data);
                     }
@@ -370,6 +434,12 @@
                     if (progressToast && typeof AiBotkitToast !== 'undefined') {
                         AiBotkitToast.hide(progressToast);
                     }
+                    
+                    // Re-enable start button
+                    $('#ai-botkit-migration-start').prop('disabled', false).removeClass('disabled');
+                    
+                    // Keep Previous button hidden after migration error
+                    $('#ai-botkit-migration-prev').hide();
                     
                     let errorMessage = 'Migration failed due to a server error';
                     
@@ -397,22 +467,49 @@
         }
 
         showMigrationResult(result) {
+            // Keep on progress step - results show below progress bar
             const log = $('#migration-log');
-            const statusIcon = result.success ? '✅' : '❌';
-            const statusClass = result.success ? 'success' : 'error';
+            
+            // Determine actual success status based on errors
+            const hasErrors = result.error_count && result.error_count > 0;
+            const hasMigrated = result.migrated_count && result.migrated_count > 0;
+            
+            let statusIcon, statusClass, statusText;
+            
+            if (!hasMigrated && hasErrors) {
+                // Complete failure
+                statusIcon = '❌';
+                statusClass = 'error';
+                statusText = 'Failed';
+            } else if (hasMigrated && hasErrors) {
+                // Partial success
+                statusIcon = '⚠️';
+                statusClass = 'warning';
+                statusText = 'Completed with Errors';
+            } else if (hasMigrated && !hasErrors) {
+                // Complete success
+                statusIcon = '✅';
+                statusClass = 'success';
+                statusText = 'Completed Successfully';
+            } else {
+                // No items to migrate
+                statusIcon = 'ℹ️';
+                statusClass = 'info';
+                statusText = 'No Items to Migrate';
+            }
             
             // Show the log section when there's content
-            log.addClass('has-content');
+            log.addClass('has-content').show();
             
             log.html(`
                 <div class="ai-botkit-migration-result ${statusClass}">
                     <div class="ai-botkit-result-header">
-                        <h5>${statusIcon} Migration ${result.success ? 'Completed' : 'Failed'}</h5>
+                        <h5>${statusIcon} Migration ${statusText}</h5>
                     </div>
                     <div class="ai-botkit-result-details">
                         <div class="ai-botkit-result-item">
                             <span class="ai-botkit-result-label">Status:</span>
-                            <span class="ai-botkit-result-value ${statusClass}">${result.success ? 'Success' : 'Failed'}</span>
+                            <span class="ai-botkit-result-value ${statusClass}">${statusText}</span>
                         </div>
                         <div class="ai-botkit-result-item">
                             <span class="ai-botkit-result-label">Message:</span>
@@ -436,6 +533,16 @@
                                 <span class="ai-botkit-result-value">${result.duration}</span>
                             </div>
                         ` : ''}
+                        ${result.log_file ? `
+                            <div class="ai-botkit-result-item">
+                                <span class="ai-botkit-result-label">Log File:</span>
+                                <span class="ai-botkit-result-value">
+                                    <a href="${aiBotKitMigration.ajaxUrl}?action=ai_botkit_download_migration_log&log_file=${encodeURIComponent(result.log_file)}&nonce=${aiBotKitMigration.nonce}" class="ai-botkit-btn-link" download>
+                                        <i class="ti ti-download"></i> Download Log
+                                    </a>
+                                </span>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `);
@@ -446,9 +553,10 @@
         }
 
         showError(message) {
+            // Keep on progress step - error shows below progress bar
             const log = $('#migration-log');
             // Show the log section when there's content
-            log.addClass('has-content');
+            log.addClass('has-content').show();
             log.html(`<div class="ai-botkit-error">${message}</div>`);
             
             // Hide start button and show close button
@@ -459,7 +567,6 @@
         loadMigrationStatus() {
             // Check if migration section exists (Pinecone configured)
             if ($('.ai-botkit-migration-section').length === 0) {
-                console.log('Migration section not available - Pinecone not configured');
                 return;
             }
             
@@ -528,14 +635,23 @@
 
             // Update migration status
             const migrationInProgress = status.migration_in_progress;
-            const migrationStatusText = migrationInProgress ? 'In Progress' : 'Ready';
-            const migrationStatusClass = migrationInProgress ? 'warning' : 'success';
             
-            $('#migration-status').html(`
-                <span class="ai-botkit-status-badge ai-botkit-status-${migrationStatusClass}">
-                    ${migrationStatusText}
-                </span>
-            `);
+            if (migrationInProgress) {
+                $('#migration-status').html(`
+                    <span class="ai-botkit-status-badge ai-botkit-status-warning">
+                        🔄 In Progress
+                    </span>
+                    <button id="ai-botkit-clear-migration-lock" class="ai-botkit-btn-sm" style="margin-left: 10px; background: #d63638; color: white;">
+                        Clear Stuck Migration
+                    </button>
+                `);
+            } else {
+                $('#migration-status').html(`
+                    <span class="ai-botkit-status-badge ai-botkit-status-success">
+                        Ready
+                    </span>
+                `);
+            }
 
             // Update last migration time
             const lastMigration = status.last_migration;
@@ -586,26 +702,81 @@
             $('#migration-status-display').removeClass('ai-botkit-loading-content');
         }
 
+        clearMigrationLock() {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Clear Stuck Migration?',
+                    html: `
+                        <div style="text-align: left;">
+                            <p><strong>This will clear the migration lock if a migration got stuck.</strong></p>
+                            <p>Only use this if:</p>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>A migration failed without completing</li>
+                                <li>The system shows "In Progress" but nothing is happening</li>
+                                <li>You've waited at least 5 minutes</li>
+                            </ul>
+                            <p style="color: #d63638; font-weight: bold;">⚠️ Do NOT use this if a migration is actually running!</p>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d63638',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Clear Lock',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: aiBotKitMigration.ajaxUrl,
+                            type: 'POST',
+                            data: {
+                                action: 'ai_botkit_clear_migration_lock',
+                                nonce: aiBotKitMigration.nonce
+                            },
+                            success: (response) => {
+                                if (response.success) {
+                                    if (typeof AiBotkitToast !== 'undefined') {
+                                        AiBotkitToast.success('Migration lock cleared successfully');
+                                    }
+                                    this.loadMigrationStatus();
+                                } else {
+                                    if (typeof AiBotkitToast !== 'undefined') {
+                                        AiBotkitToast.error(response.data.message || 'Failed to clear migration lock');
+                                    }
+                                }
+                            },
+                            error: () => {
+                                if (typeof AiBotkitToast !== 'undefined') {
+                                    AiBotkitToast.error('Failed to clear migration lock');
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
         clearDatabase(database) {
             let databaseName, title, description, actions;
             
             if (database === 'local') {
-                databaseName = 'Vector Data';
-                title = 'Clear Vector Data?';
+                databaseName = 'Local Vector Data';
+                title = 'Clear Local Vector Data?';
                 description = `
                     <div style="text-align: left;">
-                        <p><strong>Are you sure you want to clear the vector data?</strong></p>
-                        <p>This action will:</p>
+                        <p><strong>Are you sure you want to clear the LOCAL vector database?</strong></p>
+                        <p>This action will clear data stored in your WordPress database:</p>
                         <ul style="margin: 10px 0; padding-left: 20px;">
-                            <li>Remove all stored vectors and embeddings</li>
-                            <li>Delete all chunk data</li>
-                            <li>Clear migration history</li>
+                            <li>Remove all stored vectors and embeddings from local database</li>
+                            <li>Delete all chunk data from local storage</li>
+                            <li>Clear local migration history</li>
                         </ul>
+                        <p style="color: #0073aa; font-weight: bold;">ℹ️ Pinecone data will NOT be affected</p>
                         <p style="color: #dba617; font-weight: bold;">📋 Document metadata will be preserved for knowledge base display</p>
                         <p style="color: #d63638; font-weight: bold;">⚠️ This action cannot be undone!</p>
                     </div>
                 `;
-                actions = ['Remove all vector data', 'Clear migration history'];
+                actions = ['Remove all local vector data', 'Clear local migration history'];
             } else if (database === 'pinecone') {
                 databaseName = 'Pinecone Database';
                 title = 'Clear Pinecone Database?';

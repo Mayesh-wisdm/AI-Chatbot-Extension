@@ -259,7 +259,6 @@ class Activator {
         if (!file_exists($ai_botkit_dir)) {
             $result = wp_mkdir_p($ai_botkit_dir);
             if (!$result) {
-                error_log('AI BotKit Activator Error: Failed to create directory - ' . $ai_botkit_dir);
                 return;
             }
         }
@@ -269,7 +268,6 @@ class Activator {
         if (!file_exists($documents_dir)) {
             $result = wp_mkdir_p($documents_dir);
             if (!$result) {
-                error_log('AI BotKit Activator Error: Failed to create documents directory - ' . $documents_dir);
                 return;
             }
         }
@@ -283,7 +281,6 @@ class Activator {
             
             $result = file_put_contents($htaccess_file, $htaccess_content);
             if ($result === false) {
-                error_log('AI BotKit Activator Error: Failed to create .htaccess file - ' . $htaccess_file);
             }
         }
     }

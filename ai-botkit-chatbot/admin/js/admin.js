@@ -357,6 +357,11 @@ jQuery(document).ready(function($) {
         $('.ai-botkit-wizard-container').show();
         $('.ai-botkit-dashboard-wrapper').hide();
         $('.ai-botkit-sidebar-wrapper').hide();
+        
+        // Reset form and button state for new bot creation
+        $('#ai-botkit-chatbot-id').val('');
+        $('#ai-botkit-save-btn').html('Create Bot');
+        $('#ai-botkit-save-btn').prop('disabled', false);
         // loadAvailableDocuments();
 
     });
@@ -423,6 +428,27 @@ jQuery(document).ready(function($) {
             }
         });
     }
+
+    // Select All checkbox in table header for existing knowledge base (Step 1)
+    $('#ai-botkit-existing-kb-select-all').on('change', function() {
+        const isChecked = $(this).prop('checked');
+        $('#ai-botkit-existing-kb-table-body tr:visible .ai-botkit-checkbox').prop('checked', isChecked);
+    });
+
+    // Update header checkbox when individual items are checked/unchecked
+    $(document).on('change', '#ai-botkit-existing-kb-table-body .ai-botkit-checkbox', function() {
+        const $allCheckboxes = $('#ai-botkit-existing-kb-table-body tr:visible .ai-botkit-checkbox');
+        const $checkedCheckboxes = $allCheckboxes.filter(':checked');
+        const $headerCheckbox = $('#ai-botkit-existing-kb-select-all');
+        
+        if ($checkedCheckboxes.length === 0) {
+            $headerCheckbox.prop('checked', false).prop('indeterminate', false);
+        } else if ($checkedCheckboxes.length === $allCheckboxes.length) {
+            $headerCheckbox.prop('checked', true).prop('indeterminate', false);
+        } else {
+            $headerCheckbox.prop('checked', false).prop('indeterminate', true);
+        }
+    });
 
     $('#ai-botkit-add-from-kb').click(function(e) {
         e.preventDefault();
@@ -498,10 +524,36 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // $('#ai-botkit-add-data-btn').click(function(e) {
-    //     $('.ai-botkit-add-data-items').css('display', 'flex');
-    //     $('.ai-botkit-add-data-btn').css('display', 'none');
-    // });
+    // Add Data button dropdown handling
+    $('#ai-botkit-add-data-btn').on('click touchstart', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const $dropdown = $('.ai-botkit-add-data-items');
+        const isVisible = $dropdown.is(':visible');
+        
+        // Hide all other dropdowns first
+        $('.ai-botkit-add-data-items').not($dropdown).hide();
+        
+        if (isVisible) {
+            $dropdown.hide();
+        } else {
+            $dropdown.show();
+        }
+    });
+    
+    // Hide dropdown when clicking outside or on backdrop
+    $(document).on('click touchstart', function(e) {
+        if (!$(e.target).closest('.ai-botkit-add-data-btn').length && 
+            !$(e.target).closest('.ai-botkit-add-data-items').length) {
+            $('.ai-botkit-add-data-items').hide();
+        }
+    });
+    
+    // Prevent dropdown from closing when clicking inside it
+    $('.ai-botkit-add-data-items').on('click touchstart', function(e) {
+        e.stopPropagation();
+    });
 
     let currentStep = 0;
     let totalSteps =5;
@@ -802,15 +854,20 @@ jQuery(document).ready(function($) {
     $("#ai-botkit-add-url").on("click", function (e) {
         e.preventDefault();
         const $input = $("#ai-botkit-url-input");
+        const $titleInput = $("#ai-botkit-url-title-input");
         const url = $input.val().trim();
+        const title = $titleInput.val().trim();
+
 
         const formData = new FormData();
         formData.append('action', 'ai_botkit_import_url');
         formData.append('nonce', ai_botkitAdmin.nonce);
         formData.append('url', url);
+        formData.append('title', title);
 
         const button = $(this);
-        const buttonHtml = button.html();
+        const $btnText = button.find('.ai-botkit-btn-text');
+        const $btnLoading = button.find('.ai-botkit-btn-loading');
 
         $.ajax({
             url: ajaxurl,
@@ -819,15 +876,18 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             beforeSend: function() {
-                button.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i>');
+                $btnText.hide();
+                $btnLoading.show();
+                button.prop('disabled', true);
             },
             success: function(response) {
                 if (response.success) {
                     const itemActions = `<span class="ai-botkit-remove-training-item"><i class="ti ti-trash"></i></span>`;
+                    const displayTitle = title || url;
 
                     const itemHtml = `
                     <tr data-id="${response.data.document_id}" data-type="url">
-                        <td>${url}</td>
+                        <td>${displayTitle}</td>
                         <td>URL</td>
                         <td><span class="ai-botkit-badge ai-botkit-badge-info">Processing</span></td>
                         <td>${itemActions}</td>
@@ -838,6 +898,7 @@ jQuery(document).ready(function($) {
                     $('.ai-botkit-training-data-url').css('display', 'flex');
                     $('.ai-botkit-no-training-docs').hide();
                     $input.val("");
+                    $titleInput.val("");
 
                     var imports = $('#ai-botkit-imports').val();
                     imports = imports ? JSON.parse(imports) : []; // if empty, set as []
@@ -853,10 +914,13 @@ jQuery(document).ready(function($) {
                 $('#ai-botkit-url-error-message').addClass('show');
             },
             complete: function() {
-                button.html(buttonHtml);
+                $btnText.show();
+                $btnLoading.hide();
+                button.prop('disabled', false);
                 setTimeout(function() {
                     $('#ai-botkit-url-error-message').removeClass('show');
                     $('#ai-botkit-url-input').val('');
+                    $('#ai-botkit-url-title-input').val('');
                     $('#ai-botkit-add-training-url-modal').fadeOut();
                 }, 2000);
             }
@@ -1140,9 +1204,34 @@ jQuery(document).ready(function($) {
         }
     });
 
+    // Track if a save request is in progress
+    let isSavingInProgress = false;
+
     // save chatbot
     $("#ai-botkit-save-btn").on("click", function (e) {
         e.preventDefault();
+        
+        // Prevent multiple simultaneous requests
+        if (isSavingInProgress) {
+            return;
+        }
+        
+        isSavingInProgress = true;
+        
+        // Get current chatbot ID to determine if this is create or update
+        const chatbotId = $('#ai-botkit-chatbot-id').val();
+        const isNewBot = !chatbotId || chatbotId === '';
+        
+        // Set button state and text
+        const $saveBtn = $("#ai-botkit-save-btn");
+        const originalText = $saveBtn.html();
+        $saveBtn.prop('disabled', true);
+        
+        if (isNewBot) {
+            $saveBtn.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Creating Bot...');
+        } else {
+            $saveBtn.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Saving...');
+        }
         
         // Temporarily disable required attributes on form fields to allow form submission
         $('#ai-botkit-chatbot-form input[required]').prop('required', false);
@@ -1162,7 +1251,12 @@ jQuery(document).ready(function($) {
                 $(".ai-botkit-save-chatbot-status").html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i>');
             },
             success: function(response) {
-                $("#ai-botkit-save-btn").html('Save');
+                // Update chatbot ID in the form
+                $('#ai-botkit-chatbot-id').val(response.data.chatbot_id);
+                
+                // Change button to "Save Bot" after successful creation
+                $saveBtn.html('Save Bot');
+                $saveBtn.prop('disabled', false);
                 
                 $(".ai-botkit-save-chatbot-status").html(ai_botkitAdmin.i18n.successChatbotSaved);
                 $(".ai-botkit-save-chatbot-status").addClass('success');
@@ -1177,12 +1271,16 @@ jQuery(document).ready(function($) {
                 $('.ai-botkit-tab').removeClass("active");
                 $('.ai-botkit-tab[data-step="5"]').addClass("active");
                 $('.ai-botkit-tab[data-step="5"]').removeClass("hidden");
-
-                
-                
             },
             error: function() {
-                $("#ai-botkit-save-btn").html('Save');
+                // Reset button to original state on error
+                if (isNewBot) {
+                    $saveBtn.html('Create Bot');
+                } else {
+                    $saveBtn.html('Save Bot');
+                }
+                $saveBtn.prop('disabled', false);
+                
                 $(".ai-botkit-save-chatbot-status").html(ai_botkitAdmin.i18n.errorChatbotSaved);
                 $(".ai-botkit-save-chatbot-status").addClass('error');
                 
@@ -1190,7 +1288,8 @@ jQuery(document).ready(function($) {
                 $('#ai-botkit-chatbot-form input[required]').prop('required', true);
             },
             complete: function() {
-                $("#ai-botkit-save-btn").html('Save');
+                // Reset the saving flag
+                isSavingInProgress = false;
             }
         });
         
@@ -1231,9 +1330,10 @@ jQuery(document).ready(function($) {
                     } else {
                         $('.ai-botkit-chat-bubble img').attr('src', response.data.url);
                     }
-                    AiBotkitToast.success('Avatar uploaded successfully!');
+                    AiBotkitToast.success((type === 'avatar' ? 'Avatar' : 'Widget') + ' uploaded successfully!');
                 } else {
-                    AiBotkitToast.error(response.data.message || 'Failed to upload avatar');
+                    console.error('[AI BotKit] Upload failed:', response.data.message);
+                    AiBotkitToast.error(response.data.message || 'Failed to upload ' + type);
                 }
             },
             error: function() {
@@ -1439,6 +1539,10 @@ jQuery(document).ready(function($) {
                 $('#ai-botkit-chatbot-id').val(response.data.id);
                 $('#chatbot_name').val(response.data.name);
                 $('.ai-botkit-chatbot-wizard-title').text(response.data.name);
+                
+                // Update save button text to "Save Bot" when editing existing bot
+                $('#ai-botkit-save-btn').html('Save Bot');
+                $('#ai-botkit-save-btn').prop('disabled', false);
                 $('#chatbot_active').prop('checked', response.data.active == 1);
                 $('#chatbot_active').parent().parent().hide();
                 $('#chatbot_active_publish').prop('checked', response.data.active == 1);
@@ -1562,6 +1666,7 @@ jQuery(document).ready(function($) {
                 if($('.ai-botkit-bot-avatar-icon[data-icon="' + response.data.style.avatar + '"]').length > 0) {
                     $('.ai-botkit-bot-avatar-icon').removeClass('active');
                     $('.ai-botkit-bot-avatar-icon[data-icon="' + response.data.style.avatar + '"]').addClass('active');
+                    $('#ai-botkit-avatar-value').val(response.data.style.avatar);
                 } else {
                     $(".ai-botkit-avatar-icon-preview").removeClass("hidden");
                     $(".ai-botkit-avatar-icon-preview img").attr("src", response.data.style.avatar);
@@ -1571,6 +1676,7 @@ jQuery(document).ready(function($) {
                     $("#ai-botkit-avatar-value").val(response.data.style.avatar);
                     $('#ai-botkit-avatar-label').hide();
                 }
+                // Always update the preview avatar regardless of type
                 $('.ai-botkit-chat-avatar img').attr('src', response.data.style.avatar);
 
                 // widget icon
@@ -1633,7 +1739,7 @@ jQuery(document).ready(function($) {
 
                 // select location radio button
                 $('.ai-botkit-location-radio').prop('checked', false);
-                $(`input[name="location"][value="${response.data.location}"]`).prop('checked', true);
+                $(`input[name="location"][value="${response.data.style.location}"]`).prop('checked', true);
 
                 // select tone radio button
                 $('.ai-botkit-tone-radio').prop('checked', false);
@@ -1643,7 +1749,8 @@ jQuery(document).ready(function($) {
                 $('#ai-botkit-bot-name').text(response.data.name);
                 $('.ai-botkit-chat-msg p').text(response.data.greeting);
                 
-                if(response.data.location === "bottom-left") {
+                // Fix #3: Use consistent path for location
+                if(response.data.style.location === "bottom-left") {
                     $('.ai-botkit-chat-widget').addClass("bottom-left");
                     $('.ai-botkit-chat-bubble').addClass("bottom-left");
                     $('.ai-botkit-chat-widget').removeClass("bottom-right");
@@ -1728,30 +1835,64 @@ jQuery(document).ready(function($) {
     $('#ai_botkit_engine').on('change', function() {
         const selectedEngine = $(this).val();
         const engines = ai_botkitAdmin.engines;
+        const apiKeyStatus = ai_botkitAdmin.api_key_status;
+        
+        // Check if engine has API key
+        const hasApiKey = apiKeyStatus && apiKeyStatus[selectedEngine];
+        
+        if (!hasApiKey) {
+            // Show toast message for missing API key
+            AiBotkitToast.show(
+                'API key for ' + (engines[selectedEngine] ? engines[selectedEngine].name : selectedEngine) + ' not available. Please add the API key in settings or select a different engine.',
+                'warning',
+                { 
+                    duration: 8000,
+                    title: 'API Key Required'
+                }
+            );
+            
+            // Clear chat model dropdown
+            const $chatModelSelect = $('#ai_botkit_chat_model');
+            $chatModelSelect.empty();
+            $chatModelSelect.append('<option value="">Select a model</option>');
+            
+            // Clear embedding model dropdown
+            const $embeddingModelSelect = $('#ai_botkit_embedding_model');
+            $embeddingModelSelect.empty();
+            $embeddingModelSelect.append('<option value="">Select an embedding model</option>');
+            
+            return;
+        }
         
         // Show/hide API key fields
         $('.engine-settings').hide();
         $('.engine-' + selectedEngine).show();
         
-        // Update chat models
+        // Update chat models if API key is available
         const $chatModelSelect = $('#ai_botkit_chat_model');
         $chatModelSelect.empty();
-        Object.entries(engines[selectedEngine].chat_models).forEach(([id, name]) => {
-            $chatModelSelect.append($('<option>', {
-                value: id,
-                text: name
-            }));
-        });
         
-        // Update embedding models
+        if (engines[selectedEngine] && engines[selectedEngine].chat_models) {
+            Object.entries(engines[selectedEngine].chat_models).forEach(([id, name]) => {
+                $chatModelSelect.append($('<option>', {
+                    value: id,
+                    text: name
+                }));
+            });
+        }
+        
+        // Update embedding models if API key is available
         const $embeddingModelSelect = $('#ai_botkit_embedding_model');
         $embeddingModelSelect.empty();
-        Object.entries(engines[selectedEngine].embedding_models).forEach(([id, name]) => {
-            $embeddingModelSelect.append($('<option>', {
-                value: id,
-                text: name
-            }));
-        });
+        
+        if (engines[selectedEngine] && engines[selectedEngine].embedding_models) {
+            Object.entries(engines[selectedEngine].embedding_models).forEach(([id, name]) => {
+                $embeddingModelSelect.append($('<option>', {
+                    value: id,
+                    text: name
+                }));
+            });
+        }
     });
 
     // API test handler
@@ -2078,7 +2219,6 @@ jQuery(document).ready(function($) {
         }
 
         const title = $('#ai-botkit-url-title').val().trim();
-        console.log('URL Import - Title provided:', title, 'Length:', title.length);
 
         const formData = new FormData();
         formData.append('action', 'ai_botkit_import_url');
@@ -2687,10 +2827,13 @@ jQuery(document).ready(function($) {
         $('#ai-botkit-add-training-url-modal').fadeIn();
     });
 
-    $('#ai-botkit-cancel-training-url-btn').click(function(e) {
+    $('#ai-botkit-cancel-training-url-btn, #ai-botkit-cancel-url-training-btn').click(function(e) {
         e.preventDefault();
         $('#ai-botkit-add-training-url-modal').fadeOut();
         $('#ai-botkit-add-url-modal').fadeOut();
+        $('#ai-botkit-url-input').val('');
+        $('#ai-botkit-url-title-input').val('');
+        $('#ai-botkit-url-error-message').removeClass('show');
     });
 
     $('#ai-botkit-add-training-wordpress-btn').click(function(e) {
@@ -2765,6 +2908,10 @@ jQuery(document).ready(function($) {
         $('.ai-botkit-bot-avatar-icon').removeClass('active');
         $(this).addClass('active');
         $('#ai-botkit-avatar-value').val(icon);
+        // Hide custom avatar preview if showing
+        $(".ai-botkit-avatar-icon-preview").addClass("hidden");
+        $("#ai-botkit-remove-avatar").addClass("hidden");
+        $('#ai-botkit-avatar-label').show();
         // update the preview
         $('.ai-botkit-chat-avatar img').attr('src', icon);
         if( $('#enable_gradient').prop('checked') ) {
@@ -2857,7 +3004,9 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // Auto-save functionality for all form fields when editing existing bots
+    // Fix #5: Auto-save functionality DISABLED (orphaned function removed)
+    // Auto-save is no longer needed - chatbot only saves when clicking "Save Bot" button
+    /*
     function autoSaveChatbot() {
         const chatbotId = $('#ai-botkit-chatbot-id').val();
         if (!chatbotId || chatbotId === '') {
@@ -2883,53 +3032,46 @@ jQuery(document).ready(function($) {
                 }
             },
             error: function() {
-                console.log('Auto-save failed');
             }
         });
     }
+    */
 
-    // Auto-save on form field changes (with debounce)
+    // Auto-save DISABLED - Fix #5: Only save when clicking "Save Bot" button
+    // Previously this would auto-save on ANY form change, including tab switches
+    /*
     let autoSaveTimeout;
     $('#ai-botkit-chatbot-form input, #ai-botkit-chatbot-form select, #ai-botkit-chatbot-form textarea').on('change input', function() {
         clearTimeout(autoSaveTimeout);
         autoSaveTimeout = setTimeout(autoSaveChatbot, 1000); // Auto-save after 1 second of inactivity
     });
+    */
 
     $('#chatbot_active_publish').on('change', function() {
-        const chatbotId = $('#saved_chatbot_id').val();
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'ai_botkit_enable_chatbot',
-                enable_chatbot: $(this).prop('checked') ? 1 : 0,
-                chatbot_id: chatbotId,
-                nonce: ai_botkitAdmin.nonce
-            },
-            success: function(response) {
-                $(this).prop('checked', response.success);
-                if( response.success ) {
-                    $('.ai-bot-kit-show-if-publish').show();
-                    $('#ai-botkit-chatbot-wizard-status').text('Active');
-                    $('#ai-botkit-chatbot-wizard-status').addClass('ai-botkit-status-active');
-                    $('#ai-botkit-chatbot-wizard-status').removeClass('ai-botkit-status-inactive');
-
-                } else {
-                    $('.ai-bot-kit-show-if-publish').hide();
-                    $('#ai-botkit-chatbot-wizard-status').text('Inactive');
-                    $('#ai-botkit-chatbot-wizard-status').removeClass('ai-botkit-status-active');
-                    $('#ai-botkit-chatbot-wizard-status').addClass('ai-botkit-status-inactive');
-                }
-            },
-            error: function(error) {
-                $(this).prop('checked', false);
-            }
-        });
+        const isChecked = $(this).prop('checked');
+        
+        // Sync with general tab checkbox
+        $('#chatbot_active').prop('checked', isChecked);
+        
+        // Update UI immediately
+        if( isChecked ) {
+            $('.ai-bot-kit-show-if-publish').show();
+            $('#ai-botkit-chatbot-wizard-status').text('Active');
+            $('#ai-botkit-chatbot-wizard-status').addClass('ai-botkit-status-active');
+            $('#ai-botkit-chatbot-wizard-status').removeClass('ai-botkit-status-inactive');
+        } else {
+            $('.ai-bot-kit-show-if-publish').hide();
+            $('#ai-botkit-chatbot-wizard-status').text('Inactive');
+            $('#ai-botkit-chatbot-wizard-status').removeClass('ai-botkit-status-active');
+            $('#ai-botkit-chatbot-wizard-status').addClass('ai-botkit-status-inactive');
+        }
+        
     });
 
     $('#chatbot_active').on('change', function() {
-        $('#chatbot_active_publish').prop('checked', $(this).prop('checked'));
-        if( $(this).prop('checked') ) {
+        const isChecked = $(this).prop('checked');
+        $('#chatbot_active_publish').prop('checked', isChecked);
+        if( isChecked ) {
             $('.ai-bot-kit-show-if-publish').show();
             $('#ai-botkit-chatbot-wizard-status').text('Active');
             $('#ai-botkit-chatbot-wizard-status').addClass('ai-botkit-status-active');
@@ -3273,7 +3415,7 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'ai_botkit_test_pinecone_connection',
-                nonce: aiBotKitAdmin.nonce,
+                nonce: ai_botkitAdmin.nonce,
                 api_key: apiKey,
                 host: host
             },

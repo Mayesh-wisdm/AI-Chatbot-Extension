@@ -748,10 +748,15 @@
   .ai-botkit-step-header{
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+    overflow: visible; /* Ensure content is not clipped */
   }
   .ai-botkit-step-header-left{
-    width: 80%;
+    flex: 1;
+    min-width: 0; /* Allow flex item to shrink */
+    overflow: hidden; /* Prevent text overflow */
   }
   
   .ai-botkit-kb-content-scroll{
@@ -802,6 +807,11 @@
     font-size: 0.875rem;
     border-radius: 0.375rem;
     cursor: pointer;
+    white-space: nowrap; /* Prevent text wrapping */
+    min-width: fit-content; /* Ensure button has minimum required width */
+    display: inline-flex; /* Use flexbox for better alignment */
+    align-items: center;
+    gap: 0.25rem;
   }
   
   .ai-botkit-btn-primary:hover {
@@ -1437,6 +1447,12 @@
     justify-content: center;
     font-size: 1.25rem;
     border: 1px solid #FFFFFF;
+    overflow: hidden;
+  }
+  
+  .ai-botkit-chat-avatar img {
+    object-fit: cover;
+    border-radius: 50%;
   }
   
   .ai-botkit-chat-title {
@@ -1544,6 +1560,7 @@
     width: 32px;
     height: 32px;
     border-radius: 32px;
+    object-fit: cover;
   }
   .ai-botkit-chat-bubble.bottom-left {
     float: left;
@@ -2661,6 +2678,16 @@
 }
 .ai-botkit-add-data-btn{
   position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0; /* Prevent button from shrinking */
+  white-space: nowrap; /* Prevent text wrapping */
+  min-width: fit-content; /* Ensure button has minimum required width */
+}
+
+.ai-botkit-add-data-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 .ai-botkit-add-data-items{
   display: none;
@@ -2695,8 +2722,85 @@
   background: #f9fafb;
 }
 
-.ai-botkit-add-data-btn:hover .ai-botkit-add-data-items {
-  display: flex;
+/* Hover behavior removed - now using click/touch events */
+
+/* Responsive styles for Add Data button */
+@media (max-width: 768px) {
+  .ai-botkit-step-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .ai-botkit-step-header-left {
+    width: 100%;
+  }
+  
+  .ai-botkit-add-data-btn {
+    align-self: flex-end;
+  }
+  
+  .ai-botkit-add-data-items {
+    right: auto;
+    left: 0;
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-botkit-step-header {
+    gap: 0.75rem;
+  }
+  
+  .ai-botkit-add-data-btn {
+    min-height: 44px; /* Touch-friendly minimum size */
+    padding: 8px 16px;
+  }
+  
+  .ai-botkit-add-data-items {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    right: auto;
+    min-width: 250px;
+    max-width: calc(100vw - 2rem);
+    z-index: 9999;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Add backdrop for mobile dropdown */
+  .ai-botkit-add-data-items::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: -1;
+    opacity: 0;
+    animation: fadeIn 0.2s ease forwards;
+  }
+  
+  .ai-botkit-add-data-item {
+    padding: 12px 16px;
+    font-size: 16px;
+    min-height: 44px; /* Touch-friendly minimum size */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .ai-botkit-no-training-docs{
   border: 2px dashed #cbd5e1;
@@ -2815,6 +2919,7 @@
   align-items: center;
   background: linear-gradient(180deg, #21C58B 0%, #038E5D 100%);
   border-radius: 50%;
+  overflow: hidden;
 }
 .ai-botkit-bot-avatar-icon.active,
 .ai-botkit-bot-widget-icon.active{
@@ -2846,6 +2951,11 @@
 .ai-botkit-bot-avatar-icon-preview{
   width: 40px;
   height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ai-botkit-bot-avatar-icon-image img,
@@ -3000,7 +3110,7 @@
 
 /* Apply the animation to your icon */
 .ai-botkit-loading-icon {
-  font-size: 2rem;
+  font-size: 1rem;
   animation: spin 1s linear infinite; /* Adjust duration and timing as needed */
   display: inline-block; /* Ensures transform works correctly */
 }

@@ -86,7 +86,6 @@ jQuery(document).ready(function($) {
         sendButton.on('click', function(e) {
             e.preventDefault();
             const message = chatInput.val().trim();
-            console.log(message);
             if (message && !window.isProcessing) {
                 window.sendMessage(message);
             }

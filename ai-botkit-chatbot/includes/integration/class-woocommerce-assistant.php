@@ -2,7 +2,7 @@
 namespace AI_BotKit\Integration;
 
 use AI_BotKit\Core\RAG_Engine;
-use AI_BotKit\Utils\Cache_Manager;
+use AI_BotKit\Core\Unified_Cache_Manager;
 
 /**
  * WooCommerce Assistant
@@ -24,7 +24,7 @@ class WooCommerce_Assistant {
     /**
      * Initialize the assistant
      */
-    public function __construct(RAG_Engine $rag_engine, Cache_Manager $cache_manager) {
+    public function __construct(RAG_Engine $rag_engine, Unified_Cache_Manager $cache_manager) {
         $this->rag_engine = $rag_engine;
         $this->cache_manager = $cache_manager;
         $this->init_hooks();
