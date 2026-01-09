@@ -735,7 +735,7 @@ class Pinecone_Database {
             if ($status_code === 200) {
                 return [
                     'success' => true,
-                    'message' => __('All vectors deleted from Pinecone successfully', 'ai-botkit-for-lead-generation')
+                    'message' => __('All vectors deleted from Pinecone successfully', 'knowvault')
                 ];
             } else {
                 $error_data = json_decode($body, true);

@@ -39,6 +39,32 @@ class Wdm_Ai_Botkit_Extension_Admin {
 	 * @var      string    $version    The current version of this plugin.
 	 */
 	private $version;
+	
+	/**
+	 * Get table name using Table_Helper if available, otherwise use old prefix
+	 *
+	 * @param string $table_name Base table name (e.g., 'documents', 'chatbots')
+	 * @return string Full table name with appropriate prefix
+	 */
+	private function get_table_name($table_name) {
+		global $wpdb;
+		
+		// Try to use Table_Helper if available (for backward/forward compatibility)
+		if (class_exists('AI_BotKit\Utils\Table_Helper')) {
+			return \AI_BotKit\Utils\Table_Helper::get_table_name($table_name);
+		}
+		
+		// Fallback: Check if new tables exist
+		$new_table = $wpdb->prefix . 'knowvault_' . $table_name;
+		$new_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $new_table)) === $new_table;
+		
+		if ($new_exists) {
+			return $new_table;
+		}
+		
+		// Use old table prefix as fallback
+		return $wpdb->prefix . 'ai_botkit_' . $table_name;
+	}
 
 	/**
 	 * Initialize the class and set its properties.
@@ -122,7 +148,7 @@ class Wdm_Ai_Botkit_Extension_Admin {
 			<a href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=extension-license&nonce=' . $nonce)); ?>" 
 			   class="ai-botkit-sidebar-link <?php echo $current_tab === 'extension-license' ? 'active' : ''; ?>">
 				<i class="ti ti-key"></i>
-				<?php esc_html_e('Extension License', 'wdm-ai-botkit-extension'); ?>
+				<?php esc_html_e('Extension License', 'wdm-knowvault-extension'); ?>
 			</a>
 		</li>
 		<?php
@@ -148,7 +174,7 @@ class Wdm_Ai_Botkit_Extension_Admin {
 	 */
 	public function register_extension_tab($tabs) {
 		$tabs['extension-license'] = array(
-			'title' => __('Extension License', 'wdm-ai-botkit-extension'),
+			'title' => __('Extension License', 'wdm-knowvault-extension'),
 			'capability' => 'manage_options'
 		);
 		return $tabs;
@@ -199,9 +225,14 @@ class Wdm_Ai_Botkit_Extension_Admin {
 	private function start_learndash_sync($bot_id = 0) {
 		global $wpdb;
 		
+		// Use Table_Helper to get correct table name (supports both old and new tables)
+		$chatbots_table = $this->get_table_name('chatbots');
+		$documents_table = $this->get_table_name('documents');
+		$content_relationships_table = $this->get_table_name('content_relationships');
+		
 		// If no bot_id provided, get the first available bot
 		if ($bot_id === 0) {
-			$bot_id = $wpdb->get_var("SELECT id FROM {$wpdb->prefix}ai_botkit_chatbots LIMIT 1");
+			$bot_id = $wpdb->get_var("SELECT id FROM {$chatbots_table} LIMIT 1");
 			if (!$bot_id) {
 				return [
 					'success' => false,
@@ -213,8 +244,8 @@ class Wdm_Ai_Botkit_Extension_Admin {
 		// Get LearnDash courses that are already in the bot's knowledge base
 		$courses = $wpdb->get_col($wpdb->prepare(
 			"SELECT d.source_id 
-			 FROM {$wpdb->prefix}ai_botkit_documents d
-			 JOIN {$wpdb->prefix}ai_botkit_content_relationships cr ON cr.target_id = d.id
+			 FROM {$documents_table} d
+			 JOIN {$content_relationships_table} cr ON cr.target_id = d.id
 			 WHERE cr.source_type = 'chatbot' 
 			 AND cr.source_id = %d 
 			 AND cr.relationship_type = 'knowledge_base'
@@ -316,9 +347,9 @@ class Wdm_Ai_Botkit_Extension_Admin {
 	 * Sync a single LearnDash course
 	 */
 	private function sync_learndash_course($course_id) {
-		// Check if AI BotKit is available
-		if (!class_exists('AI_BotKit\Core\RAG_Engine')) {
-			throw new Exception('AI BotKit is not available');
+		// Check if KnowVault is available (supports both old and new namespaces)
+		if (!class_exists('AI_BotKit\Core\RAG_Engine') && !class_exists('KnowVault\Core\RAG_Engine')) {
+			throw new Exception('KnowVault is not available');
 		}
 		
 		// Get course data
@@ -333,9 +364,12 @@ class Wdm_Ai_Botkit_Extension_Admin {
 		// Process with RAG engine (this will trigger the cleanup and reprocessing)
 		global $wpdb;
 		
+		// Use Table_Helper to get correct table name
+		$documents_table = $this->get_table_name('documents');
+		
 		// Create or update document record
 		$document_id = $wpdb->get_var($wpdb->prepare(
-			"SELECT id FROM {$wpdb->prefix}ai_botkit_documents 
+			"SELECT id FROM {$documents_table} 
 			WHERE source_type = 'post' AND source_id = %d",
 			$course_id
 		));
@@ -343,7 +377,7 @@ class Wdm_Ai_Botkit_Extension_Admin {
 		if (!$document_id) {
 			// Create new document record
 			$wpdb->insert(
-				$wpdb->prefix . 'ai_botkit_documents',
+				$documents_table,
 				[
 					'source_type' => 'post',
 					'source_id' => $course_id,
@@ -356,7 +390,7 @@ class Wdm_Ai_Botkit_Extension_Admin {
 		} else {
 			// Update existing document to trigger reprocessing
 			$wpdb->update(
-				$wpdb->prefix . 'ai_botkit_documents',
+				$documents_table,
 				['status' => 'pending'],
 				['id' => $document_id],
 				['%s'],
@@ -517,9 +551,9 @@ class Wdm_Ai_Botkit_Extension_Admin {
 	 * @return array Modified plugin action links
 	 */
 	public function add_plugin_action_links( $links ) {
-		// Check if AI BotKit is active before showing settings link
+		// Check if KnowVault is active before showing settings link
 		if ( Wdm_Ai_Botkit_Extension_License_Manager::is_ai_botkit_active() ) {
-			$settings_link = '<a href="' . admin_url( 'admin.php?page=ai-botkit&tab=extension-license' ) . '">' . __( 'Settings', 'wdm-ai-botkit-extension' ) . '</a>';
+			$settings_link = '<a href="' . admin_url( 'admin.php?page=ai-botkit&tab=extension-license' ) . '">' . __( 'Settings', 'wdm-knowvault-extension' ) . '</a>';
 			array_unshift( $links, $settings_link );
 		}
 		return $links;

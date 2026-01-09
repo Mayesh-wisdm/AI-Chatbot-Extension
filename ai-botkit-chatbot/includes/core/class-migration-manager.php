@@ -146,7 +146,7 @@ class Migration_Manager {
                     return [
                         'success' => false,
                         'message' => sprintf(
-                            __('Migration is currently in progress (started %d seconds ago). Please wait for it to complete.', 'ai-botkit-for-lead-generation'),
+                            __('Migration is currently in progress (started %d seconds ago). Please wait for it to complete.', 'knowvault'),
                             $elapsed_time
                         )
                     ];
@@ -192,7 +192,7 @@ class Migration_Manager {
                 $logger->error('Invalid migration options provided');
                 return [
                     'success' => false,
-                    'message' => __('Invalid migration options', 'ai-botkit-for-lead-generation')
+                    'message' => __('Invalid migration options', 'knowvault')
                 ];
             }
 
@@ -230,7 +230,7 @@ class Migration_Manager {
             
             return [
                 'success' => false,
-                'message' => __('Migration failed: ', 'ai-botkit-for-lead-generation') . $e->getMessage(),
+                'message' => __('Migration failed: ', 'knowvault') . $e->getMessage(),
                 'log_file' => $logger->get_log_file_url()
             ];
         } finally {
@@ -272,7 +272,7 @@ class Migration_Manager {
             $logger->warning('No chunks found to migrate');
             return [
                 'success' => true,
-                'message' => __('No data to migrate', 'ai-botkit-for-lead-generation'),
+                'message' => __('No data to migrate', 'knowvault'),
                 'migrated_count' => 0
             ];
         }
@@ -351,7 +351,7 @@ class Migration_Manager {
         return [
             'success' => $error_count === 0,
             'message' => sprintf(
-                __('Migration completed. Migrated: %d, Errors: %d', 'ai-botkit-for-lead-generation'),
+                __('Migration completed. Migrated: %d, Errors: %d', 'knowvault'),
                 $migrated_count,
                 $error_count
             ),
@@ -373,7 +373,7 @@ class Migration_Manager {
             $logger->error('Pinecone is not configured');
             return [
                 'success' => false,
-                'message' => __('Pinecone is not configured', 'ai-botkit-for-lead-generation')
+                'message' => __('Pinecone is not configured', 'knowvault')
             ];
         }
         
@@ -391,7 +391,7 @@ class Migration_Manager {
                 $logger->warning('No vectors found in Pinecone to migrate');
                 return [
                     'success' => true,
-                    'message' => __('No data to migrate from Pinecone', 'ai-botkit-for-lead-generation'),
+                    'message' => __('No data to migrate from Pinecone', 'knowvault'),
                     'migrated_count' => 0
                 ];
             }
@@ -445,7 +445,7 @@ class Migration_Manager {
             return [
                 'success' => $error_count === 0,
                 'message' => sprintf(
-                    __('Migration completed. Migrated: %d, Errors: %d', 'ai-botkit-for-lead-generation'),
+                    __('Migration completed. Migrated: %d, Errors: %d', 'knowvault'),
                     $migrated_count,
                     $error_count
                 ),
@@ -461,7 +461,7 @@ class Migration_Manager {
             
             return [
                 'success' => false,
-                'message' => __('Migration failed: ', 'ai-botkit-for-lead-generation') . $e->getMessage()
+                'message' => __('Migration failed: ', 'knowvault') . $e->getMessage()
             ];
         }
     }
@@ -909,13 +909,13 @@ class Migration_Manager {
             } else {
                 return [
                     'success' => false,
-                    'message' => __('Invalid database specified', 'ai-botkit-for-lead-generation')
+                    'message' => __('Invalid database specified', 'knowvault')
                 ];
             }
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => __('Failed to clear database: ', 'ai-botkit-for-lead-generation') . $e->getMessage()
+                'message' => __('Failed to clear database: ', 'knowvault') . $e->getMessage()
             ];
         }
     }
@@ -946,7 +946,7 @@ class Migration_Manager {
         return [
             'success' => $cleared_count > 0,
             'message' => sprintf(
-                __('Cleared %d vector tables from local database. Document metadata preserved for knowledge base display.', 'ai-botkit-for-lead-generation'),
+                __('Cleared %d vector tables from local database. Document metadata preserved for knowledge base display.', 'knowvault'),
                 $cleared_count
             ),
             'cleared_tables' => $cleared_count
@@ -981,7 +981,7 @@ class Migration_Manager {
         return [
             'success' => $cleared_count > 0,
             'message' => sprintf(
-                __('Cleared entire knowledge base (%d tables). All documents, chunks, embeddings, and chatbot associations removed.', 'ai-botkit-for-lead-generation'),
+                __('Cleared entire knowledge base (%d tables). All documents, chunks, embeddings, and chatbot associations removed.', 'knowvault'),
                 $cleared_count
             ),
             'cleared_tables' => $cleared_count
@@ -998,7 +998,7 @@ class Migration_Manager {
         if (!$this->pinecone_database || !$this->pinecone_database->is_configured()) {
             return [
                 'success' => false,
-                'message' => __('Pinecone is not configured', 'ai-botkit-for-lead-generation')
+                'message' => __('Pinecone is not configured', 'knowvault')
             ];
         }
 
@@ -1011,7 +1011,7 @@ class Migration_Manager {
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => __('Failed to clear Pinecone: ', 'ai-botkit-for-lead-generation') . $e->getMessage()
+                'message' => __('Failed to clear Pinecone: ', 'knowvault') . $e->getMessage()
             ];
         }
     }

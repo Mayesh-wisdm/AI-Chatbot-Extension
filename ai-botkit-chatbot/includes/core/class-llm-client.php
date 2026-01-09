@@ -101,7 +101,7 @@ class LLM_Client {
 
                 $request_data = array_merge($this->default_config, $parameters, [
                     'contents' => $contents,
-                    'model' => str_replace('gpt-4', 'gemini-pro', $this->default_config['model'])
+                    'model' => str_replace('gpt-4', 'gemini-1.5-flash', $this->default_config['model'])
                 ]);
                 $endpoint = 'models/' . $request_data['model'] . '/generateContent';
                 break;
@@ -178,7 +178,7 @@ class LLM_Client {
         } catch (\Exception $e) {
             do_action('ai_botkit_llm_error', $e, $request_data);
             throw new LLM_Request_Exception(
-                esc_html__('Failed to generate completion: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage())
+                esc_html__('Failed to generate completion: ', 'knowvault') . esc_html($e->getMessage())
             );
         }
     }
@@ -225,7 +225,7 @@ class LLM_Client {
 
                 $request_data = array_merge($this->default_config, $parameters, [
                     'contents' => $contents,
-                    'model' => str_replace('gpt-4', 'gemini-pro', $this->default_config['model'])
+                    'model' => str_replace('gpt-4', 'gemini-1.5-flash', $this->default_config['model'])
                 ]);
                 $endpoint = 'models/' . $request_data['model'] . ':generateContent?key=' . get_option('ai_botkit_google_api_key');
                 break;
@@ -338,7 +338,7 @@ class LLM_Client {
         } catch (\Exception $e) {
             do_action('ai_botkit_llm_error', $e, $request_data);
             throw new LLM_Stream_Exception(
-                esc_html__('Failed to stream completion: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage())
+                esc_html__('Failed to stream completion: ', 'knowvault') . esc_html($e->getMessage())
             );
         }
     }
@@ -394,7 +394,7 @@ class LLM_Client {
             
             if ( isset($response_data['error']) ) {
                 throw new LLM_Embedding_Exception(
-                    esc_html__('Failed to generate embeddings: ', 'ai-botkit-for-lead-generation') . esc_html($response_data['error']['message'])
+                    esc_html__('Failed to generate embeddings: ', 'knowvault') . esc_html($response_data['error']['message'])
                 );
             }
             
@@ -403,7 +403,7 @@ class LLM_Client {
         } catch (\Exception $e) {
             do_action('ai_botkit_llm_error', $e, ['model' => $model, 'texts' => $texts]);
             throw new LLM_Embedding_Exception(
-                esc_html__('Failed to generate embeddings: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage())
+                esc_html__('Failed to generate embeddings: ', 'knowvault') . esc_html($e->getMessage())
             );
         }
     }
@@ -561,7 +561,6 @@ class LLM_Client {
                     'Content-Type' => 'application/json',
                 ),
                 'body' => wp_json_encode(array(
-                    'model' => $model,
                     'content' => array(
                         'parts' => $parts
                     ),
@@ -602,7 +601,7 @@ class LLM_Client {
     private function check_response($engine, $response) {
         if (is_wp_error($response)) {
             throw new LLM_Request_Exception(
-                esc_html__('Failed to generate completion: ', 'ai-botkit-for-lead-generation') . esc_html($response->get_error_message())
+                esc_html__('Failed to generate completion: ', 'knowvault') . esc_html($response->get_error_message())
             );
         }
         
@@ -621,7 +620,7 @@ class LLM_Client {
             }
             
             throw new LLM_Request_Exception(
-                esc_html__('API Error: ', 'ai-botkit-for-lead-generation') . esc_html($error_message)
+                esc_html__('API Error: ', 'knowvault') . esc_html($error_message)
             );
         }
 
@@ -662,7 +661,7 @@ class HTTP_Client {
         $response = wp_remote_post($url, $args);
         
         if (is_wp_error($response)) {
-            throw new \Exception(esc_html__('Failed to make API request: ', 'ai-botkit-for-lead-generation') . esc_html($response->get_error_message()));
+            throw new \Exception(esc_html__('Failed to make API request: ', 'knowvault') . esc_html($response->get_error_message()));
         }
         
         return new HTTP_Response($response);

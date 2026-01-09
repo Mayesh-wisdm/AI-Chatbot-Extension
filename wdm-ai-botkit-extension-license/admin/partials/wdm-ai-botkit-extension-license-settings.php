@@ -30,17 +30,13 @@ try {
 ?>
 
 <div class="ai-botkit-extension-license-container">
-    <div class="ai-botkit-dashboard-header">
-        <h1 class="ai-botkit-dashboard-title"><?php _e('Extension License', 'wdm-ai-botkit-extension'); ?></h1>
-    </div>
-    
     <div class="ai-botkit-extension-license-content">
         <div class="ai-botkit-license-status-section">
-            <h2><?php _e('License Status', 'wdm-ai-botkit-extension'); ?></h2>
+            <h2><?php _e('License Status', 'wdm-knowvault-extension'); ?></h2>
             
             <!-- Extension License Status -->
             <div class="ai-botkit-license-status-item">
-                <h3><?php _e('Extension License', 'wdm-ai-botkit-extension'); ?></h3>
+                <h3><?php _e('Extension License', 'wdm-knowvault-extension'); ?></h3>
                 <div id="extension-license-status" class="ai-botkit-license-status <?php echo esc_attr($license_status['class']); ?>">
                     <span class="dashicons dashicons-<?php echo $license_status['status'] === 'valid' ? 'yes-alt' : 'no-alt'; ?>"></span>
                     <?php echo esc_html($license_status['message']); ?>
@@ -50,7 +46,7 @@ try {
         
         <!-- License Key Management -->
         <div class="ai-botkit-license-key-section">
-            <h2><?php _e('License Key Management', 'wdm-ai-botkit-extension'); ?></h2>
+            <h2><?php _e('License Key Management', 'wdm-knowvault-extension'); ?></h2>
             
             <form id="wdm-extension-license-form" method="post" action="">
                 <?php wp_nonce_field('wdm_ai_botkit_extension_settings'); ?>
@@ -58,7 +54,7 @@ try {
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="wdm_ai_botkit_extension_license_key"><?php _e('License Key', 'wdm-ai-botkit-extension'); ?></label>
+                            <label for="wdm_ai_botkit_extension_license_key"><?php _e('License Key', 'wdm-knowvault-extension'); ?></label>
                         </th>
                         <td>
                             <input type="text" 
@@ -66,9 +62,9 @@ try {
                                    name="wdm_ai_botkit_extension_license_key" 
                                    value="<?php echo esc_attr($license_key); ?>" 
                                    class="regular-text" 
-                                   placeholder="<?php _e('Enter your license key', 'wdm-ai-botkit-extension'); ?>" />
+                                   placeholder="<?php _e('Enter your license key', 'wdm-knowvault-extension'); ?>" />
                             <p class="description">
-                                <?php _e('Enter your WDM AI BotKit Extension license key to activate premium features.', 'wdm-ai-botkit-extension'); ?>
+                                <?php _e('Enter your WDM KnowVault Extension for LearnDash license key to activate premium features.', 'wdm-knowvault-extension'); ?>
                             </p>
                         </td>
                     </tr>
@@ -78,13 +74,13 @@ try {
                     <?php if ($license_manager->get_extension_license_status() === 'valid'): ?>
                         <input type="submit" 
                                name="wdm_ai_botkit_extension_license_action" 
-                               value="<?php _e('Deactivate License', 'wdm-ai-botkit-extension'); ?>" 
+                               value="<?php _e('Deactivate License', 'wdm-knowvault-extension'); ?>" 
                                class="button button-secondary" 
-                               onclick="return confirm('<?php _e('Are you sure you want to deactivate the license?', 'wdm-ai-botkit-extension'); ?>')" />
+                               onclick="return confirm('<?php _e('Are you sure you want to deactivate the license?', 'wdm-knowvault-extension'); ?>')" />
                     <?php else: ?>
                         <input type="submit" 
                                name="wdm_ai_botkit_extension_license_action" 
-                               value="<?php _e('Activate License', 'wdm-ai-botkit-extension'); ?>" 
+                               value="<?php _e('Activate License', 'wdm-knowvault-extension'); ?>" 
                                class="button button-primary" />
                     <?php endif; ?>
                     
@@ -92,7 +88,7 @@ try {
                             id="check-license-status" 
                             class="button button-secondary" 
                             style="margin-left: 10px;">
-                        <?php _e('Check License Status', 'wdm-ai-botkit-extension'); ?>
+                        <?php _e('Check License Status', 'wdm-knowvault-extension'); ?>
                     </button>
                 </p>
             </form>
@@ -108,25 +104,25 @@ try {
         $upgrade_completed = $transformation_status && $transformation_status['upgrade_completed'];
         ?>
         <div class="ai-botkit-sync-section">
-            <h2><?php _e('LearnDash Course Sync', 'wdm-ai-botkit-extension'); ?></h2>
+            <h2><?php _e('LearnDash Course Sync', 'wdm-knowvault-extension'); ?></h2>
             
             <?php if ($upgrade_available): ?>
                 <div class="ai-botkit-upgrade-notice">
                     <p class="description">
-                        <strong><?php _e('Content Upgrade Available!', 'wdm-ai-botkit-extension'); ?></strong><br>
-                        <?php _e('Your LearnDash content sync was disabled when the license expired. Click below to re-enable comprehensive content sync.', 'wdm-ai-botkit-extension'); ?>
+                        <strong><?php _e('Content Upgrade Available!', 'wdm-knowvault-extension'); ?></strong><br>
+                        <?php _e('Your LearnDash content sync was disabled when the license expired. Click below to re-enable comprehensive content sync.', 'wdm-knowvault-extension'); ?>
                     </p>
                 </div>
             <?php elseif ($upgrade_completed): ?>
                 <div class="ai-botkit-upgrade-completed">
                     <p class="description">
-                        <strong><?php _e('Content Upgrade Completed!', 'wdm-ai-botkit-extension'); ?></strong><br>
-                        <?php _e('Your LearnDash courses now have comprehensive content (lessons, topics, quizzes).', 'wdm-ai-botkit-extension'); ?>
+                        <strong><?php _e('Content Upgrade Completed!', 'wdm-knowvault-extension'); ?></strong><br>
+                        <?php _e('Your LearnDash courses now have comprehensive content (lessons, topics, quizzes).', 'wdm-knowvault-extension'); ?>
                     </p>
                 </div>
             <?php else: ?>
                 <p class="description">
-                    <?php _e('Upgrade LearnDash courses that are already in your chatbot\'s knowledge base with comprehensive content (lessons, topics, quizzes) instead of basic post data.', 'wdm-ai-botkit-extension'); ?>
+                    <?php _e('Upgrade LearnDash courses that are already in your chatbot\'s knowledge base with comprehensive content (lessons, topics, quizzes) instead of basic post data.', 'wdm-knowvault-extension'); ?>
                 </p>
             <?php endif; ?>
             
@@ -138,9 +134,9 @@ try {
                     <span class="dashicons dashicons-<?php echo $upgrade_available ? 'upload' : 'update'; ?>"></span>
                     <?php 
                     if ($upgrade_available) {
-                        _e('Upgrade LearnDash Content', 'wdm-ai-botkit-extension');
+                        _e('Upgrade LearnDash Content', 'wdm-knowvault-extension');
                     } else {
-                        _e('Upgrade LearnDash Content in Knowledge Base', 'wdm-ai-botkit-extension');
+                        _e('Upgrade LearnDash Content in Knowledge Base', 'wdm-knowvault-extension');
                     }
                     ?>
                 </button>
@@ -150,14 +146,14 @@ try {
                         <div class="ai-botkit-progress-fill" style="width: 0%;"></div>
                     </div>
                     <div class="ai-botkit-progress-text">
-                        <span id="sync-status"><?php _e('Preparing content upgrade...', 'wdm-ai-botkit-extension'); ?></span>
+                        <span id="sync-status"><?php _e('Preparing content upgrade...', 'wdm-knowvault-extension'); ?></span>
                         <span id="sync-count">0 / 0</span>
                     </div>
                 </div>
             </div>
             
             <div id="sync-results" class="ai-botkit-sync-results" style="display: none;">
-                <h4><?php _e('Content Upgrade Results', 'wdm-ai-botkit-extension'); ?></h4>
+                <h4><?php _e('Content Upgrade Results', 'wdm-knowvault-extension'); ?></h4>
                 <div id="sync-results-content"></div>
             </div>
         </div>
@@ -165,25 +161,25 @@ try {
         
         <!-- Feature Information -->
         <div class="ai-botkit-features-section">
-            <h2><?php _e('Extension Features', 'wdm-ai-botkit-extension'); ?></h2>
+            <h2><?php _e('Extension Features', 'wdm-knowvault-extension'); ?></h2>
             
             <div class="ai-botkit-features-list">
                 <div class="ai-botkit-feature-item">
                     <span class="dashicons dashicons-groups"></span>
-                    <h4><?php _e('User Course Awareness', 'wdm-ai-botkit-extension'); ?></h4>
-                    <p><?php _e('Provides AI BotKit with information about user\'s enrolled LearnDash courses for personalized responses.', 'wdm-ai-botkit-extension'); ?></p>
+                    <h4><?php _e('User Course Awareness', 'wdm-knowvault-extension'); ?></h4>
+                    <p><?php _e('Provides AI BotKit with information about user\'s enrolled LearnDash courses for personalized responses.', 'wdm-knowvault-extension'); ?></p>
                 </div>
                 
                 <div class="ai-botkit-feature-item">
                     <span class="dashicons dashicons-book"></span>
-                    <h4><?php _e('LearnDash Content Integration', 'wdm-ai-botkit-extension'); ?></h4>
-                    <p><?php _e('Enhances AI responses with detailed course, lesson, topic, and quiz content from LearnDash.', 'wdm-ai-botkit-extension'); ?></p>
+                    <h4><?php _e('LearnDash Content Integration', 'wdm-knowvault-extension'); ?></h4>
+                    <p><?php _e('Enhances AI responses with detailed course, lesson, topic, and quiz content from LearnDash.', 'wdm-knowvault-extension'); ?></p>
                 </div>
                 
                 <div class="ai-botkit-feature-item">
                     <span class="dashicons dashicons-admin-users"></span>
-                    <h4><?php _e('Personalized Learning Experience', 'wdm-ai-botkit-extension'); ?></h4>
-                    <p><?php _e('Delivers context-aware responses based on user\'s learning progress and course enrollment.', 'wdm-ai-botkit-extension'); ?></p>
+                    <h4><?php _e('Personalized Learning Experience', 'wdm-knowvault-extension'); ?></h4>
+                    <p><?php _e('Delivers context-aware responses based on user\'s learning progress and course enrollment.', 'wdm-knowvault-extension'); ?></p>
                 </div>
             </div>
         </div>
@@ -191,339 +187,25 @@ try {
         <!-- Support Information - Hidden for now -->
         <!-- 
         <div class="ai-botkit-support-section">
-            <h2><?php _e('Support & Documentation', 'wdm-ai-botkit-extension'); ?></h2>
+            <h2><?php _e('Support & Documentation', 'wdm-knowvault-extension'); ?></h2>
             
             <div class="ai-botkit-support-links">
                 <a href="https://wisdmlabs.com/support/" target="_blank" class="button button-secondary">
                     <span class="dashicons dashicons-sos"></span>
-                    <?php _e('Get Support', 'wdm-ai-botkit-extension'); ?>
+                    <?php _e('Get Support', 'wdm-knowvault-extension'); ?>
                 </a>
                 
                 <a href="https://wisdmlabs.com/docs/" target="_blank" class="button button-secondary">
                     <span class="dashicons dashicons-book-alt"></span>
-                    <?php _e('Documentation', 'wdm-ai-botkit-extension'); ?>
+                    <?php _e('Documentation', 'wdm-knowvault-extension'); ?>
                 </a>
                 
                 <a href="https://wisdmlabs.com/contact/" target="_blank" class="button button-secondary">
                     <span class="dashicons dashicons-email-alt"></span>
-                    <?php _e('Contact Us', 'wdm-ai-botkit-extension'); ?>
+                    <?php _e('Contact Us', 'wdm-knowvault-extension'); ?>
                 </a>
             </div>
         </div>
         -->
     </div>
-</div>
-
-<script type="text/javascript">
-jQuery(document).ready(function($) {
-    'use strict';
-    
-    // License status check functionality
-    $('#check-license-status').on('click', function() {
-        var $btn = $(this);
-        var nonce = $('#wdm_extension_license_nonce').val();
-        
-        // Store original button content
-        var originalHtml = $btn.html();
-        
-        // Disable button and show loading state
-        $btn.prop('disabled', true);
-        $btn.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Checking...');
-        
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'wdm_ai_botkit_extension_check_license',
-                nonce: nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    var data = response.data;
-                    var message = 'License status checked successfully. Status: ' + data.remote_status;
-                    
-                    if (data.status_changed) {
-                        message += ' (Status changed from ' + data.current_status + ' to ' + data.new_status + ')';
-                        showNotice(message, 'success');
-                        
-                        // Reload page with cache busting to show updated status
-                        setTimeout(function() {
-                            location.href = location.href + (location.href.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
-                        }, 1500);
-                    } else {
-                        message += ' (No change detected)';
-                        showNotice(message, 'info');
-                    }
-                } else {
-                    showNotice('Failed to check license status: ' + response.data.message, 'error');
-                }
-            },
-            error: function() {
-                showNotice('Error checking license status', 'error');
-            },
-            complete: function() {
-                // Restore button
-                $btn.prop('disabled', false);
-                $btn.html(originalHtml);
-            }
-        });
-    });
-    
-    function showNotice(message, type) {
-        var noticeClass;
-        switch(type) {
-            case 'success':
-                noticeClass = 'notice-success';
-                break;
-            case 'error':
-                noticeClass = 'notice-error';
-                break;
-            case 'info':
-                noticeClass = 'notice-info';
-                break;
-            default:
-                noticeClass = 'notice-info';
-        }
-        
-        var $notice = $('<div class="notice ' + noticeClass + ' is-dismissible"><p>' + message + '</p></div>');
-        $('.wrap h1').after($notice);
-        
-        // Auto-dismiss after 5 seconds (except for info notices which stay longer)
-        var dismissTime = type === 'info' ? 8000 : 5000;
-        setTimeout(function() {
-            $notice.fadeOut();
-        }, dismissTime);
-    }
-    
-    // LearnDash Sync functionality
-    $('#learndash-sync-btn').on('click', function() {
-        var $btn = $(this);
-        var $progress = $('#sync-progress');
-        var $results = $('#sync-results');
-        var nonce = $btn.data('nonce');
-        
-        // Store original button content
-        var originalHtml = $btn.html();
-        
-        // Disable button and show loading state
-        $btn.prop('disabled', true);
-        $btn.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Processing...');
-        $progress.show();
-        $results.hide();
-        
-        // Start sync process
-        startLearndashSync(nonce, originalHtml);
-    });
-    
-    function startLearndashSync(nonce, originalHtml) {
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'learndash_sync_courses',
-                sync_action: 'start',
-                bot_id: 0, // Will auto-detect first bot if not specified
-                nonce: nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    updateProgress(0, response.data.total_courses, 'Starting content upgrade...');
-                    processSyncBatch(nonce, response.data.total_courses, originalHtml);
-                } else {
-                    showError(response.data.message || 'Failed to start content upgrade', originalHtml);
-                }
-            },
-            error: function() {
-                showError('Network error occurred', originalHtml);
-            }
-        });
-    }
-    
-    function processSyncBatch(nonce, totalCourses, originalHtml) {
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'learndash_sync_courses',
-                sync_action: 'process',
-                nonce: nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    var data = response.data;
-                    var progress = Math.round((data.current_index / data.total_courses) * 100);
-                    
-                    updateProgress(data.current_index, data.total_courses, data.message);
-                    
-                    if (data.is_complete) {
-                        showResults(data);
-                        $('#learndash-sync-btn').prop('disabled', false).html(originalHtml);
-                    } else {
-                        // Continue processing
-                        setTimeout(function() {
-                            processSyncBatch(nonce, totalCourses, originalHtml);
-                        }, 1000);
-                    }
-                } else {
-                    showError(response.data.message || 'Sync failed', originalHtml);
-                }
-            },
-            error: function() {
-                showError('Network error occurred during sync', originalHtml);
-            }
-        });
-    }
-    
-    function updateProgress(current, total, message) {
-        var progress = Math.round((current / total) * 100);
-        $('.ai-botkit-progress-fill').css('width', progress + '%');
-        $('#sync-status').text(message);
-        $('#sync-count').text(current + ' / ' + total);
-    }
-    
-    function showResults(data) {
-        var $results = $('#sync-results');
-        var $content = $('#sync-results-content');
-        
-        var html = '<div class="ai-botkit-sync-summary">';
-        html += '<p><strong>Sync Completed Successfully!</strong></p>';
-        html += '<ul>';
-        html += '<li>Total courses processed: ' + data.total_processed + '</li>';
-        html += '<li>Total courses found: ' + data.total_courses + '</li>';
-        
-        if (data.errors && data.errors.length > 0) {
-            html += '<li>Errors: ' + data.errors.length + '</li>';
-        }
-        
-        html += '</ul>';
-        
-        if (data.errors && data.errors.length > 0) {
-            html += '<div class="ai-botkit-sync-errors">';
-            html += '<h5>Errors encountered:</h5>';
-            html += '<ul>';
-            data.errors.forEach(function(error) {
-                html += '<li>Course ID ' + error.course_id + ': ' + error.error + '</li>';
-            });
-            html += '</ul>';
-            html += '</div>';
-        }
-        
-        html += '</div>';
-        
-        $content.html(html);
-        $results.show();
-        $('#sync-progress').hide();
-    }
-    
-    function showError(message, originalHtml) {
-        $('#sync-progress').hide();
-        $('#learndash-sync-btn').prop('disabled', false).html(originalHtml);
-        
-        var $results = $('#sync-results');
-        var $content = $('#sync-results-content');
-        
-        $content.html('<div class="notice notice-error"><p>' + message + '</p></div>');
-        $results.show();
-    }
-});
-</script>
-
-<style>
-.ai-botkit-sync-section {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-.ai-botkit-sync-controls {
-    margin: 15px 0;
-}
-
-.ai-botkit-sync-progress {
-    margin: 15px 0;
-}
-
-.ai-botkit-progress-bar {
-    background: #e5e7eb;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
-
-.ai-botkit-progress-fill {
-    background: #008858;
-    height: 100%;
-    transition: width 0.3s ease;
-}
-
-.ai-botkit-progress-text {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    color: #6b7280;
-}
-
-.ai-botkit-sync-results {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 15px;
-    margin-top: 15px;
-}
-
-.ai-botkit-sync-summary {
-    margin-bottom: 15px;
-}
-
-.ai-botkit-sync-errors {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 4px;
-    padding: 10px;
-    margin-top: 10px;
-}
-
-.ai-botkit-sync-errors h5 {
-    color: #dc2626;
-    margin: 0 0 10px 0;
-}
-
-.ai-botkit-sync-errors ul {
-    margin: 0;
-    padding-left: 20px;
-}
-
-.ai-botkit-sync-errors li {
-    color: #dc2626;
-    font-size: 13px;
-}
-
-.ai-botkit-upgrade-notice {
-    background: #fef3c7;
-    border: 1px solid #f59e0b;
-    border-radius: 6px;
-    padding: 15px;
-    margin: 15px 0;
-}
-
-.ai-botkit-upgrade-notice .description {
-    margin: 0;
-    color: #92400e;
-}
-
-.ai-botkit-upgrade-completed {
-    background: #d1fae5;
-    border: 1px solid #10b981;
-    border-radius: 6px;
-    padding: 15px;
-    margin: 15px 0;
-}
-
-.ai-botkit-upgrade-completed .description {
-    margin: 0;
-    color: #065f46;
-}
-</style> 
+</div> 

@@ -174,7 +174,7 @@ class RAG_Engine {
 
         } catch (\Exception $e) {
             throw new RAG_Engine_Exception(
-                esc_html__('Failed to process document: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to process document: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );
@@ -213,7 +213,7 @@ class RAG_Engine {
                     if (preg_match($pattern, $message_lowercase)) {
                         // Return early with warning message
                         $warning_message = sprintf(
-                            esc_html__('⚠️ The word "%s" is not allowed in this chat.', 'ai-botkit-for-lead-generation'),
+                            esc_html__('⚠️ The word "%s" is not allowed in this chat.', 'knowvault'),
                             esc_html($keyword)
                         );
                         //return that this word is not allowed
@@ -328,7 +328,7 @@ class RAG_Engine {
 
         } catch (\Exception $e) {
             throw new RAG_Engine_Exception(
-                esc_html__('Failed to generate response: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to generate response: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );
@@ -368,7 +368,7 @@ class RAG_Engine {
                     if (preg_match($pattern, $message_lowercase)) {
                         // Return early with warning message
                         $warning_message = sprintf(
-                            esc_html__('⚠️ The word "%s" is not allowed in this chat.', 'ai-botkit-for-lead-generation'),
+                            esc_html__('⚠️ The word "%s" is not allowed in this chat.', 'knowvault'),
                             esc_html($keyword)
                         );
                         $callback($warning_message);
@@ -459,7 +459,7 @@ class RAG_Engine {
 
         } catch (\Exception $e) {
             throw new RAG_Engine_Exception(
-                esc_html__('Failed to stream response: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to stream response: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );
@@ -612,7 +612,7 @@ class RAG_Engine {
 
                 if ($wpdb->last_error) {
                     throw new RAG_Engine_Exception(
-                        esc_html__('Failed to update document status: ', 'ai-botkit-for-lead-generation') . esc_html($wpdb->last_error)
+                        esc_html__('Failed to update document status: ', 'knowvault') . esc_html($wpdb->last_error)
                     );
                 }
 
@@ -620,7 +620,7 @@ class RAG_Engine {
                 $source = $document['file_path'] ?? $document['source_id'];
                 if (empty($source)) {
                     throw new RAG_Engine_Exception(
-                        esc_html__('No valid source found for document', 'ai-botkit-for-lead-generation')
+                        esc_html__('No valid source found for document', 'knowvault')
                     );
                 }
 
@@ -657,7 +657,7 @@ class RAG_Engine {
 
                 if ($wpdb->last_error) {
                     throw new RAG_Engine_Exception(
-                        esc_html__('Failed to update document status: ', 'ai-botkit-for-lead-generation') . esc_html($wpdb->last_error)
+                        esc_html__('Failed to update document status: ', 'knowvault') . esc_html($wpdb->last_error)
                     );
                 }
 

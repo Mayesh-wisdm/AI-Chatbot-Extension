@@ -1,10 +1,10 @@
 <?php
 
 /**
- * License Manager for WDM AI BotKit Extension
+ * License Manager for WDM KnowVault Extension
  *
- * Handles license validation, activation, and integration with the main AI BotKit plugin.
- * This class ensures the extension only works with a properly licensed AI BotKit installation.
+ * Handles license validation, activation, and integration with the main KnowVault plugin.
+ * This class ensures the extension only works with a properly licensed KnowVault installation.
  *
  * @link       https://wisdmlabs.com
  * @since      1.0.0
@@ -27,11 +27,11 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
     /**
      * Plugin identifiers
      */
-    private $plugin_slug = 'wdm-ai-botkit-extension';
-    private $plugin_name = 'WDM AI BotKit Extension';
+    private $plugin_slug = 'wdm-knowvault-extension';
+    private $plugin_name = 'WDM KnowVault Extension for LearnDash';
     private $store_url;
     private $item_id;
-    private $text_domain = 'wdm-ai-botkit-extension';
+    private $text_domain = 'wdm-knowvault-extension';
 
     /**
      * Constructor
@@ -58,7 +58,7 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
         if (strpos($current_url, 'wisdmlabs.net') !== false || strpos($current_url, 'local') !== false) {
             // Development/local environment
             $this->store_url = 'https://wordpress-1496509-5716381.cloudwaysapps.com/';
-            $this->item_id = 483904; // Extension product ID for dev environment
+            $this->item_id = 495121; // Extension product ID for dev environment
         } else {
             // Production environment
             $this->store_url = 'https://dev1.edwiser.org/';
@@ -71,7 +71,7 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
     public static function add_custom_cron_interval($schedules) {
         $schedules['wdm_ai_botkit_extension_60s'] = array(
             'interval' => 60, // 60 seconds
-            'display'  => __('Every 60 Seconds', 'wdm-ai-botkit-extension')
+            'display'  => __('Every 60 Seconds', 'wdm-knowvault-extension')
         );
         return $schedules;
     }
@@ -263,7 +263,7 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
      * Show license notices - only when there are actual issues
      */
     public function show_license_notices() {
-        // Only disable notices on the specific AI BotKit extension-license tab page
+        // Only disable notices on the specific KnowVault extension-license tab page
         $current_page = isset($_GET['page']) ? $_GET['page'] : '';
         $current_tab = isset($_GET['tab']) ? $_GET['tab'] : '';
         
@@ -275,7 +275,7 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
         // Check main plugin dependency first
         if (!self::is_ai_botkit_active()) {
             echo '<div class="notice notice-error"><p>' . 
-                 esc_html__('WDM AI BotKit Extension requires AI BotKit plugin to be installed and activated.', $this->text_domain) . 
+                 esc_html__('WDM KnowVault Extension for LearnDash requires KnowVault plugin to be installed and activated.', $this->text_domain) . 
                  '</p></div>';
             return;
         }
@@ -284,11 +284,11 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
         $status = $this->get_extension_license_status();
         if ($status === 'invalid') {
             echo '<div class="notice notice-error"><p>' . 
-                 esc_html__('Your WDM AI BotKit Extension license is invalid or expired. Please enter a valid license key.', $this->text_domain) . 
+                 esc_html__('Your WDM KnowVault Extension license is invalid or expired. Please enter a valid license key.', $this->text_domain) . 
                  '</p></div>';
         } elseif ($status === 'inactive' || $status === 'deactivated') {
             echo '<div class="notice notice-warning"><p>' . 
-                 esc_html__('Your WDM AI BotKit Extension license is not activated. Please activate your license key.', $this->text_domain) . 
+                 esc_html__('Your WDM KnowVault Extension license is not activated. Please activate your license key.', $this->text_domain) . 
                  '</p></div>';
         }
         // Don't show anything if status is 'valid' - that's what the settings page is for
@@ -301,30 +301,45 @@ class Wdm_Ai_Botkit_Extension_License_Manager {
         if (!self::is_ai_botkit_active()) {
             add_action('admin_notices', function() {
                 echo '<div class="notice notice-error"><p>' . 
-                     esc_html__('WDM AI BotKit Extension requires AI BotKit plugin to be installed and activated.', $this->text_domain) . 
+                     esc_html__('WDM KnowVault Extension requires KnowVault plugin to be installed and activated.', $this->text_domain) . 
                      '</p></div>';
             });
         }
     }
 
     /**
-     * Check if AI BotKit plugin is active (static method for reuse)
+     * Check if KnowVault plugin is active (static method for reuse)
      *
      * @since    1.0.0
      * @return   bool
      */
     public static function is_ai_botkit_active() {
-        // Check if plugin is active by name
-        if (is_plugin_active('ai-botkit/ai-botkit.php')) {
+        // Check if plugin is active by main file name (knowVault.php)
+        if (is_plugin_active('knowvault/knowVault.php') || is_plugin_active('ai-botkit-services/knowVault.php')) {
             return true;
         }
         
-        // Also check by plugin name in case folder structure changes
+        // Also check by old file name for backward compatibility
+        if (is_plugin_active('ai-botkit/ai-botkit.php') || is_plugin_active('ai-botkit-for-lead-generation/ai-botkit-for-lead-generation.php')) {
+            return true;
+        }
+        
+        // Check by plugin name in case folder structure changes
         $active_plugins = get_option('active_plugins');
         foreach ($active_plugins as $plugin) {
+            // Check for new name
+            if (strpos($plugin, 'knowvault') !== false || strpos($plugin, 'knowVault') !== false) {
+                return true;
+            }
+            // Check for old name (backward compatibility)
             if (strpos($plugin, 'ai-botkit') !== false) {
                 return true;
             }
+        }
+        
+        // Check if core class exists (most reliable method)
+        if (class_exists('AI_BotKit\Core\RAG_Engine') || class_exists('KnowVault\Core\RAG_Engine')) {
+            return true;
         }
         
         return false;

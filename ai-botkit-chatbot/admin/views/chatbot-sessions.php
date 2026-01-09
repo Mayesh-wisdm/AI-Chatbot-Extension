@@ -42,17 +42,17 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 		<div class="ai-botkit-knowledge-header-left">
 			<a class="ai-botkit-btn-outline ai-botkit-btn-sm" id="ai-botkit-chatbot-wizard-back" href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=chatbots&nonce=' . $nonce)); ?>">
                 <i class="ti ti-arrow-left"></i>
-				<?php esc_html_e('Back to Chatbots', 'ai-botkit-for-lead-generation'); ?>
+				<?php esc_html_e('Back to Chatbots', 'knowvault'); ?>
 			</a>
-			<h1 class="ai-botkit-knowledge-title"><?php echo esc_html($chatbot_data['name']) . ' ' . esc_html__('Sessions', 'ai-botkit-for-lead-generation'); ?></h1>
-			<p class="ai-botkit-knowledge-description"><?php esc_html_e('View user interactions with this chatbot', 'ai-botkit-for-lead-generation'); ?></p>
+			<h1 class="ai-botkit-knowledge-title"><?php echo esc_html($chatbot_data['name']) . ' ' . esc_html__('Sessions', 'knowvault'); ?></h1>
+			<p class="ai-botkit-knowledge-description"><?php esc_html_e('View user interactions with this chatbot', 'knowvault'); ?></p>
 		</div>
 	</div>
 
 	<div class="ai-botkit-knowledge-stats">
 		<div class="ai-botkit-knowledge-stats-item">
 			<div class="ai-botkit-stats-body">
-				<span class="ai-botkit-knowledge-stats-item-label"><?php esc_html_e('Total Sessions', 'ai-botkit-for-lead-generation'); ?></span>
+				<span class="ai-botkit-knowledge-stats-item-label"><?php esc_html_e('Total Sessions', 'knowvault'); ?></span>
 				<span class="ai-botkit-knowledge-stats-item-value"><?php echo esc_html(count($sessions)); ?></span>
 			</div>
 			<div class="ai-botkit-stats-icon">
@@ -61,7 +61,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 		</div>
 		<div class="ai-botkit-knowledge-stats-item">
 			<div class="ai-botkit-stats-body">
-				<span class="ai-botkit-knowledge-stats-item-label"><?php esc_html_e('Total Messages', 'ai-botkit-for-lead-generation'); ?></span>
+				<span class="ai-botkit-knowledge-stats-item-label"><?php esc_html_e('Total Messages', 'knowvault'); ?></span>
 				<span class="ai-botkit-knowledge-stats-item-value"><?php echo esc_html($total_messages); ?></span>
 			</div>
 			<div class="ai-botkit-stats-icon">
@@ -85,7 +85,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 			<!-- If no data (show this placeholder) -->
 			<?php if (empty($sessions)) { ?>
 				<div id="ai-botkit-table-empty" class="ai-botkit-table-empty">
-					<p><?php esc_html_e('No sessions found. Start a new conversation to get started.', 'ai-botkit-for-lead-generation'); ?></p>
+					<p><?php esc_html_e('No sessions found. Start a new conversation to get started.', 'knowvault'); ?></p>
 				</div>
 			<?php } else { ?>
 
@@ -94,10 +94,10 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 				<table class="ai-botkit-table">
 					<thead>
 					<tr>
-						<th><?php esc_html_e('User', 'ai-botkit-for-lead-generation'); ?></th>
-						<th><?php esc_html_e('Last Message', 'ai-botkit-for-lead-generation'); ?></th>
-						<th><?php esc_html_e('Messages', 'ai-botkit-for-lead-generation'); ?></th>
-						<th><?php esc_html_e('Actions', 'ai-botkit-for-lead-generation'); ?></th>
+						<th><?php esc_html_e('User', 'knowvault'); ?></th>
+						<th><?php esc_html_e('Last Message', 'knowvault'); ?></th>
+						<th><?php esc_html_e('Messages', 'knowvault'); ?></th>
+						<th><?php esc_html_e('Actions', 'knowvault'); ?></th>
 					</tr>
 					</thead>
 					<tbody id="ai-botkit-table-body">
@@ -140,7 +140,7 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
     ) ); ?>">
         <i class="ti ti-chevron-left"></i>
     </a>
-    <span id="ai-botkit-page-info"><?php echo esc_html__('Page', 'ai-botkit-for-lead-generation') . ' ' . esc_html($current_page) . ' ' . esc_html__('of', 'ai-botkit-for-lead-generation') . ' ' . esc_html($total_pages); ?></span>
+    <span id="ai-botkit-page-info"><?php echo esc_html__('Page', 'knowvault') . ' ' . esc_html($current_page) . ' ' . esc_html__('of', 'knowvault') . ' ' . esc_html($total_pages); ?></span>
     <a class="ai-botkit-btn-outline" href="<?php echo esc_url( add_query_arg(
         array(
             'page'    => 'ai-botkit',

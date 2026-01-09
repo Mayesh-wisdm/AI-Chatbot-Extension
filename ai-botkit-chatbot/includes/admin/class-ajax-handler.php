@@ -100,7 +100,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(array('message' => __('Insufficient permissions.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Insufficient permissions.', 'knowvault')));
         }
 
         // Check rate limit
@@ -116,20 +116,20 @@ class Ajax_Handler {
         $api_key = sanitize_text_field($_POST['api_key']);
 
         if (empty($api_key)) {
-            wp_send_json_error(array('message' => __('API key is required.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('API key is required.', 'knowvault')));
         }
 
         try {
             $result = $this->test_api_connection($provider, $api_key);
             if ($result) {
-                wp_send_json_success(array('message' => __('API connection successful.', 'ai-botkit-for-lead-generation')));
+                wp_send_json_success(array('message' => __('API connection successful.', 'knowvault')));
             } else {
-                wp_send_json_error(array('message' => __('API connection failed. The response was valid but did not contain expected data.', 'ai-botkit-for-lead-generation')));
+                wp_send_json_error(array('message' => __('API connection failed. The response was valid but did not contain expected data.', 'knowvault')));
             }
         } catch (\Exception $e) {
             wp_send_json_error(array(
                 'message' => sprintf(
-                    __('API connection failed: %s', 'ai-botkit-for-lead-generation'),
+                    __('API connection failed: %s', 'knowvault'),
                     $e->getMessage()
                 ),
                 'data' => array(
@@ -144,7 +144,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(array('message' => __('Insufficient permissions.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Insufficient permissions.', 'knowvault')));
         }
 
         // Check rate limit
@@ -182,7 +182,7 @@ class Ajax_Handler {
                 'body_bg_color' => isset($_POST['chatbot_bg_color']) ? sanitize_text_field($_POST['chatbot_bg_color']) : '#FFFFFF',
                 'ai_msg_bg_color' => isset($_POST['chatbot_ai_msg_bg_color']) ? sanitize_text_field($_POST['chatbot_ai_msg_bg_color']) : '#F5F5F5',
                 'ai_msg_font_color' => isset($_POST['chatbot_ai_msg_font_color']) ? sanitize_text_field($_POST['chatbot_ai_msg_font_color']) : '#333333',
-                'user_msg_bg_color' => isset($_POST['chatbot_user_msg_bg_color']) ? sanitize_text_field($_POST['chatbot_user_msg_bg_color']) : '#008858',
+                'user_msg_bg_color' => isset($_POST['chatbot_user_msg_bg_color']) ? sanitize_text_field($_POST['chatbot_user_msg_bg_color']) : '#1E3A8A',
                 'user_msg_font_color' => isset($_POST['chatbot_user_msg_font_color']) ? sanitize_text_field($_POST['chatbot_user_msg_font_color']) : '#FFFFFF',
                 'initiate_msg_bg_color' => isset($_POST['chatbot_initiate_msg_bg_color']) ? sanitize_text_field($_POST['chatbot_initiate_msg_bg_color']) : '#FFFFFF',
                 'initiate_msg_border_color' => isset($_POST['chatbot_initiate_msg_border_color']) ? sanitize_text_field($_POST['chatbot_initiate_msg_border_color']) : '#E7E7E7',
@@ -258,30 +258,33 @@ class Ajax_Handler {
 
 
         if ($result === false) {
-            wp_send_json_error(array('message' => __('Failed to save chatbot.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Failed to save chatbot.', 'knowvault')));
         }
         
-        // add document to chatbot
+        // Always manage document relationships, regardless of imports
         $chatbot = new Chatbot($chatbot_id);
-        if( ! empty($imports) ) {
-            $associated_documents = $chatbot->get_associated_content();
-            $associated_documents = array_column($associated_documents, 'target_id');
-            // add if not already in the associated documents and remove if in there but not in the imports
-            $docs_to_add = array_diff($imports, $associated_documents);
-            $docs_to_remove = array_diff($associated_documents, $imports);
-            foreach ($docs_to_add as $doc_id) {
-                $chatbot->add_content('document', $doc_id);
-            }
-            foreach ($docs_to_remove as $doc_id) {
-                $chatbot->remove_content('document', $doc_id);
-            }
+        $associated_documents = $chatbot->get_associated_content();
+        $associated_documents = array_column($associated_documents, 'target_id');
+        
+        // Calculate what to add and remove
+        $docs_to_add = array_diff($imports, $associated_documents);
+        $docs_to_remove = array_diff($associated_documents, $imports);
+        
+        // Add new relationships
+        foreach ($docs_to_add as $doc_id) {
+            $chatbot->add_content('document', $doc_id);
+        }
+        
+        // Remove old relationships
+        foreach ($docs_to_remove as $doc_id) {
+            $chatbot->remove_content('document', $doc_id);
         }
         // Get updated list of associated documents
         $documents = $chatbot->get_associated_content('document');
 
         // You can also return the chatbot ID if needed
         wp_send_json_success(array(
-            'message' => __('Chatbot saved successfully.', 'ai-botkit-for-lead-generation'),
+            'message' => __('Chatbot saved successfully.', 'knowvault'),
             'chatbot_id' => $chatbot_id
         ));
     }
@@ -290,7 +293,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(array('message' => __('Insufficient permissions.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Insufficient permissions.', 'knowvault')));
         }
 
         $chatbot_id = intval($_POST['chatbot_id']);
@@ -301,7 +304,7 @@ class Ajax_Handler {
         $chatbot = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $chatbot_id));
         
         if (!$chatbot) {
-            wp_send_json_error(array('message' => __('Chatbot not found.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Chatbot not found.', 'knowvault')));
         }
 
         $image = wp_get_attachment_image_src($chatbot->avatar, 'full');
@@ -318,7 +321,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(array('message' => __('Insufficient permissions.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Insufficient permissions.', 'knowvault')));
         }
 
         $chatbot_id = intval($_POST['chatbot_id']);
@@ -329,29 +332,29 @@ class Ajax_Handler {
         $result = $wpdb->delete($table_name, ['id' => $chatbot_id]);
 
         if ($result === false) {
-            wp_send_json_error(array('message' => __('Failed to delete chatbot.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Failed to delete chatbot.', 'knowvault')));
         }
 
-        wp_send_json_success(array('message' => __('Chatbot deleted successfully.', 'ai-botkit-for-lead-generation')));
+        wp_send_json_success(array('message' => __('Chatbot deleted successfully.', 'knowvault')));
     }
 
     public function handle_update_fallback_order() {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(array('message' => __('Insufficient permissions.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Insufficient permissions.', 'knowvault')));
         }
 
         $order = isset($_POST['order']) ? json_decode(wp_unslash($_POST['order']), true) : []; // sanitized below
         $order = array_unique(array_map('absint', $order)); // ensure all values are integers and sanitized
         if (!is_array($order)) {
-            wp_send_json_error(array('message' => __('Invalid order data.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Invalid order data.', 'knowvault')));
         }
 
         $sanitized_order = array_map('sanitize_text_field', $order);
         update_option('ai_botkit_fallback_order', $sanitized_order);
         
-        wp_send_json_success(array('message' => __('Fallback order updated successfully.', 'ai-botkit-for-lead-generation')));
+        wp_send_json_success(array('message' => __('Fallback order updated successfully.', 'knowvault')));
     }
 
     /**
@@ -361,7 +364,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(array('message' => __('Insufficient permissions.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Insufficient permissions.', 'knowvault')));
         }
 
         $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
@@ -370,15 +373,15 @@ class Ajax_Handler {
         $max_requests = isset($_POST['max_requests']) ? intval($_POST['max_requests']) : Rate_Limiter::DEFAULT_MAX_REQUESTS;
 
         if (!$user_id || empty($action)) {
-            wp_send_json_error(array('message' => __('Invalid parameters.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Invalid parameters.', 'knowvault')));
         }
 
         $result = $this->rate_limiter->set_user_rate_limits($user_id, $action, $window, $max_requests);
         
         if ($result) {
-            wp_send_json_success(array('message' => __('Rate limits updated successfully.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_success(array('message' => __('Rate limits updated successfully.', 'knowvault')));
         } else {
-            wp_send_json_error(array('message' => __('Failed to update rate limits.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Failed to update rate limits.', 'knowvault')));
         }
     }
 
@@ -389,22 +392,22 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(array('message' => __('Insufficient permissions.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Insufficient permissions.', 'knowvault')));
         }
 
         $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
         $action = sanitize_text_field($_POST['action_name']);
 
         if (!$user_id || empty($action)) {
-            wp_send_json_error(array('message' => __('Invalid parameters.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Invalid parameters.', 'knowvault')));
         }
 
         $result = $this->rate_limiter->reset_rate_limit($user_id, $action);
         
         if ($result) {
-            wp_send_json_success(array('message' => __('Rate limits reset successfully.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_success(array('message' => __('Rate limits reset successfully.', 'knowvault')));
         } else {
-            wp_send_json_error(array('message' => __('Failed to reset rate limits.', 'ai-botkit-for-lead-generation')));
+            wp_send_json_error(array('message' => __('Failed to reset rate limits.', 'knowvault')));
         }
     }
 
@@ -426,8 +429,10 @@ class Ajax_Handler {
                 return $this->test_google_connection($api_key);
             case 'together':
                 return $this->test_together_connection($api_key);
+            case 'voyageai':
+                return $this->test_voyageai_connection($api_key);
             default:
-                throw new \Exception(esc_html__('Invalid provider.', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(esc_html__('Invalid provider.', 'knowvault'));
         }
     }
 
@@ -529,13 +534,41 @@ class Ajax_Handler {
     }
 
     /**
+     * Tests VoyageAI API connection
+     * 
+     * @param string $api_key VoyageAI API key
+     * @return bool True if connection is successful
+     * @throws Exception If connection fails
+     */
+    private function test_voyageai_connection($api_key) {
+        $response = wp_remote_post('https://api.voyageai.com/v1/embeddings', array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $api_key,
+                'Content-Type' => 'application/json'
+            ),
+            'body' => wp_json_encode(array(
+                'input' => array('test'),
+                'model' => 'voyage-3-lite'
+            )),
+            'timeout' => 60
+        ));
+
+        if (is_wp_error($response)) {
+            throw new \Exception(esc_html($response->get_error_message()));
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        return isset($body['data'][0]['embedding']) && !empty($body['data'][0]['embedding']);
+    }
+
+    /**
     * Preview content
     */
     function ai_botkit_preview_content() {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         $post_types = isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : [];
@@ -544,7 +577,7 @@ class Ajax_Handler {
         $date_to = isset($_POST['date_to']) ? sanitize_text_field($_POST['date_to']) : '';
 
         if (empty($post_types)) {
-            wp_send_json_error(['message' => esc_html__('Please select at least one content type.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Please select at least one content type.', 'knowvault')]);
         }
         $args = [
             'post_type' => $post_types,
@@ -599,7 +632,7 @@ class Ajax_Handler {
                 </div>';
             }
         } else {
-            echo '<div class="notice notice-warning"><p>' . esc_html__('No content found matching your criteria.', 'ai-botkit-for-lead-generation') . '</p></div>';
+            echo '<div class="notice notice-warning"><p>' . esc_html__('No content found matching your criteria.', 'knowvault') . '</p></div>';
         }
         
         wp_reset_postdata();
@@ -616,11 +649,11 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         if ( ! isset($_FILES['file']) ) {
-            wp_send_json_error(['message' => esc_html__('Missing required fields.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Missing required fields.', 'knowvault')]);
         }
 
         $file = $_FILES['file'];
@@ -628,7 +661,7 @@ class Ajax_Handler {
 
         // Check for upload errors
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            wp_send_json_error(['message' => esc_html__('File upload failed.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('File upload failed.', 'knowvault')]);
         }
 
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -641,12 +674,12 @@ class Ajax_Handler {
         // Validate file type
         $allowed_types = ['text/plain', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown', 'application/octet-stream'];
         if (!in_array($file['type'], $allowed_types)) {
-            wp_send_json_error(['message' => esc_html__('Invalid file type.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid file type.', 'knowvault')]);
         }
 
         $filetype = wp_check_filetype($file['name']);
         if( empty($filetype['ext']) ) {
-            wp_send_json_error(['message' => esc_html__('Invalid file type.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid file type.', 'knowvault')]);
         }
 
         // user wp_handle_upload to upload the file
@@ -677,11 +710,11 @@ class Ajax_Handler {
         );
 
         if ($result === false) {
-            wp_send_json_error(['message' => esc_html__('Failed to save document.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Failed to save document.', 'knowvault')]);
         }
 
         wp_send_json_success([
-            'message' => esc_html__('Document uploaded successfully.', 'ai-botkit-for-lead-generation'),
+            'message' => esc_html__('Document uploaded successfully.', 'knowvault'),
             'document_id' => $wpdb->insert_id
         ]);
     }
@@ -693,11 +726,11 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         if (!isset($_POST['document_id'])) {
-            wp_send_json_error(['message' => esc_html__('Missing document ID.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Missing document ID.', 'knowvault')]);
         }
 
         $document_id = intval($_POST['document_id']);
@@ -712,7 +745,7 @@ class Ajax_Handler {
             ));
             
             if (!$document) {
-                wp_send_json_error(['message' => esc_html__('Document not found.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Document not found.', 'knowvault')]);
             }
             
             // Create RAG Engine dependencies
@@ -732,14 +765,29 @@ class Ajax_Handler {
             );
             
             // Reprocess the document
-            $source = $document->file_path ?? $document->source_id;
-            
+            // For URLs, file_path contains the URL; for files, it's the file path; for posts, source_id contains post ID
+            if ($document->source_type === 'url') {
+                $source = $document->file_path;
+            } elseif ($document->source_type === 'file') {
+                $source = $document->file_path;
+            } else {
+                // For posts, use source_id
+                $source = $document->source_id;
+            }
             
             $result = $rag_engine->process_document($source, $document->source_type, $document_id);
             
+            // Check if embeddings were actually generated
+            if (empty($result['embedding_count']) || $result['embedding_count'] == 0) {
+                wp_send_json_error([
+                    'message' => esc_html__('Reprocessing completed but no embeddings were generated. Please check your API key and embedding model configuration in Settings.', 'knowvault'),
+                    'details' => $result
+                ]);
+                return;
+            }
             
             wp_send_json_success([
-                'message' => esc_html__('Document reprocessed successfully.', 'ai-botkit-for-lead-generation'),
+                'message' => esc_html__('Document reprocessed successfully.', 'knowvault'),
                 'result' => $result
             ]);
             
@@ -748,12 +796,12 @@ class Ajax_Handler {
             // Check if this is a "Not Found" error from Pinecone (which is often expected)
             if (strpos($e->getMessage(), 'Not Found') !== false) {
                 wp_send_json_error([
-                    'message' => esc_html__('Document reprocessing failed: The document embeddings were not found in the vector database. This may indicate the document was never properly processed or has already been deleted. Please try processing the document again.', 'ai-botkit-for-lead-generation'),
+                    'message' => esc_html__('Document reprocessing failed: The document embeddings were not found in the vector database. This may indicate the document was never properly processed or has already been deleted. Please try processing the document again.', 'knowvault'),
                     'details' => $e->getMessage()
                 ]);
             } else {
                 wp_send_json_error([
-                    'message' => esc_html__('Document reprocessing failed: ', 'ai-botkit-for-lead-generation') . $e->getMessage(),
+                    'message' => esc_html__('Document reprocessing failed: ', 'knowvault') . $e->getMessage(),
                     'details' => $e->getMessage()
                 ]);
             }
@@ -767,11 +815,11 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         if (!isset($_POST['document_id'])) {
-            wp_send_json_error(['message' => esc_html__('Missing document ID.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Missing document ID.', 'knowvault')]);
         }
 
         $document_id = intval($_POST['document_id']);
@@ -786,7 +834,7 @@ class Ajax_Handler {
             ));
             
             if (!$document) {
-                wp_send_json_error(['message' => esc_html__('Document not found.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Document not found.', 'knowvault')]);
             }
             
             // Get error metadata
@@ -818,11 +866,11 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         if (!isset($_POST['url']) ) {
-            wp_send_json_error(['message' => esc_html__('Missing required fields.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Missing required fields.', 'knowvault')]);
         }
 
         $url = esc_url_raw($_POST['url']);
@@ -832,7 +880,7 @@ class Ajax_Handler {
         // Debug logging
 
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            wp_send_json_error(['message' => esc_html__('Invalid URL.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid URL.', 'knowvault')]);
         }
 
         // Skip URL accessibility check for now - many sites block automated requests
@@ -860,7 +908,7 @@ class Ajax_Handler {
         );
 
         if ($result === false) {
-            wp_send_json_error(['message' => esc_html__('Failed to save document.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Failed to save document.', 'knowvault')]);
         }
 
         $document_id = $wpdb->insert_id;
@@ -897,7 +945,7 @@ class Ajax_Handler {
         }
 
         wp_send_json_success([
-            'message' => esc_html__('URL imported successfully.', 'ai-botkit-for-lead-generation'),
+            'message' => esc_html__('URL imported successfully.', 'knowvault'),
             'document_id' => $document_id  // Fix: Use captured variable instead of stale $wpdb->insert_id after process_queue()
         ]);
     }
@@ -1016,7 +1064,7 @@ class Ajax_Handler {
         // Capitalize first letter
         $host = ucfirst($host);
         
-        return $host . ' - ' . esc_html__('Web Page', 'ai-botkit-for-lead-generation');
+        return $host . ' - ' . esc_html__('Web Page', 'knowvault');
     }
 
     /**
@@ -1026,11 +1074,11 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         if (!isset($_POST['post_ids']) || !is_array($_POST['post_ids'])) {
-            wp_send_json_error(['message' => esc_html__('No content selected.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('No content selected.', 'knowvault')]);
         }
 
         $post_ids = array_map('intval', $_POST['post_ids']);
@@ -1070,7 +1118,7 @@ class Ajax_Handler {
 
         wp_send_json_success([
             'message' => sprintf(
-                __('%1$d items imported successfully. %2$d items failed.', 'ai-botkit-for-lead-generation'),
+                __('%1$d items imported successfully. %2$d items failed.', 'knowvault'),
                 $imported_count,
                 $failed_count
             ),
@@ -1087,17 +1135,17 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         if (!isset($_POST['document_id'])) {
-            wp_send_json_error(['message' => esc_html__('Invalid parameters.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid parameters.', 'knowvault')]);
         }
 
         $document_id = intval($_POST['document_id']);
 
         if ($document_id <= 0) {
-            wp_send_json_error(['message' => esc_html__('Invalid document ID.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid document ID.', 'knowvault')]);
         }
 
         global $wpdb;
@@ -1131,10 +1179,10 @@ class Ajax_Handler {
 
         if ($result) {
             wp_send_json_success([
-                'message' => esc_html__('Document deleted successfully.', 'ai-botkit-for-lead-generation')
+                'message' => esc_html__('Document deleted successfully.', 'knowvault')
             ]);
         } else {
-            wp_send_json_error(['message' => esc_html__('Failed to delete document.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Failed to delete document.', 'knowvault')]);
         }
         
         
@@ -1147,14 +1195,14 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         $chatbot_id = isset($_POST['chatbot_id']) ? intval($_POST['chatbot_id']) : 0;
         $document_ids = isset($_POST['document_ids']) ? array_map('intval', $_POST['document_ids']) : [];
 
         if (!$chatbot_id || empty($document_ids)) {
-            wp_send_json_error(['message' => __('Invalid parameters.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => __('Invalid parameters.', 'knowvault')]);
         }
 
         try {
@@ -1168,7 +1216,7 @@ class Ajax_Handler {
             $documents = $chatbot->get_associated_content('document');
             
             wp_send_json_success([
-                'message' => __('Documents added successfully.', 'ai-botkit-for-lead-generation'),
+                'message' => __('Documents added successfully.', 'knowvault'),
                 'documents' => $documents
             ]);
 
@@ -1184,14 +1232,14 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         $chatbot_id = isset($_POST['chatbot_id']) ? intval($_POST['chatbot_id']) : 0;
         $document_id = isset($_POST['document_id']) ? intval($_POST['document_id']) : 0;
 
         if (!$chatbot_id || !$document_id) {
-            wp_send_json_error(['message' => esc_html__('Invalid parameters.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid parameters.', 'knowvault')]);
         }
 
         try {
@@ -1202,11 +1250,11 @@ class Ajax_Handler {
                 $documents = $chatbot->get_associated_content('document');
                 
                 wp_send_json_success([
-                    'message' => __('Document removed successfully.', 'ai-botkit-for-lead-generation'),
+                    'message' => __('Document removed successfully.', 'knowvault'),
                     'documents' => $documents
                 ]);
             } else {
-                wp_send_json_error(['message' => esc_html__('Failed to remove document.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Failed to remove document.', 'knowvault')]);
             }
 
         } catch (\Exception $e) {
@@ -1221,13 +1269,13 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         $chatbot_id = isset($_POST['chatbot_id']) ? intval($_POST['chatbot_id']) : 0;
 
         if (!$chatbot_id) {
-            wp_send_json_error(['message' => esc_html__('Invalid parameters.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid parameters.', 'knowvault')]);
         }
 
         try {
@@ -1250,7 +1298,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         global $wpdb;
@@ -1286,29 +1334,29 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         if (!isset($_FILES['avatar'])) {
-            wp_send_json_error(['message' => esc_html__('No file uploaded.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('No file uploaded.', 'knowvault')]);
         }
 
         $file = $_FILES['avatar'];
         
         // Check for upload errors
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            wp_send_json_error(['message' => esc_html__('File upload failed.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('File upload failed.', 'knowvault')]);
         }
 
         // Validate file type
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         if (!in_array($file['type'], $allowed_types)) {
-            wp_send_json_error(['message' => esc_html__('Invalid file type. Please upload an image (JPG, PNG, or GIF).', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid file type. Please upload an image (JPG, PNG, or GIF).', 'knowvault')]);
         }
 
         $filetype = wp_check_filetype($file['name']);
         if( empty($filetype['ext']) ) {
-            wp_send_json_error(['message' => esc_html__('Invalid file type.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid file type.', 'knowvault')]);
         }
 
         // Upload the file to WordPress media library
@@ -1329,7 +1377,7 @@ class Ajax_Handler {
         $attach_id = wp_insert_attachment($attachment, $upload['file']);
 
         if (is_wp_error($attach_id)) {
-            wp_send_json_error(['message' => esc_html__('Failed to save image.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Failed to save image.', 'knowvault')]);
         }
 
         // Generate attachment metadata and update
@@ -1338,7 +1386,7 @@ class Ajax_Handler {
         wp_update_attachment_metadata($attach_id, $attach_data);
 
         wp_send_json_success([
-            'message' => esc_html__('Avatar uploaded successfully.', 'ai-botkit-for-lead-generation'),
+            'message' => esc_html__('Avatar uploaded successfully.', 'knowvault'),
             'id' => $attach_id,
             'url' => $upload['url']
         ]);
@@ -1351,29 +1399,29 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         if (!isset($_FILES['background_image'])) {
-            wp_send_json_error(['message' => esc_html__('No file uploaded.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('No file uploaded.', 'knowvault')]);
         }
 
         $file = $_FILES['background_image'];
         
         // Check for upload errors
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            wp_send_json_error(['message' => esc_html__('File upload failed.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('File upload failed.', 'knowvault')]);
         }
 
         // Validate file type
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         if (!in_array($file['type'], $allowed_types)) {
-            wp_send_json_error(['message' => esc_html__('Invalid file type. Please upload an image (JPG, PNG, or GIF).', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid file type. Please upload an image (JPG, PNG, or GIF).', 'knowvault')]);
         }
 
         $filetype = wp_check_filetype($file['name']);
         if( empty($filetype['ext']) ) {
-            wp_send_json_error(['message' => esc_html__('Invalid file type.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid file type.', 'knowvault')]);
         }
 
         // Upload the file to WordPress media library
@@ -1394,7 +1442,7 @@ class Ajax_Handler {
         $attach_id = wp_insert_attachment($attachment, $upload['file']);
 
         if (is_wp_error($attach_id)) {
-            wp_send_json_error(['message' => esc_html__('Failed to save image.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Failed to save image.', 'knowvault')]);
         }
 
         // Generate attachment metadata and update
@@ -1403,7 +1451,7 @@ class Ajax_Handler {
         wp_update_attachment_metadata($attach_id, $attach_data);
 
         wp_send_json_success([
-            'message' => esc_html__('Background image uploaded successfully.', 'ai-botkit-for-lead-generation'),
+            'message' => esc_html__('Background image uploaded successfully.', 'knowvault'),
             'id' => $attach_id,
             'url' => $upload['url']
         ]);
@@ -1416,22 +1464,22 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         $chatbot_id = isset($_POST['chatbot_id']) ? intval($_POST['chatbot_id']) : 0;
         $enable_chatbot_sitewide = isset($_POST['enable_chatbot_sitewide']) ? intval($_POST['enable_chatbot_sitewide']) : 0;
         
         if( $chatbot_id <= 0 ) {
-            wp_send_json_error(['message' => esc_html__('Invalid chatbot ID.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid chatbot ID.', 'knowvault')]);
         }
 
         if( $enable_chatbot_sitewide ) {
             update_option('ai_botkit_chatbot_sitewide_enabled', $chatbot_id);
-            wp_send_json_success(['message' => esc_html__('Chatbot enabled sitewide.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_success(['message' => esc_html__('Chatbot enabled sitewide.', 'knowvault')]);
         } else {
             update_option('ai_botkit_chatbot_sitewide_enabled', 0);
-            wp_send_json_error(['message' => esc_html__('Chatbot disabled sitewide.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Chatbot disabled sitewide.', 'knowvault')]);
         }
     }
 
@@ -1442,14 +1490,14 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         $chatbot_id = isset($_POST['chatbot_id']) ? intval($_POST['chatbot_id']) : 0;
         $enable_chatbot = isset($_POST['enable_chatbot']) ? intval($_POST['enable_chatbot']) : 0;
 
         if( $chatbot_id <= 0 ) {
-            wp_send_json_error(['message' => esc_html__('Invalid chatbot ID.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid chatbot ID.', 'knowvault')]);
         }
         
         // Update chatbot publish status
@@ -1462,12 +1510,12 @@ class Ajax_Handler {
 
         if( $result ) {
             if( $enable_chatbot == 1 ) {
-                wp_send_json_success(['message' => esc_html__('Chatbot enabled.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_success(['message' => esc_html__('Chatbot enabled.', 'knowvault')]);
             } else {
-                wp_send_json_error(['message' => esc_html__('Chatbot disabled.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Chatbot disabled.', 'knowvault')]);
             }
         } else {
-            wp_send_json_error(['message' => esc_html__('Failed to enable chatbot.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Failed to enable chatbot.', 'knowvault')]);
         }
     }
 
@@ -1478,7 +1526,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         // Check if Pinecone API key and host exist before proceeding
@@ -1486,14 +1534,14 @@ class Ajax_Handler {
         $pinecone_host = get_option('ai_botkit_pinecone_host', '');
         
         if (empty($pinecone_api_key) || empty($pinecone_host)) {
-            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'knowvault')]);
         }
 
         // Test Pinecone credentials validity
         try {
             $pinecone_database = new \AI_BotKit\Core\Pinecone_Database();
             if (!$pinecone_database->is_configured()) {
-                wp_send_json_error(['message' => esc_html__('Pinecone is not properly configured. Please check your API key and host in Settings.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Pinecone is not properly configured. Please check your API key and host in Settings.', 'knowvault')]);
             }
             
             // Test connection by making a simple API call
@@ -1502,16 +1550,16 @@ class Ajax_Handler {
         } catch (\AI_BotKit\Core\Pinecone_Exception $e) {
             $error_message = $e->getMessage();
             if (strpos($error_message, '401') !== false || strpos($error_message, 'Unauthorized') !== false) {
-                wp_send_json_error(['message' => esc_html__('Invalid Pinecone API key. Please check your credentials in Settings.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Invalid Pinecone API key. Please check your credentials in Settings.', 'knowvault')]);
             } elseif (strpos($error_message, '403') !== false || strpos($error_message, 'Forbidden') !== false) {
-                wp_send_json_error(['message' => esc_html__('Pinecone API access denied. Please check your API key permissions in Settings.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Pinecone API access denied. Please check your API key permissions in Settings.', 'knowvault')]);
             } elseif (strpos($error_message, '404') !== false) {
-                wp_send_json_error(['message' => esc_html__('Invalid Pinecone host URL. Please check your host configuration in Settings.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Invalid Pinecone host URL. Please check your host configuration in Settings.', 'knowvault')]);
             } else {
-                wp_send_json_error(['message' => esc_html__('Pinecone connection failed: ', 'ai-botkit-for-lead-generation') . $error_message]);
+                wp_send_json_error(['message' => esc_html__('Pinecone connection failed: ', 'knowvault') . $error_message]);
             }
         } catch (\Exception $e) {
-            wp_send_json_error(['message' => esc_html__('Failed to validate Pinecone credentials: ', 'ai-botkit-for-lead-generation') . $e->getMessage()]);
+            wp_send_json_error(['message' => esc_html__('Failed to validate Pinecone credentials: ', 'knowvault') . $e->getMessage()]);
         }
 
         try {
@@ -1551,7 +1599,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         // Check if Pinecone API key and host exist before proceeding
@@ -1559,7 +1607,7 @@ class Ajax_Handler {
         $pinecone_host = get_option('ai_botkit_pinecone_host', '');
         
         if (empty($pinecone_api_key) || empty($pinecone_host)) {
-            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'knowvault')]);
         }
 
         try {
@@ -1599,7 +1647,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         // Check if Pinecone API key and host exist before proceeding
@@ -1607,11 +1655,11 @@ class Ajax_Handler {
         $pinecone_host = get_option('ai_botkit_pinecone_host', '');
         
         if (empty($pinecone_api_key) || empty($pinecone_host)) {
-            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required. Please configure Pinecone in Settings to use migration features.', 'knowvault')]);
         }
 
         if (!isset($_POST['options'])) {
-            wp_send_json_error(['message' => esc_html__('Migration options are required.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Migration options are required.', 'knowvault')]);
         }
 
         try {
@@ -1619,7 +1667,7 @@ class Ajax_Handler {
             $options = $_POST['options'];
             
             if (!is_array($options)) {
-                wp_send_json_error(['message' => esc_html__('Invalid migration options.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Invalid migration options.', 'knowvault')]);
             }
 
             // Create required dependencies
@@ -1658,19 +1706,19 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions.', 'ai-botkit-for-lead-generation'));
+            wp_die(__('Insufficient permissions.', 'knowvault'));
         }
 
         $log_file = isset($_GET['log_file']) ? sanitize_file_name($_GET['log_file']) : '';
         
         if (empty($log_file)) {
-            wp_die(__('Log file not specified.', 'ai-botkit-for-lead-generation'));
+            wp_die(__('Log file not specified.', 'knowvault'));
         }
 
         $log_path = WP_CONTENT_DIR . '/ai-botkit-logs/' . $log_file;
         
         if (!file_exists($log_path)) {
-            wp_die(__('Log file not found.', 'ai-botkit-for-lead-generation'));
+            wp_die(__('Log file not found.', 'knowvault'));
         }
 
         // Security check - ensure file is within logs directory
@@ -1678,7 +1726,7 @@ class Ajax_Handler {
         $logs_dir = realpath(WP_CONTENT_DIR . '/ai-botkit-logs');
         
         if (strpos($real_path, $logs_dir) !== 0) {
-            wp_die(__('Invalid log file path.', 'ai-botkit-for-lead-generation'));
+            wp_die(__('Invalid log file path.', 'knowvault'));
         }
 
         // Set headers for download
@@ -1700,11 +1748,11 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         delete_transient('ai_botkit_migration_in_progress');
-        wp_send_json_success(['message' => esc_html__('Migration lock cleared successfully.', 'ai-botkit-for-lead-generation')]);
+        wp_send_json_success(['message' => esc_html__('Migration lock cleared successfully.', 'knowvault')]);
     }
 
     /**
@@ -1714,7 +1762,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         // Get database type first to determine if Pinecone check is needed
@@ -1722,7 +1770,7 @@ class Ajax_Handler {
         
         // Only check Pinecone configuration for migration operations, not for clearing
         if (!in_array($database, ['local', 'pinecone', 'knowledge_base'])) {
-            wp_send_json_error(['message' => esc_html__('Invalid database specified.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Invalid database specified.', 'knowvault')]);
         }
 
         try {
@@ -1734,7 +1782,7 @@ class Ajax_Handler {
                 $pinecone_host = get_option('ai_botkit_pinecone_host');
                 
                 if (empty($pinecone_api_key) || empty($pinecone_host)) {
-                    wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required to clear Pinecone database.', 'ai-botkit-for-lead-generation')]);
+                    wp_send_json_error(['message' => esc_html__('Pinecone API key and host are required to clear Pinecone database.', 'knowvault')]);
                 }
             }
 
@@ -1774,7 +1822,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         try {
@@ -1826,7 +1874,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         try {
@@ -1885,20 +1933,20 @@ class Ajax_Handler {
                 if ('post' == $document_type) {
                     $document_url = '<a href="' . get_permalink($document->source_id) . '" target="_blank">' . get_the_title($document->source_id) . '</a>';
                 } elseif ('url' == $document_type) {
-                    $document_url = '<a href="' . $document->file_path . '" target="_blank">' . esc_html__('Visit URL', 'ai-botkit-for-lead-generation') . '</a>';
+                    $document_url = '<a href="' . $document->file_path . '" target="_blank">' . esc_html__('Visit URL', 'knowvault') . '</a>';
                 } elseif ('file' == $document_type) {
                     $document_url = size_format(filesize($document->file_path), 2);
                 }
 
                 $status_badge = '';
                 if ('pending' == $document->status) {
-                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-warning">' . esc_html__('Pending', 'ai-botkit-for-lead-generation') . '</span>';
+                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-warning">' . esc_html__('Pending', 'knowvault') . '</span>';
                 } elseif ('processing' == $document->status) {
-                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-info">' . esc_html__('Processing', 'ai-botkit-for-lead-generation') . '</span>';
+                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-info">' . esc_html__('Processing', 'knowvault') . '</span>';
                 } elseif ('completed' == $document->status) {
-                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-success">' . esc_html__('Completed', 'ai-botkit-for-lead-generation') . '</span>';
+                    $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-success">' . esc_html__('Completed', 'knowvault') . '</span>';
                    } elseif ('failed' == $document->status) {
-                       $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-danger ai-botkit-error-clickable" data-document-id="' . $document->id . '" style="cursor: pointer;" title="Click to view error details">' . esc_html__('Failed', 'ai-botkit-for-lead-generation') . '</span>';
+                       $status_badge = '<span class="ai-botkit-badge ai-botkit-badge-danger ai-botkit-error-clickable" data-document-id="' . $document->id . '" style="cursor: pointer;" title="Click to view error details">' . esc_html__('Failed', 'knowvault') . '</span>';
                    }
 
                 // Add reprocess button for completed documents
@@ -1907,13 +1955,13 @@ class Ajax_Handler {
                     // Set appropriate reprocess label based on document type
                     $reprocess_title = '';
                     if ( 'file' == $document_type ) {
-                        $reprocess_title = esc_attr__('Reprocess file', 'ai-botkit-for-lead-generation');
+                        $reprocess_title = esc_attr__('Reprocess file', 'knowvault');
                     } elseif ( 'post' == $document_type ) {
-                        $reprocess_title = esc_attr__('Reprocess post', 'ai-botkit-for-lead-generation');
+                        $reprocess_title = esc_attr__('Reprocess post', 'knowvault');
                     } elseif ( 'url' == $document_type ) {
-                        $reprocess_title = esc_attr__('Reprocess URL', 'ai-botkit-for-lead-generation');
+                        $reprocess_title = esc_attr__('Reprocess URL', 'knowvault');
                     } else {
-                        $reprocess_title = esc_attr__('Reprocess document', 'ai-botkit-for-lead-generation');
+                        $reprocess_title = esc_attr__('Reprocess document', 'knowvault');
                     }
                     $actions = '<button class="ai-botkit-reprocess-btn" data-id="' . esc_attr($document->id) . '" data-type="' . esc_attr($document_type) . '" title="' . $reprocess_title . '"><i class="ti ti-refresh"></i></button>';
                 }
@@ -1951,7 +1999,7 @@ class Ajax_Handler {
         check_ajax_referer('ai_botkit_admin', 'nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
         }
 
         // Get credentials from POST data
@@ -1959,7 +2007,7 @@ class Ajax_Handler {
         $host = sanitize_text_field($_POST['host'] ?? '');
 
         if (empty($api_key) || empty($host)) {
-            wp_send_json_error(['message' => esc_html__('API key and host are required.', 'ai-botkit-for-lead-generation')]);
+            wp_send_json_error(['message' => esc_html__('API key and host are required.', 'knowvault')]);
         }
 
         try {
@@ -1974,7 +2022,7 @@ class Ajax_Handler {
             $pinecone_database = new \AI_BotKit\Core\Pinecone_Database();
             
             if (!$pinecone_database->is_configured()) {
-                wp_send_json_error(['message' => esc_html__('Pinecone is not properly configured.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Pinecone is not properly configured.', 'knowvault')]);
             }
             
             // Test connection by making a simple API call
@@ -1985,7 +2033,7 @@ class Ajax_Handler {
             update_option('ai_botkit_pinecone_host', $original_host);
             
             wp_send_json_success([
-                'message' => esc_html__('Connection successful! Your Pinecone credentials are valid.', 'ai-botkit-for-lead-generation'),
+                'message' => esc_html__('Connection successful! Your Pinecone credentials are valid.', 'knowvault'),
                 'status' => 'success'
             ]);
             
@@ -1996,20 +2044,20 @@ class Ajax_Handler {
             
             $error_message = $e->getMessage();
             if (strpos($error_message, '401') !== false || strpos($error_message, 'Unauthorized') !== false) {
-                wp_send_json_error(['message' => esc_html__('Invalid API key. Please check your Pinecone API key.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Invalid API key. Please check your Pinecone API key.', 'knowvault')]);
             } elseif (strpos($error_message, '403') !== false || strpos($error_message, 'Forbidden') !== false) {
-                wp_send_json_error(['message' => esc_html__('API access denied. Please check your API key permissions.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('API access denied. Please check your API key permissions.', 'knowvault')]);
             } elseif (strpos($error_message, '404') !== false) {
-                wp_send_json_error(['message' => esc_html__('Invalid host URL. Please check your Pinecone host configuration.', 'ai-botkit-for-lead-generation')]);
+                wp_send_json_error(['message' => esc_html__('Invalid host URL. Please check your Pinecone host configuration.', 'knowvault')]);
             } else {
-                wp_send_json_error(['message' => esc_html__('Connection failed: ', 'ai-botkit-for-lead-generation') . $error_message]);
+                wp_send_json_error(['message' => esc_html__('Connection failed: ', 'knowvault') . $error_message]);
             }
         } catch (\Exception $e) {
             // Restore original values on error
             update_option('ai_botkit_pinecone_api_key', $original_api_key);
             update_option('ai_botkit_pinecone_host', $original_host);
             
-            wp_send_json_error(['message' => esc_html__('Failed to test connection: ', 'ai-botkit-for-lead-generation') . $e->getMessage()]);
+            wp_send_json_error(['message' => esc_html__('Failed to test connection: ', 'knowvault') . $e->getMessage()]);
         }
     }
 } 

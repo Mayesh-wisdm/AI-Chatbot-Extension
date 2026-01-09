@@ -63,7 +63,7 @@ class Rate_Limiter {
                     'limited' => true,
                     'reason' => 'token_limit',
                     'message' => sprintf(
-                        __('You have reached your token limit of %s for the day. Please try again tomorrow.', 'ai-botkit-for-lead-generation'),
+                        __('You have reached your token limit of %s for the day. Please try again tomorrow.', 'knowvault'),
                         number_format_i18n($token_limit)
                     ),
                     'usage' => $stats['total_tokens'],
@@ -78,7 +78,7 @@ class Rate_Limiter {
                     'limited' => true,
                     'reason' => 'message_limit',
                     'message' => sprintf(
-                        __('You have reached your message limit of %s for the day. Please try again tomorrow.', 'ai-botkit-for-lead-generation'),
+                        __('You have reached your message limit of %s for the day. Please try again tomorrow.', 'knowvault'),
                         $message_limit
                     ),
                     'usage' => $stats['message_count'],

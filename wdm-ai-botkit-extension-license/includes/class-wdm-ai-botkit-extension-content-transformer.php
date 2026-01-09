@@ -96,7 +96,7 @@ class Wdm_Ai_Botkit_Extension_Content_Transformer {
         $screen = get_current_screen();
         if ($screen && strpos($screen->id, 'ai-botkit') !== false) {
             echo '<div class="notice notice-info is-dismissible">';
-            echo '<p><strong>AI BotKit Extension:</strong> Your license has been reactivated! ';
+            echo '<p><strong>KnowVault Extension:</strong> Your license has been reactivated! ';
             echo 'Your LearnDash content sync is now available. ';
             echo '<a href="' . admin_url('admin.php?page=ai-botkit&tab=extension-license') . '">Click here to sync comprehensive content</a>.</p>';
             echo '</div>';
@@ -145,8 +145,8 @@ class Wdm_Ai_Botkit_Extension_Content_Transformer {
             return;
         }
         
-        // Check if AI BotKit is available
-        if (!class_exists('AI_BotKit\Core\RAG_Engine')) {
+        // Check if KnowVault is available (supports both old and new namespaces)
+        if (!class_exists('AI_BotKit\Core\RAG_Engine') && !class_exists('KnowVault\Core\RAG_Engine')) {
             return;
         }
         

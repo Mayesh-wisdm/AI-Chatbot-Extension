@@ -40,9 +40,9 @@ class Shortcode_Handler {
         // Parse attributes
         $args = shortcode_atts([
             'id' => '',
-            'title' => __('AI Assistant', 'ai-botkit-for-lead-generation'),
-            'welcome_message' => __('Hello! How can I help you today?', 'ai-botkit-for-lead-generation'),
-            'placeholder' => __('Type your message...', 'ai-botkit-for-lead-generation'),
+            'title' => __('AI Assistant', 'knowvault'),
+            'welcome_message' => __('Hello! How can I help you today?', 'knowvault'),
+            'placeholder' => __('Type your message...', 'knowvault'),
             'context' => '', // Optional context to focus the chat
             'width' => '100%',
             'height' => '600px',
@@ -53,7 +53,7 @@ class Shortcode_Handler {
         $chatbot = new Chatbot($args['id']);
 
         if (!$chatbot->exists()) {
-            return __('Chatbot not found.', 'ai-botkit-for-lead-generation');
+            return __('Chatbot not found.', 'knowvault');
         }
 
         $chatbot_data = $chatbot->get_data();
@@ -91,9 +91,9 @@ class Shortcode_Handler {
             'position' => 'right',
             'offset_x' => 20,
             'offset_y' => 20,
-            'title' => __('AI Assistant', 'ai-botkit-for-lead-generation'),
-            'welcome_message' => __('Hello! How can I help you today?', 'ai-botkit-for-lead-generation'),
-            'button_text' => __('Chat with AI', 'ai-botkit-for-lead-generation'),
+            'title' => __('AI Assistant', 'knowvault'),
+            'welcome_message' => __('Hello! How can I help you today?', 'knowvault'),
+            'button_text' => __('Chat with AI', 'knowvault'),
             'context' => '', // Optional context to focus the chat
             'theme' => 'light',
         ], $atts);
@@ -104,7 +104,7 @@ class Shortcode_Handler {
         $chatbot = new Chatbot($args['id']);
 
         if (!$chatbot->exists()) {
-            return __('Chatbot not found.', 'ai-botkit-for-lead-generation');
+            return __('Chatbot not found.', 'knowvault');
         }
 
         $chatbot_data = $chatbot->get_data();
@@ -179,9 +179,9 @@ class Shortcode_Handler {
             'botID' => $chatbot_data['id'],
             'color' => $styles['primary_color'],
             'i18n' => [
-                'errorMessage' => __('An error occurred. Please try again.', 'ai-botkit-for-lead-generation'),
-                'networkError' => __('Network error. Please check your connection.', 'ai-botkit-for-lead-generation'),
-                'sendError' => __('Failed to send message. Please try again.', 'ai-botkit-for-lead-generation'),
+                'errorMessage' => __('An error occurred. Please try again.', 'knowvault'),
+                'networkError' => __('Network error. Please check your connection.', 'knowvault'),
+                'sendError' => __('Failed to send message. Please try again.', 'knowvault'),
                 'welcomeMessage' => $messages_template['greeting']
             ]
         ]);
@@ -235,11 +235,11 @@ class Shortcode_Handler {
             "header_color" => "#000000",
             "body_bg_color" => "#ffffff",
             "bubble_height" => "55",
-            "primary_color" => "#008858",
-            "ai_msg_bg_color" => "#0088581a",
-            "header_bg_color" => "#008858",
+            "primary_color" => "#1E3A8A",
+            "ai_msg_bg_color" => "#1E3A8A1a",
+            "header_bg_color" => "#1E3A8A",
             "ai_msg_font_color" => "#1C1C1C",
-            "user_msg_bg_color" => "#008858",
+            "user_msg_bg_color" => "#1E3A8A",
             "user_msg_font_color" => "#1C1C1C"
         ];
 

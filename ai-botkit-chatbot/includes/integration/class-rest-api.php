@@ -167,7 +167,7 @@ class REST_API {
             // Check if IP is blocked
             if ($this->is_ip_blocked()) {
                 return new WP_REST_Response([
-                    'error' => __('Access denied. Your IP address has been blocked.', 'ai-botkit-for-lead-generation')
+                    'error' => __('Access denied. Your IP address has been blocked.', 'knowvault')
                 ], 403);
             }
 

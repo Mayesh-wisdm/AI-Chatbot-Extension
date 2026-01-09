@@ -35,8 +35,8 @@ class Wdm_Ai_Botkit_Extension_Activator {
 			
 			// Show error message
 			wp_die(
-				__('WDM AI BotKit Extension requires AI BotKit plugin to be installed and activated. Please install and activate AI BotKit plugin first.', 'wdm-ai-botkit-extension'),
-				__('Plugin Activation Error', 'wdm-ai-botkit-extension'),
+				__('WDM KnowVault Extension for LearnDash requires KnowVault plugin to be installed and activated. Please install and activate KnowVault plugin first.', 'wdm-knowvault-extension'),
+				__('Plugin Activation Error', 'wdm-knowvault-extension'),
 				array(
 					'response' => 200,
 					'back_link' => true,

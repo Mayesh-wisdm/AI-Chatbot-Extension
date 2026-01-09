@@ -43,8 +43,7 @@
   
   .ai-botkit-main {
     flex: 1;
-    padding: 1rem;
-    background: #F5FBF9;
+    background: #F5F9FB;
   }
 
   
@@ -85,6 +84,8 @@
     height: 100%;
     width: 100%;
     object-fit: contain;
+    transform: scale(2.0);
+    margin-left: 100px;
   }
   
   .ai-botkit-sidebar-title {
@@ -99,7 +100,7 @@
   }
   
   .ai-botkit-button {
-    background-color: #008858;
+    background-color: #1E3A8A;
     color: white;
     border: none;
     padding: 0.5rem;
@@ -110,7 +111,7 @@
   }
   
   .ai-botkit-button:hover {
-    background-color: #0E594D;
+    background-color: #1E40AF;
   }
   
   .ai-botkit-sidebar-nav {
@@ -138,14 +139,14 @@
   }
 
   .ai-botkit-sidebar-link.active {
-    background-color: #E6F4EF;
-    color: #008858;
+    background-color: #E6F2FF;
+    color: #1E3A8A;
   }
   .ai-botkit-sidebar-link.active i{
-    color: #008858;
+    color: #1E3A8A;
   }
   .ai-botkit-sidebar-link.active svg{
-    fill: #008858;
+    fill: #1E3A8A;
   }
   .ai-botkit-sidebar-link:focus{
     box-shadow: none;
@@ -230,7 +231,7 @@
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
-    color: #008858; /* primary */
+    color: #1E3A8A; /* primary */
   }
   
   .ai-botkit-welcome-title {
@@ -303,7 +304,7 @@
   }
   
   .ai-botkit-button-lg {
-    background-color: #008858;
+    background-color: #1E3A8A;
     color: white;
     font-size: 1rem;
     padding: 0.75rem 1.5rem;
@@ -315,7 +316,7 @@
   }
   
   .ai-botkit-button-lg:hover {
-    background-color: #0E594D;
+    background-color: #1E40AF;
     color: white;
   }
   
@@ -327,7 +328,7 @@
   }
   
   .ai-botkit-link {
-    color: #008858;
+    color: #1E3A8A;
     text-decoration: none;
     margin-left: 0.25rem;
   }
@@ -375,7 +376,7 @@
   .ai-botkit-chatbot-hide-preview{
     cursor: pointer;
     margin: 0;
-    color: #008858;
+    color: #1E3A8A;
     font-size: 0.875rem;
     font-weight: 500;
     display: flex;
@@ -384,7 +385,7 @@
   }
   
   .ai-botkit-create-btn {
-    background-color: #008858;
+    background-color: #1E3A8A;
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -398,7 +399,7 @@
   }
   
   .ai-botkit-create-btn:hover {
-    background-color: #0E594D;
+    background-color: #1E40AF;
   }
 
   .ai-botkit-chatbot-grid {
@@ -540,7 +541,7 @@
   
   .ai-botkit-status-active {
     background-color: #DAF9DF;
-    color: #00B61D;
+    color: #00BFA6;
   }
   
   .ai-botkit-status-inactive {
@@ -559,13 +560,13 @@
   }
 
   .ai-botkit-badge-success{
-    color: #00B61D;
-    background-color: #00B61D1A;
+    color: #00BFA6;
+    background-color: #00BFA61A;
   }
 
   .ai-botkit-badge-sitewide{
-    color: #008858;
-    background-color: #0088581A;
+    color: #1E3A8A;
+    background-color: #1E3A8A1A;
   }
   #ai-botkit-chatbot-wizard-sitewide{
     display: none;
@@ -627,7 +628,7 @@
   }
   
   .ai-botkit-btn-view-chat {
-    background-color: #008858;
+    background-color: #1E3A8A;
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -639,7 +640,7 @@
   }
 
   .ai-botkit-btn-view-chat:hover {
-    background-color: #0E594D;
+    background-color: #1E40AF;
     color: white;
   }
   
@@ -656,7 +657,7 @@
   }
 
   .ai-botkit-btn-outline:hover {
-    background-color: #0E594D;
+    background-color: #1E40AF;
     color: white;
   }
   .ai-botkit-btn-outline:focus {
@@ -731,7 +732,7 @@
   
   .ai-botkit-progress-fill {
     height: 100%;
-    background: #008858;
+    background: #1E3A8A;
     width: 0%;
     transition: width 0.4s ease;
   }
@@ -772,7 +773,7 @@
     gap: 1rem;
   }
   .ai-botkit-tab.active {
-    background: #008858;
+    background: #1E3A8A;
     color: #fff;
   }
   
@@ -800,9 +801,9 @@
   }
   
   .ai-botkit-btn-primary {
-    background-color: #008858;
+    background-color: #1E3A8A;
     color: white;
-    border: 1px solid #008858;
+    border: 1px solid #1E3A8A;
     padding: 0.5rem 0.75rem; /* Averaged padding */
     font-size: 0.875rem;
     border-radius: 0.375rem;
@@ -815,7 +816,7 @@
   }
   
   .ai-botkit-btn-primary:hover {
-    background-color: #0E594D;
+    background-color: #1E40AF;
     color: white; /* Added for consistency */
   }
   
@@ -1031,7 +1032,7 @@
   }
 
   .ai-botkit-btn-sm:hover {
-    background-color: #0E594D;
+    background-color: #1E40AF;
     color: white;
   }
   
@@ -1172,7 +1173,7 @@
   }
   
   .ai-botkit-switch input:checked + .ai-botkit-slider {
-    background-color: #008858;
+    background-color: #1E3A8A;
   }
   
   .ai-botkit-switch input:checked + .ai-botkit-slider:before {
@@ -1198,7 +1199,7 @@
   }
   
   .ai-botkit-model-option:hover {
-    border-color: #008858;
+    border-color: #1E3A8A;
     background-color: #f5f7ff;
   }
   
@@ -1294,11 +1295,11 @@
   }
   
   .ai-botkit-color-circle.selected {
-    outline: 2px solid #008858;
+    outline: 2px solid #1E3A8A;
     outline-offset: 2px;
   }
   .ai-botkit-color-preview.selected{
-    outline: 2px solid #008858;
+    outline: 2px solid #1E3A8A;
     outline-offset: 2px;
     width: 7rem;
 
@@ -1438,7 +1439,7 @@
   }
   
   .ai-botkit-chat-avatar {
-    background: linear-gradient(180deg, #21C58B 0%, #038E5D 100%);
+    background: linear-gradient(180deg, #3B82F6 0%, #1E3A8A 100%);
     height: 2.5rem;
     width: 2.5rem;
     border-radius: 9999px;
@@ -1451,8 +1452,9 @@
   }
   
   .ai-botkit-chat-avatar img {
-    object-fit: cover;
     border-radius: 50%;
+    width: 27px;
+    height: 27px;
   }
   
   .ai-botkit-chat-title {
@@ -1508,7 +1510,7 @@
   }
   
   .user-msg {
-    background: #008858;
+    background: #1E3A8A;
     color: #FFF;
     align-self: flex-end;
   }
@@ -1535,7 +1537,7 @@
   }
   
   .ai-botkit-chat-form button {
-    background-color: #008858;
+    background-color: #1E3A8A;
     color: white;
     border: none;
     padding: 0 1rem;
@@ -1544,7 +1546,7 @@
   
   /* Chat bubble */
   .ai-botkit-chat-bubble {
-    background: #008858;
+    background: #1E3A8A;
     color: white;
     border-radius: 9999px;
     font-size: 1.25rem;
@@ -1683,7 +1685,7 @@
   }
   
   .ai-botkit-tab.active {
-    background: #008858;
+    background: #1E3A8A;
     color: white;
   }
   
@@ -1779,7 +1781,7 @@
   }
   
   .ai-botkit-btn {
-    background-color: #008858;
+    background-color: #1E3A8A;
     color: white;
     padding: 0.5rem 1.5rem;
     border: none;
@@ -1787,7 +1789,7 @@
     cursor: pointer;
   }
   .ai-botkit-btn:hover {
-    background-color: #0E594D;
+    background-color: #1E40AF;
   }
   
   .ai-botkit-switch {
@@ -1823,7 +1825,7 @@
   }
   
   .ai-botkit-switch input:checked + .ai-botkit-slider {
-    background-color: #008858;
+    background-color: #1E3A8A;
   }
   
   .ai-botkit-switch input:checked + .ai-botkit-slider::before {
@@ -1857,7 +1859,7 @@
   
   .ai-botkit-select-input:focus {
     outline: none;
-    border-color: #008858; /* Primary color on focus */
+    border-color: #1E3A8A; /* Primary color on focus */
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
   }
   .ai-botkit-api-test-result-container {
@@ -1920,7 +1922,7 @@
     padding: 0.5rem 1.25rem;
     border-radius: 1rem;
     font-size: 0.875rem;
-    border: 1px solid #59C39E;
+    border: 1px solid #1E3A8A;
     cursor: pointer;
     transition: background 0.3s;
     text-decoration: none;
@@ -1929,7 +1931,7 @@
   }
   
   .ai-botkit-tab.active {
-    background: #008858;
+    background: #1E3A8A;
     color: #ffffff;
   }
   
@@ -2203,7 +2205,7 @@
 }
 
 .ai-botkit-table th {
-  background: #E9F3F0;
+  background: #E9F2FF;
   font-weight: 600;
 }
 
@@ -2319,7 +2321,7 @@
   color: #6b7280;
   padding: 1rem;
   border-radius: 100px;
-  background: #C9E6DB;
+  background: #C9E0FF;
 }
 .ai-botkit-chat-session-container{
   display: flex;
@@ -2878,7 +2880,7 @@
   margin-top: 1rem;
 }
 .ai-botkit-training-pdf-upload{
-  color: #008858;
+  color: #1E3A8A;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2917,13 +2919,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(180deg, #21C58B 0%, #038E5D 100%);
+  background: linear-gradient(180deg, #3B82F6 0%, #1E3A8A 100%);
   border-radius: 50%;
   overflow: hidden;
 }
 .ai-botkit-bot-avatar-icon.active,
 .ai-botkit-bot-widget-icon.active{
-  border: 2px solid #038E5D;
+  border: 2px solid #1E3A8A;
   border-radius: 50%;
   padding: 2px;
 }
@@ -3004,8 +3006,8 @@
   border-radius: 8px;
 }
 .ai-botkit-bot-theme-item .check{
-  border: 1px solid #008858;
-  background-color: #008858;
+  border: 1px solid #1E3A8A;
+  background-color: #1E3A8A;
   color: #fff;
   height: 1rem;
   width: 1rem;
@@ -3021,7 +3023,7 @@
   display: flex;
 }
 .ai-botkit-background-image-label{
-  color: #008858;
+  color: #1E3A8A;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -3121,11 +3123,11 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  border: 1px solid #008858;
+  border: 1px solid #1E3A8A;
   border-radius: 9999px;
   padding: 0.5rem 1rem;
-  color: #008858;
-  background: #0088581A;
+  color: #1E3A8A;
+  background: #1E3A8A1A;
 }
 .ai-botkit-error-message{
   color: #E50505;
@@ -3143,8 +3145,8 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #008858;
-  background: #0088581A;
+  color: #1E3A8A;
+  background: #1E3A8A1A;
   padding: 6px 12px;
   border-radius: 9999px;
 }
@@ -3160,7 +3162,7 @@
 .ai-botkit-form-group input:focus,
 .ai-botkit-form-group textarea:focus,
 .ai-botkit-form-group select:focus{
-  border: 1px solid #008858;
+  border: 1px solid #1E3A8A;
 }
 .ai-botkit-knowledge-tab:focus,
 .ai-botkit-knowledge-tab:active{
@@ -3232,7 +3234,7 @@
   padding: 0;
 }
 input[type=radio]:checked::before{
-  background-color: #008858;
+  background-color: #1E3A8A;
 }
 .ai-botkit-wp-header-back{
   display: none;
@@ -3662,7 +3664,7 @@ input[type=radio]:checked::before{
 
 /* Reprocess button styling */
 .ai-botkit-reprocess-btn {
-    background: #28a745;
+    background: #1E3A8A;
     color: white;
     border: none;
     border-radius: 4px;
@@ -3676,9 +3678,9 @@ input[type=radio]:checked::before{
 }
 
 .ai-botkit-reprocess-btn:hover {
-    background: #218838;
+    background: #1E40AF;
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    box-shadow: 0 2px 4px rgba(30, 58, 138, 0.3);
 }
 
 .ai-botkit-reprocess-btn:disabled {
@@ -3784,4 +3786,12 @@ input[type=radio]:checked::before{
     align-items: center;
     justify-content: center;
     z-index: 10;
+}
+
+.swal2-popup {
+  display: block !important;
+}
+
+.swal2-modal {
+  display: block !important;
 }

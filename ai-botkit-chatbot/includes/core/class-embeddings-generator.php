@@ -115,7 +115,7 @@ class Embeddings_Generator {
 
         } catch (\Exception $e) {
             throw new Embedding_Generation_Exception(
-                esc_html__('Failed to generate embeddings: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to generate embeddings: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );

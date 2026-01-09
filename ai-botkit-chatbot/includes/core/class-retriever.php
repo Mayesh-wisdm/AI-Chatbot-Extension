@@ -116,7 +116,7 @@ class Retriever {
 
         } catch (\Exception $e) {
             throw new Retriever_Exception(
-                esc_html__('Failed to find context: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to find context: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );

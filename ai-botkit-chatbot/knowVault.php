@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name: AI BotKit –  AI Chatbot for WordPress
+ * Plugin Name: KnowVault –  AI Chatbot for WordPress
  * Plugin URI: https://wisdmlabs.com/
  * Description: An advanced RAG-based chatbot plugin for WordPress with vector search capabilities.
- * Version: 1.0.3
+ * Version: 1.1.0
  * Author: WisdmLabs
  * Author URI: https://wisdmlabs.com/
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: ai-botkit-for-lead-generation
+ * Text Domain: knowvault
  * Domain Path: /languages
  * Requires at least: 5.8
  * Requires PHP: 7.4
@@ -20,7 +20,7 @@ if (!defined('WPINC')) {
 }
 
 // Plugin version and constants
-define('AI_BOTKIT_VERSION', '1.0.2');
+define('AI_BOTKIT_VERSION', '1.1.0');
 define('AI_BOTKIT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AI_BOTKIT_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AI_BOTKIT_INCLUDES_DIR', AI_BOTKIT_PLUGIN_DIR . 'includes/');

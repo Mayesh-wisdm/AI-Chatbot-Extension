@@ -10,18 +10,18 @@
  *
  * @link              https://wisdmlabs.com
  * @since             1.0.0
- * @package           Wdm_Ai_Botkit_Extension
+ * @package           Wdm_KnowVault_Extension
  *
  * @wordpress-plugin
- * Plugin Name:       WDM AI BotKit Extension with License
+ * Plugin Name:       WDM KnowVault Extension for LearnDash
  * Plugin URI:        https://www.wisdmlabs.com
- * Description:       Adds User Awareness for Learndash enrolled courses with integrated licensing system
+ * Description:       Adds User Awareness for LearnDash enrolled courses with integrated licensing system for KnowVault
  * Version:           1.0.2
  * Author:            WisdmLabs
  * Author URI:        https://wisdmlabs.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       wdm-ai-botkit-extension
+ * Text Domain:       wdm-knowvault-extension
  * Domain Path:       /languages
  */
 
@@ -35,7 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'WDM_AI_BOTKIT_EXTENSION_VERSION', '1.0.0' );
+define( 'WDM_KNOWVAULT_EXTENSION_VERSION', '1.0.0' );
 
 /**
  * The code that runs during plugin activation.

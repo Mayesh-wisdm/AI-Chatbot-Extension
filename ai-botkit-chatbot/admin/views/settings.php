@@ -5,7 +5,7 @@ defined('ABSPATH') || exit;
 
 // Ensure user has permissions
 if (!current_user_can('manage_options')) {
-    wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'ai-botkit-for-lead-generation'));
+    wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'knowvault'));
 }
 
 // Save settings if form is submitted
@@ -66,7 +66,7 @@ if (isset($_POST['submit'])) {
     add_settings_error(
         'ai_botkit_messages',
         'ai_botkit_message',
-        __('Settings Saved', 'ai-botkit-for-lead-generation'),
+        __('Settings Saved', 'knowvault'),
         'updated'
     );
 }
@@ -95,7 +95,7 @@ $engines = $this->get_engines();
 
 <div class="ai-botkit-settings-container">
 
-  <h2 class="ai-botkit-settings-title"><?php esc_html_e('Settings', 'ai-botkit-for-lead-generation'); ?></h2>
+  <h2 class="ai-botkit-settings-title"><?php esc_html_e('Settings', 'knowvault'); ?></h2>
     <!-- Tabs Content -->
     
     <?php settings_errors('ai_botkit_messages'); ?>
@@ -107,13 +107,13 @@ $engines = $this->get_engines();
             <!-- API Keys Tab -->
             <div class="ai-botkit-tab-pane ai-botkit-card" data-tab-content="api">
                     <div class="ai-botkit-card-header">
-                        <h3><?php esc_html_e('API Keys', 'ai-botkit-for-lead-generation'); ?></h3>
-                        <p><?php esc_html_e('Connect to AI providers', 'ai-botkit-for-lead-generation'); ?></p>
+                        <h3><?php esc_html_e('API Keys', 'knowvault'); ?></h3>
+                        <p><?php esc_html_e('Connect to AI providers', 'knowvault'); ?></p>
                     </div>
 
                     <div class="ai-botkit-card-body">
                         <div class="ai-botkit-form-group">
-                            <label for="ai_botkit_engine" class="ai-botkit-select-label"><?php esc_html_e('AI Engine', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_engine" class="ai-botkit-select-label"><?php esc_html_e('AI Engine', 'knowvault'); ?></label>
                             <select id="ai_botkit_engine" class="ai-botkit-select-input" name="ai_botkit_engine">
                                 <?php foreach ($engines as $engine_id => $engine): ?>
                                     <option value="<?php echo esc_attr($engine_id); ?>"
@@ -122,22 +122,22 @@ $engines = $this->get_engines();
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Select the AI engine you want to use', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Select the AI engine you want to use', 'knowvault'); ?></p>
                         </div>
                         <div class="ai-botkit-form-group engine-settings engine-openai" <?php echo $selected_engine !== 'openai' ? 'style="display: none;"' : ''; ?>>
-                            <label for="ai_botkit_openai_api_key" class="ai-botkit-label"><?php esc_html_e('OpenAI API Key', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_openai_api_key" class="ai-botkit-label"><?php esc_html_e('OpenAI API Key', 'knowvault'); ?></label>
                             <div class="ai-botkit-inline-input">
                                 <input type="password" id="ai_botkit_openai_api_key" name="ai_botkit_openai_api_key" placeholder="sk-..." value="<?php echo esc_attr($openai_api_key); ?>" />
-                                <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'ai-botkit-for-lead-generation'); ?></button>
+                                <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'knowvault'); ?></button>
                             </div>
                             <div class="ai-botkit-api-test-result-container">
                                 <span class="spinner" style="display: none;"></span>
                                 <span class="ai-botkit-api-test-result" style="display: none;"></span>
                             </div>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Required for GPT-3.5 and GPT-4 models', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Required for GPT-3.5 and GPT-4 models', 'knowvault'); ?></p>
                         </div>
                         <div class="ai-botkit-form-group engine-settings engine-openai" <?php echo $selected_engine !== 'openai' ? 'style="display: none;"' : ''; ?>>
-                            <label for="openai-org-id" class="ai-botkit-label"><?php esc_html_e('OpenAI Organization ID', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="openai-org-id" class="ai-botkit-label"><?php esc_html_e('OpenAI Organization ID', 'knowvault'); ?></label>
                             <div class="ai-botkit-inline-input">
                                 <input
                                     type="text"
@@ -145,58 +145,58 @@ $engines = $this->get_engines();
                                     name="ai_botkit_openai_org_id"
                                     value="<?php echo esc_attr($openai_org_id); ?>" />
                             </div>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Optional: Your OpenAI organization ID.', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Optional: Your OpenAI organization ID.', 'knowvault'); ?></p>
                         </div>
                         <div class="ai-botkit-form-group engine-settings engine-anthropic" <?php echo $selected_engine !== 'anthropic' ? 'style="display: none;"' : ''; ?>>
-                            <label for="ai_botkit_anthropic_api_key" class="ai-botkit-label"><?php esc_html_e('Anthropic API Key', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_anthropic_api_key" class="ai-botkit-label"><?php esc_html_e('Anthropic API Key', 'knowvault'); ?></label>
                             <div class="ai-botkit-inline-input">
                                 <input type="password" id="ai_botkit_anthropic_api_key" name="ai_botkit_anthropic_api_key" placeholder="sk-ant-..." value="<?php echo esc_attr($anthropic_api_key); ?>" />
-                                <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'ai-botkit-for-lead-generation'); ?></button>
+                                <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'knowvault'); ?></button>
                             </div>
                             <div class="ai-botkit-api-test-result-container">
                                 <span class="spinner" style="display: none;"></span>
                                 <span class="ai-botkit-api-test-result" style="display: none;"></span>
                             </div>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Required for Claude models', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Required for Claude models', 'knowvault'); ?></p>
                         </div>
                         <div class="ai-botkit-form-group engine-settings engine-anthropic" <?php echo $selected_engine !== 'anthropic' ? 'style="display: none;"' : ''; ?>>
-                            <label for="ai_botkit_voyageai_api_key" class="ai-botkit-label"><?php esc_html_e('VoyageAI API Key', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_voyageai_api_key" class="ai-botkit-label"><?php esc_html_e('VoyageAI API Key', 'knowvault'); ?></label>
                             <div class="ai-botkit-inline-input">
                                 <input type="password" id="ai_botkit_voyageai_api_key" name="ai_botkit_voyageai_api_key" placeholder="sk-..." value="<?php echo esc_attr($voyageai_api_key); ?>" />
-                                <!-- <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'ai-botkit-for-lead-generation'); ?></button> -->
+                                <button class="ai-botkit-btn-outline ai_botkit_test_api" data-provider="voyageai"><?php esc_html_e('Verify', 'knowvault'); ?></button>
                             </div>
                             <div class="ai-botkit-api-test-result-container">
                                 <span class="spinner" style="display: none;"></span>
                                 <span class="ai-botkit-api-test-result" style="display: none;"></span>
                             </div>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Required for VoyageAI Embedding models', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Required for VoyageAI Embedding models', 'knowvault'); ?></p>
                         </div>
                         <div class="ai-botkit-form-group engine-settings engine-google" <?php echo $selected_engine !== 'google' ? 'style="display: none;"' : ''; ?>>
-                            <label for="ai_botkit_google_api_key" class="ai-botkit-label"><?php esc_html_e('Google API Key', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_google_api_key" class="ai-botkit-label"><?php esc_html_e('Google API Key', 'knowvault'); ?></label>
                             <div class="ai-botkit-inline-input">
                                 <input type="password" id="ai_botkit_google_api_key" name="ai_botkit_google_api_key" placeholder="sk-..." value="<?php echo esc_attr($google_api_key); ?>" />
-                                <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'ai-botkit-for-lead-generation'); ?></button>
+                                <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'knowvault'); ?></button>
                             </div>
                             <div class="ai-botkit-api-test-result-container">
                                 <span class="spinner" style="display: none;"></span>
                                 <span class="ai-botkit-api-test-result" style="display: none;"></span>
                             </div>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Required for Google models', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Required for Google models', 'knowvault'); ?></p>
                         </div>
                         <div class="ai-botkit-form-group engine-settings engine-together" <?php echo $selected_engine !== 'together' ? 'style="display: none;"' : ''; ?>>
-                            <label for="ai_botkit_together_api_key" class="ai-botkit-label"><?php esc_html_e('Together AI API Key', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_together_api_key" class="ai-botkit-label"><?php esc_html_e('Together AI API Key', 'knowvault'); ?></label>
                             <div class="ai-botkit-inline-input">
                                 <input type="password" id="ai_botkit_together_api_key" name="ai_botkit_together_api_key" placeholder="..." value="<?php echo esc_attr($together_api_key); ?>" />
-                                <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'ai-botkit-for-lead-generation'); ?></button>
+                                <button class="ai-botkit-btn-outline ai_botkit_test_api"><?php esc_html_e('Verify', 'knowvault'); ?></button>
                             </div>
                             <div class="ai-botkit-api-test-result-container">
                                 <span class="spinner" style="display: none;"></span>
                                 <span class="ai-botkit-api-test-result" style="display: none;"></span>
                             </div>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Required for Together AI models', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Required for Together AI models', 'knowvault'); ?></p>
                         </div>
                         <div class="ai-botkit-form-group">
-                            <label for="ai_botkit_chat_model" class="ai-botkit-select-label"><?php esc_html_e('Chat Model', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_chat_model" class="ai-botkit-select-label"><?php esc_html_e('Chat Model', 'knowvault'); ?></label>
                             <select id="ai_botkit_chat_model" class="ai-botkit-select-input" name="ai_botkit_chat_model">
                                 <?php foreach ($engines[$selected_engine]['chat_models'] as $model_id => $model_name): ?>
                                     <option value="<?php echo esc_attr($model_id); ?>"
@@ -205,10 +205,10 @@ $engines = $this->get_engines();
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Select the chat model you want to use', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Select the chat model you want to use', 'knowvault'); ?></p>
                         </div>
                         <div class="ai-botkit-form-group">
-                            <label for="ai_botkit_embedding_model" class="ai-botkit-select-label"><?php esc_html_e('Embedding Model', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_embedding_model" class="ai-botkit-select-label"><?php esc_html_e('Embedding Model', 'knowvault'); ?></label>
                             <select id="ai_botkit_embedding_model" class="ai-botkit-select-input" name="ai_botkit_embedding_model">
                                 <?php foreach ($engines[$selected_engine]['embedding_models'] as $model_id => $model_name): ?>
                                     <option value="<?php echo esc_attr($model_id); ?>"
@@ -217,40 +217,40 @@ $engines = $this->get_engines();
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Select the embedding model you want to use', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Select the embedding model you want to use', 'knowvault'); ?></p>
                         </div>
 
-                        <h4><?php esc_html_e('Pinecone Vector Database Settings', 'ai-botkit-for-lead-generation'); ?></h4>
-                        <p class="ai-botkit-section-description"><?php esc_html_e('Configure Pinecone for vector storage and search. If disabled, the plugin will use local WordPress database for vector storage.', 'ai-botkit-for-lead-generation'); ?></p>
+                        <h4><?php esc_html_e('Pinecone Vector Database Settings', 'knowvault'); ?></h4>
+                        <p class="ai-botkit-section-description"><?php esc_html_e('Configure Pinecone for vector storage and search. If disabled, the plugin will use local WordPress database for vector storage.', 'knowvault'); ?></p>
 
                         <div class="ai-botkit-form-group">
                             <label class="ai-botkit-checkbox-label">
                                 <input type="checkbox" id="ai_botkit_enable_pinecone" name="ai_botkit_enable_pinecone" value="1" <?php checked($enable_pinecone, 1); ?> />
-                                <span class="ai-botkit-checkbox-text"><?php esc_html_e('Enable Pinecone Vector Database', 'ai-botkit-for-lead-generation'); ?></span>
+                                <span class="ai-botkit-checkbox-text"><?php esc_html_e('Enable Pinecone Vector Database', 'knowvault'); ?></span>
                             </label>
-                            <p class="ai-botkit-hint"><?php esc_html_e('Check this box to use Pinecone for vector storage. Uncheck to use local WordPress database.', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Check this box to use Pinecone for vector storage. Uncheck to use local WordPress database.', 'knowvault'); ?></p>
                         </div>
 
                         <div id="pinecone-settings" class="ai-botkit-form-group" style="<?php echo $enable_pinecone ? '' : 'display: none;'; ?>">
                             <div class="ai-botkit-form-group">
-                                <label for="ai_botkit_pinecone_api_key" class="ai-botkit-label"><?php esc_html_e('Pinecone API Key', 'ai-botkit-for-lead-generation'); ?></label>
+                                <label for="ai_botkit_pinecone_api_key" class="ai-botkit-label"><?php esc_html_e('Pinecone API Key', 'knowvault'); ?></label>
                                 <input type="password" id="ai_botkit_pinecone_api_key" name="ai_botkit_pinecone_api_key" placeholder="sk-..." value="<?php echo esc_attr($pinecone_api_key); ?>" />
-                                <p class="ai-botkit-hint"><?php esc_html_e('Enter the Pinecone API key, sign up at', 'ai-botkit-for-lead-generation'); ?> <a href="https://pinecone.io" target="_blank">pinecone.io</a></p>
+                                <p class="ai-botkit-hint"><?php esc_html_e('Enter the Pinecone API key, sign up at', 'knowvault'); ?> <a href="https://pinecone.io" target="_blank">pinecone.io</a></p>
                             </div>
 
                             <div class="ai-botkit-form-group">
-                                <label for="ai_botkit_pinecone_host" class="ai-botkit-label"><?php esc_html_e('Pinecone Host', 'ai-botkit-for-lead-generation'); ?></label>
+                                <label for="ai_botkit_pinecone_host" class="ai-botkit-label"><?php esc_html_e('Pinecone Host', 'knowvault'); ?></label>
                                 <input type="text" id="ai_botkit_pinecone_host" name="ai_botkit_pinecone_host" placeholder="https://your-index.pinecone.io" value="<?php echo esc_attr($pinecone_host); ?>" />
-                                <p class="ai-botkit-hint"><?php esc_html_e('Enter the Pinecone host URL (e.g., https://your-index.pinecone.io).', 'ai-botkit-for-lead-generation'); ?> <br /><strong><?php esc_html_e('Important: Your Pinecone host index must be configured with 1536 dimensions to work with this plugin.', 'ai-botkit-for-lead-generation'); ?></strong></p>
+                                <p class="ai-botkit-hint"><?php esc_html_e('Enter the Pinecone host URL (e.g., https://your-index.pinecone.io).', 'knowvault'); ?> <br /><strong><?php esc_html_e('Important: Your Pinecone host index must be configured with 1536 dimensions to work with this plugin.', 'knowvault'); ?></strong></p>
                             </div>
 
                             <div class="ai-botkit-form-group">
                                 <button type="button" id="ai-botkit-test-pinecone-connection" class="ai-botkit-btn ai-botkit-btn-outline">
                                     <i class="ti ti-check"></i>
-                                    <?php esc_html_e('Test Connection', 'ai-botkit-for-lead-generation'); ?>
+                                    <?php esc_html_e('Test Connection', 'knowvault'); ?>
                                 </button>
                                 <div id="ai-botkit-pinecone-validation-result" class="ai-botkit-validation-result" style="display: none;"></div>
-                                <p class="ai-botkit-hint"><?php esc_html_e('Click "Test Connection" to validate your Pinecone credentials before saving.', 'ai-botkit-for-lead-generation'); ?></p>
+                                <p class="ai-botkit-hint"><?php esc_html_e('Click "Test Connection" to validate your Pinecone credentials before saving.', 'knowvault'); ?></p>
                             </div>
                         </div>
                     </div>
@@ -259,37 +259,37 @@ $engines = $this->get_engines();
             <!-- General Tab -->
             <div class="ai-botkit-tab-pane ai-botkit-card" data-tab-content="general">
                     <div class="ai-botkit-card-header">
-                        <h3><?php esc_html_e('AI Parameters', 'ai-botkit-for-lead-generation'); ?></h3>
-                        <p><?php esc_html_e('Manage your AI parameters/settings', 'ai-botkit-for-lead-generation'); ?></p>
+                        <h3><?php esc_html_e('AI Parameters', 'knowvault'); ?></h3>
+                        <p><?php esc_html_e('Manage your AI parameters/settings', 'knowvault'); ?></p>
                     </div>
 
                     <div class="ai-botkit-card-body">
 
                         <div class="ai-botkit-form-group">
-                            <label for="ai_botkit_chunk_size" class="ai-botkit-label"><?php esc_html_e('Chunk Size', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_chunk_size" class="ai-botkit-label"><?php esc_html_e('Chunk Size', 'knowvault'); ?></label>
                             <input type="number" id="ai_botkit_chunk_size" name="ai_botkit_chunk_size" value="<?php echo esc_attr($chunk_size); ?>" min="100" max="2000" step="100" class="small-text" />
-                            <p class="ai-botkit-hint"><?php esc_html_e('Enter the chunk size for document processing', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Enter the chunk size for document processing', 'knowvault'); ?></p>
                         </div>
 
                         <div class="ai-botkit-form-group">
-                            <label for="ai_botkit_chunk_overlap" class="ai-botkit-label"><?php esc_html_e('Chunk Overlap', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_chunk_overlap" class="ai-botkit-label"><?php esc_html_e('Chunk Overlap', 'knowvault'); ?></label>
                             <input type="number" id="ai_botkit_chunk_overlap" name="ai_botkit_chunk_overlap" value="<?php echo esc_attr($chunk_overlap); ?>" min="0" max="200" step="1" class="small-text" />
-                            <p class="ai-botkit-hint"><?php esc_html_e('Enter the chunk overlap for document processing', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Enter the chunk overlap for document processing', 'knowvault'); ?></p>
                         </div>
 
-                        <h4><?php esc_html_e('Rate Limiting Settings', 'ai-botkit-for-lead-generation'); ?></h4>
-                        <p class="ai-botkit-section-description"><?php esc_html_e('Configure rate limits for logged-in users', 'ai-botkit-for-lead-generation'); ?></p>
+                        <h4><?php esc_html_e('Rate Limiting Settings', 'knowvault'); ?></h4>
+                        <p class="ai-botkit-section-description"><?php esc_html_e('Configure rate limits for logged-in users', 'knowvault'); ?></p>
 
                         <div class="ai-botkit-form-group">
-                            <label for="ai_botkit_token_bucket_limit" class="ai-botkit-label"><?php esc_html_e('Max Tokens per Conversation (Token Bucket)', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_token_bucket_limit" class="ai-botkit-label"><?php esc_html_e('Max Tokens per Conversation (Token Bucket)', 'knowvault'); ?></label>
                             <input type="number" id="ai_botkit_token_bucket_limit" name="ai_botkit_token_bucket_limit" value="<?php echo esc_attr($token_bucket_limit); ?>" min="10000" max="1000000" step="10000" class="small-text" />
-                            <p class="ai-botkit-hint"><?php esc_html_e('Maximum number of tokens allowed per user in a 24-hour window.', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Maximum number of tokens allowed per user in a 24-hour window.', 'knowvault'); ?></p>
                         </div>
 
                         <div class="ai-botkit-form-group">
-                            <label for="ai_botkit_max_requests_per_day" class="ai-botkit-label"><?php esc_html_e('Max Messages in 24 Hours', 'ai-botkit-for-lead-generation'); ?></label>
+                            <label for="ai_botkit_max_requests_per_day" class="ai-botkit-label"><?php esc_html_e('Max Messages in 24 Hours', 'knowvault'); ?></label>
                             <input type="number" id="ai_botkit_max_requests_per_day" name="ai_botkit_max_requests_per_day" value="<?php echo esc_attr($max_requests_per_day); ?>" min="1" max="1000" step="1" class="small-text" />
-                            <p class="ai-botkit-hint"><?php esc_html_e('Maximum number of messages a user can send in a day.', 'ai-botkit-for-lead-generation'); ?></p>
+                            <p class="ai-botkit-hint"><?php esc_html_e('Maximum number of messages a user can send in a day.', 'knowvault'); ?></p>
                         </div>
                     
 
@@ -367,7 +367,7 @@ $engines = $this->get_engines();
             </div> -->
         </div>
         <div class="ai-botkit-card-footer">
-            <input type="submit" class="ai-botkit-btn" name="submit" value="<?php esc_html_e('Save Changes', 'ai-botkit-for-lead-generation'); ?>">
+            <input type="submit" class="ai-botkit-btn" name="submit" value="<?php esc_html_e('Save Changes', 'knowvault'); ?>">
         </div>
     </form>
 </div>

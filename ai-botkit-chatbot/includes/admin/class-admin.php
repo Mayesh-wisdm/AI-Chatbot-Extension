@@ -72,32 +72,32 @@ class Admin {
         $this->init_hooks();
 
         self::$admin_pages = [
-            'ai-botkit' => [
-                'title' =>  __('AI BotKit Dashboard', 'ai-botkit-for-lead-generation'), /* translators: Main plugin admin page title */
-                'menu_title' => __('AI BotKit', 'ai-botkit-for-lead-generation'),
+            'KnowVault' => [
+                'title' =>  __('KnowVault Dashboard', 'knowvault'), /* translators: Main plugin admin page title */
+                'menu_title' => __('KnowVault', 'knowvault'),
                 'capability' => 'manage_options',
                 'icon' => 'dashicons-format-chat',
                 'position' => 30,
                 'callback' => 'display_dashboard_page'
             ],
-            'ai-botkit-knowledge' => [
-                'title' => __('Knowledge Base Management', 'ai-botkit-for-lead-generation'), /* translators: Knowledge base page title */
-                'menu_title' => __('Knowledge Base', 'ai-botkit-for-lead-generation'),
-                'parent' => 'ai-botkit',
+            'KnowVault-knowledge' => [
+                'title' => __('Knowledge Base Management', 'knowvault'), /* translators: Knowledge base page title */
+                'menu_title' => __('Knowledge Base', 'knowvault'),
+                'parent' => 'KnowVault',
                 'capability' => 'manage_options',
                 'callback' => 'display_knowledge_base_page'
             ],
-            'ai-botkit-settings' => [
-                'title' => __('Plugin Settings', 'ai-botkit-for-lead-generation'), /* translators: Settings page title */
-                'menu_title' => __('Settings', 'ai-botkit-for-lead-generation'),
-                'parent' => 'ai-botkit',
+            'KnowVault-settings' => [
+                'title' => __('Plugin Settings', 'knowvault'), /* translators: Settings page title */
+                'menu_title' => __('Settings', 'knowvault'),
+                'parent' => 'KnowVault',
                 'capability' => 'manage_options',
                 'callback' => 'display_settings_page'
             ],
-            'ai-botkit-analytics' => [
-                'title' => __('Usage Analytics', 'ai-botkit-for-lead-generation'), /* translators: Analytics page title */
-                'menu_title' => __('Analytics', 'ai-botkit-for-lead-generation'),
-                'parent' => 'ai-botkit',
+            'KnowVault-analytics' => [
+                'title' => __('Usage Analytics', 'knowvault'), /* translators: Analytics page title */
+                'menu_title' => __('Analytics', 'knowvault'),
+                'parent' => 'KnowVault',
                 'capability' => 'manage_options',
                 'callback' => 'display_analytics_page'
             ]
@@ -116,6 +116,16 @@ class Admin {
         
         // Add help widget to admin footer (only on AI BotKit pages)
         add_action('admin_footer', [$this, 'inject_help_widget']);
+        
+        // Database migration notice
+        add_action('admin_notices', [$this, 'show_database_migration_notice']);
+        
+        // AJAX handler for database migration
+        add_action('wp_ajax_knowvault_migrate_database', [$this, 'handle_database_migration']);
+        add_action('wp_ajax_knowvault_dismiss_migration_notice', [$this, 'handle_dismiss_notice']);
+        
+        // Custom menu icon
+        add_action('admin_head', [$this, 'add_custom_menu_icon']);
 
         // Admin assets
         add_action('admin_enqueue_scripts', [$this, 'enqueue_styles']);
@@ -160,8 +170,8 @@ class Admin {
     public function add_plugin_admin_menu() {
         // Main menu
         add_menu_page(
-            __('AI BotKit', 'ai-botkit-for-lead-generation'),
-            __('AI BotKit', 'ai-botkit-for-lead-generation'),
+            __('KnowVault', 'knowvault'),
+            __('KnowVault', 'knowvault'),
             'manage_options',
             'ai-botkit',
             array($this, 'display_dashboard_page'),
@@ -172,8 +182,8 @@ class Admin {
         // // Submenus
         // add_submenu_page(
         //     'ai-botkit',
-        //     __('Knowledge Base', 'ai-botkit-for-lead-generation'),
-        //     __('Knowledge Base', 'ai-botkit-for-lead-generation'),
+        //     __('Knowledge Base', 'knowvault'),
+        //     __('Knowledge Base', 'knowvault'),
         //     'manage_options',
         //     'ai-botkit-knowledge',
         //     array($this, 'display_knowledge_base_page')
@@ -181,8 +191,8 @@ class Admin {
 
         // add_submenu_page(
         //     'ai-botkit',
-        //     __('Chatbots', 'ai-botkit-for-lead-generation'),
-        //     __('Chatbots', 'ai-botkit-for-lead-generation'),
+        //     __('Chatbots', 'knowvault'),
+        //     __('Chatbots', 'knowvault'),
         //     'manage_options',
         //     'ai-botkit-chatbots',
         //     array($this, 'display_chatbots_page')
@@ -190,8 +200,8 @@ class Admin {
 
         // add_submenu_page(
         //     'ai-botkit',
-        //     __('Analytics', 'ai-botkit-for-lead-generation'),
-        //     __('Analytics', 'ai-botkit-for-lead-generation'),
+        //     __('Analytics', 'knowvault'),
+        //     __('Analytics', 'knowvault'),
         //     'manage_options',
         //     'ai-botkit-analytics',
         //     array($this, 'display_analytics_page')
@@ -199,8 +209,8 @@ class Admin {
 
         // add_submenu_page(
         //     'ai-botkit',
-        //     __('Settings', 'ai-botkit-for-lead-generation'),
-        //     __('Settings', 'ai-botkit-for-lead-generation'),
+        //     __('Settings', 'knowvault'),
+        //     __('Settings', 'knowvault'),
         //     'manage_options',
         //     'ai-botkit-settings',
         //     array($this, 'display_settings_page')
@@ -431,9 +441,9 @@ class Admin {
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('ai_botkit_admin'),
                 'strings' => array(
-                    'loading' => __('Loading...', 'ai-botkit-for-lead-generation'),
-                    'error' => __('An error occurred', 'ai-botkit-for-lead-generation'),
-                    'success' => __('Success', 'ai-botkit-for-lead-generation')
+                    'loading' => __('Loading...', 'knowvault'),
+                    'error' => __('An error occurred', 'knowvault'),
+                    'success' => __('Success', 'knowvault')
                 )
             ));
         }
@@ -458,27 +468,27 @@ class Admin {
         // Get registered tabs including extensions
         $registered_tabs = apply_filters('ai_botkit_admin_tabs', array(
             // 'dashboard' => array(
-            //     'title' => __('Dashboard', 'ai-botkit-for-lead-generation'),
+            //     'title' => __('Dashboard', 'knowvault'),
             //     'capability' => 'manage_options'
             // ),
             'chatbots' => array(
-                'title' => __('My Bots', 'ai-botkit-for-lead-generation'),
+                'title' => __('My Bots', 'knowvault'),
                 'capability' => 'manage_options'
             ),
             'knowledge' => array(
-                'title' => __('Knowledge Base', 'ai-botkit-for-lead-generation'),
+                'title' => __('Knowledge Base', 'knowvault'),
                 'capability' => 'manage_options'
             ),
             'analytics' => array(
-                'title' => __('Analytics', 'ai-botkit-for-lead-generation'),
+                'title' => __('Analytics', 'knowvault'),
                 'capability' => 'manage_options'
             ),
             'security' => array(
-                'title' => __('Security', 'ai-botkit-for-lead-generation'),
+                'title' => __('Security', 'knowvault'),
                 'capability' => 'manage_options'
             ),
             'settings' => array(
-                'title' => __('Settings', 'ai-botkit-for-lead-generation'),
+                'title' => __('Settings', 'knowvault'),
                 'capability' => 'manage_options'
             )
         ));
@@ -490,7 +500,7 @@ class Admin {
         if (isset($_GET['nonce'])) {
             $nonce = sanitize_key($_GET['nonce']);
             if (!wp_verify_nonce($nonce, 'ai_botkit_chatbots')) {
-                wp_die(__('Security check failed. Please refresh the page and try again.', 'ai-botkit-for-lead-generation'));
+                wp_die(__('Security check failed. Please refresh the page and try again.', 'knowvault'));
             }
         }
 
@@ -515,7 +525,7 @@ class Admin {
             case 'chatbots':
                 // nonce check. only check if bot_id is set else request from wp-admin menu item
                 if ( isset($_GET['bot_id']) && ( !isset($_GET['nonce']) || !wp_verify_nonce( sanitize_text_field( wp_unslash ( $_GET['nonce'] ) ), 'ai_botkit_chatbots' ) ) ) {
-                    wp_die(__('Invalid request', 'ai-botkit-for-lead-generation'));
+                    wp_die(__('Invalid request', 'knowvault'));
                 }
                 $bot_id = isset($_GET['bot_id']) ? sanitize_text_field($_GET['bot_id']) : null;
                 $chat_session_id = isset($_GET['chat_session_id']) ? sanitize_text_field($_GET['chat_session_id']) : null;
@@ -622,30 +632,30 @@ class Admin {
 
     private function get_js_translations() {
         return array(
-            'confirmDelete' => __('Are you sure you want to delete this item?', 'ai-botkit-for-lead-generation'),
-            'confirmBulk' => __('Are you sure you want to perform this action?', 'ai-botkit-for-lead-generation'),
-            'success' => __('Operation completed successfully.', 'ai-botkit-for-lead-generation'),
-            'error' => __('An error occurred.', 'ai-botkit-for-lead-generation'),
-            'loading' => __('Loading...', 'ai-botkit-for-lead-generation'),
-            'saving' => __('Saving...', 'ai-botkit-for-lead-generation'),
-            'deleting' => __('Deleting...', 'ai-botkit-for-lead-generation'),
-            'processing' => __('Processing...', 'ai-botkit-for-lead-generation'),
-            'addNewChatbot' => __('Add New Chatbot', 'ai-botkit-for-lead-generation'),
-            'editChatbot' => __('Edit Chatbot', 'ai-botkit-for-lead-generation'),
-            'confirmDeleteChatbot' => __('Are you sure you want to delete this chatbot?', 'ai-botkit-for-lead-generation'),
-            'noDocumentsSelected' => __('No documents selected.', 'ai-botkit-for-lead-generation'),
-            'noDocuments' => __('No documents found.', 'ai-botkit-for-lead-generation'),
-            'remove' => __('Remove', 'ai-botkit-for-lead-generation'),
-            'noApiKey' => __('API key is required.', 'ai-botkit-for-lead-generation'),
-            'confirmReprocess' => __('Are you sure you want to reprocess this document?', 'ai-botkit-for-lead-generation'),
-            'noSelection' => __('No selection made.', 'ai-botkit-for-lead-generation'),
-            'confirmBulk' => __('Are you sure you want to perform this action?', 'ai-botkit-for-lead-generation'),
-            'invalidDateRange' => __('Invalid date range.', 'ai-botkit-for-lead-generation'),
-            'confirmRemoveDocument' => __('Are you sure you want to remove this document?', 'ai-botkit-for-lead-generation'),
-            'successChatbotSaved' => __('Chatbot saved successfully.', 'ai-botkit-for-lead-generation'),
-            'errorChatbotSaved' => __('Error saving chatbot.', 'ai-botkit-for-lead-generation'),
-            'showPreview' => __('Show Preview', 'ai-botkit-for-lead-generation'),
-            'hidePreview' => __('Hide Preview', 'ai-botkit-for-lead-generation'),
+            'confirmDelete' => __('Are you sure you want to delete this item?', 'knowvault'),
+            'confirmBulk' => __('Are you sure you want to perform this action?', 'knowvault'),
+            'success' => __('Operation completed successfully.', 'knowvault'),
+            'error' => __('An error occurred.', 'knowvault'),
+            'loading' => __('Loading...', 'knowvault'),
+            'saving' => __('Saving...', 'knowvault'),
+            'deleting' => __('Deleting...', 'knowvault'),
+            'processing' => __('Processing...', 'knowvault'),
+            'addNewChatbot' => __('Add New Chatbot', 'knowvault'),
+            'editChatbot' => __('Edit Chatbot', 'knowvault'),
+            'confirmDeleteChatbot' => __('Are you sure you want to delete this chatbot?', 'knowvault'),
+            'noDocumentsSelected' => __('No documents selected.', 'knowvault'),
+            'noDocuments' => __('No documents found.', 'knowvault'),
+            'remove' => __('Remove', 'knowvault'),
+            'noApiKey' => __('API key is required.', 'knowvault'),
+            'confirmReprocess' => __('Are you sure you want to reprocess this document?', 'knowvault'),
+            'noSelection' => __('No selection made.', 'knowvault'),
+            'confirmBulk' => __('Are you sure you want to perform this action?', 'knowvault'),
+            'invalidDateRange' => __('Invalid date range.', 'knowvault'),
+            'confirmRemoveDocument' => __('Are you sure you want to remove this document?', 'knowvault'),
+            'successChatbotSaved' => __('Chatbot saved successfully.', 'knowvault'),
+            'errorChatbotSaved' => __('Error saving chatbot.', 'knowvault'),
+            'showPreview' => __('Show Preview', 'knowvault'),
+            'hidePreview' => __('Hide Preview', 'knowvault'),
         );
     }
 
@@ -695,11 +705,11 @@ class Admin {
             'google' => array(
                 'name' => 'Google',
                 'chat_models' => array(
-                    'gemini-pro' => 'Gemini Pro',
-                    'gemini-ultra' => 'Gemini Ultra'
+                    'gemini-1.5-flash' => 'Gemini 1.5 Flash',
+                    'gemini-1.5-pro' => 'Gemini 1.5 Pro'
                 ),
                 'embedding_models' => array(
-                    'text-embedding-gecko' => 'Text Embedding Gecko'
+                    'embedding-001' => 'Text Embedding 001'
                 )
             ),
             'together' => array(
@@ -730,6 +740,9 @@ class Admin {
             $status[$engine_id] = !empty(get_option('ai_botkit_'.$engine_id.'_api_key', ''));
         }
         
+        // Special case for VoyageAI (used by Anthropic for embeddings)
+        $status['voyageai'] = !empty(get_option('ai_botkit_voyageai_api_key', ''));
+        
         return $status;
     }
 
@@ -753,8 +766,6 @@ class Admin {
                         <button id="ai-botkit-hamburger-menu" class="ai-botkit-hamburger-menu">
                             <i class="ti ti-menu-2"></i>
                         </button>
-                        <!-- Title -->
-                        <h1 class="ai-botkit-topbar-title"><?php esc_html_e('AI BotKit Beta', 'ai-botkit-for-lead-generation'); ?></h1>
                     </div>
                 </div>
                 <!-- Main Content -->
@@ -846,5 +857,174 @@ class Admin {
         ];
         
         wp_send_json_success($debug_data);
+    }
+    
+    /**
+     * Show database migration notice
+     */
+    public function show_database_migration_notice() {
+        // Only show on KnowVault admin pages
+        $screen = get_current_screen();
+        if (!$screen || strpos($screen->id, 'ai-botkit') === false) {
+            return;
+        }
+        
+        // Check if migration is needed
+        $migration_completed = get_option('knowvault_db_migration_completed', false);
+        $old_tables_exist = \AI_BotKit\Utils\Table_Helper::check_old_tables_exist();
+        
+        // Only show if old tables exist and migration hasn't been completed
+        if (!$old_tables_exist || $migration_completed) {
+            return;
+        }
+        
+        // Check if user dismissed the notice
+        $dismissed = get_user_meta(get_current_user_id(), 'knowvault_migration_notice_dismissed', true);
+        if ($dismissed) {
+            return;
+        }
+        
+        ?>
+        <div class="notice notice-info is-dismissible knowvault-migration-notice" data-notice="knowvault-migration">
+            <p>
+                <strong><?php esc_html_e('KnowVault Database Update Available', 'knowvault'); ?></strong>
+            </p>
+            <p>
+                <?php esc_html_e('Your database is using the old table structure. We recommend updating to the new structure for better performance and future compatibility.', 'knowvault'); ?>
+            </p>
+            <p>
+                <button type="button" class="button button-primary" id="knowvault-migrate-db">
+                    <?php esc_html_e('Update Database', 'knowvault'); ?>
+                </button>
+                <button type="button" class="button" id="knowvault-dismiss-notice">
+                    <?php esc_html_e('Dismiss', 'knowvault'); ?>
+                </button>
+            </p>
+        </div>
+        <script>
+        jQuery(document).ready(function($) {
+            $('#knowvault-migrate-db').on('click', function() {
+                var $button = $(this);
+                $button.prop('disabled', true).text('<?php esc_html_e('Updating...', 'knowvault'); ?>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'knowvault_migrate_database',
+                        nonce: '<?php echo wp_create_nonce('knowvault_migrate_db'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('.knowvault-migration-notice').fadeOut(function() {
+                                $(this).remove();
+                            });
+                            alert('<?php esc_html_e('Database updated successfully!', 'knowvault'); ?>');
+                        } else {
+                            alert('<?php esc_html_e('Migration failed:', 'knowvault'); ?> ' + (response.data.message || '<?php esc_html_e('Unknown error', 'knowvault'); ?>'));
+                            $button.prop('disabled', false).text('<?php esc_html_e('Update Database', 'knowvault'); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php esc_html_e('An error occurred during migration.', 'knowvault'); ?>');
+                        $button.prop('disabled', false).text('<?php esc_html_e('Update Database', 'knowvault'); ?>');
+                    }
+                });
+            });
+            
+            $('#knowvault-dismiss-notice').on('click', function() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'knowvault_dismiss_migration_notice',
+                        nonce: '<?php echo wp_create_nonce('knowvault_dismiss_notice'); ?>'
+                    }
+                });
+                $('.knowvault-migration-notice').fadeOut();
+            });
+        });
+        </script>
+        <?php
+    }
+    
+    /**
+     * Handle database migration via AJAX
+     */
+    public function handle_database_migration() {
+        // Check nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'knowvault_migrate_db')) {
+            wp_send_json_error(['message' => __('Security check failed.', 'knowvault')]);
+            return;
+        }
+        
+        // Check permissions
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('Insufficient permissions.', 'knowvault')]);
+            return;
+        }
+        
+        // Run migration
+        $result = \AI_BotKit\Core\Database_Table_Migration::migrate_tables();
+        
+        if ($result['success']) {
+            wp_send_json_success([
+                'message' => $result['message'],
+                'tables_migrated' => $result['tables_migrated']
+            ]);
+        } else {
+            wp_send_json_error([
+                'message' => $result['message'],
+                'errors' => $result['errors']
+            ]);
+        }
+    }
+    
+    /**
+     * Handle dismissing migration notice
+     */
+    public function handle_dismiss_notice() {
+        // Check nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'knowvault_dismiss_notice')) {
+            wp_send_json_error(['message' => __('Security check failed.', 'knowvault')]);
+            return;
+        }
+        
+        // Check permissions
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('Insufficient permissions.', 'knowvault')]);
+            return;
+        }
+        
+        // Dismiss notice for current user
+        update_user_meta(get_current_user_id(), 'knowvault_migration_notice_dismissed', true);
+        
+        wp_send_json_success(['message' => __('Notice dismissed.', 'knowvault')]);
+    }
+    
+    /**
+     * Add custom menu icon for KnowVault
+     */
+    public function add_custom_menu_icon() {
+        $icon_url = AI_BOTKIT_PLUGIN_URL . 'admin/knowvault_logo_sq.png';
+        ?>
+        <style type="text/css">
+            #toplevel_page_ai-botkit .wp-menu-image img {
+                width: 20px;
+                height: 20px;
+                padding: 0;
+                opacity: 1;
+            }
+            #toplevel_page_ai-botkit .wp-menu-image {
+                background-image: url('<?php echo esc_url($icon_url); ?>');
+                background-size: 20px 20px;
+                background-position: center;
+                background-repeat: no-repeat;
+            }
+            #toplevel_page_ai-botkit .wp-menu-image:before {
+                content: '';
+            }
+        </style>
+        <?php
     }
 } 

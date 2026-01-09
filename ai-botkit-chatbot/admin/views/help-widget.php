@@ -5,10 +5,10 @@
 
 <div class="ai-botkit-help-widget-container">
     <i class="ti ti-x ai-botkit-help-widget-close"></i>
-    <p><?php esc_html_e('Hi, need help for your chatbot. I’m happy to help. Click here.', 'ai-botkit-for-lead-generation'); ?></p>
+    <p><?php esc_html_e('Hi, need help for your chatbot. I’m happy to help. Click here.', 'knowvault'); ?></p>
 </div>
 
-<!-- AI BotKit Help Widget -->
+<!-- KnowVault Help Widget -->
 <div class="ai-botkit-widget" aria-hidden="true">
     <div class="ai-botkit-widget-header">
         <div class="ai-botkit-widget-header-left">
@@ -30,7 +30,7 @@
             <div class="ai-botkit-message assistant">
                 <div class="ai-botkit-message-content">
                     <div class="ai-botkit-message-text">
-                        <?php esc_html_e('Hi there! I\'m your AI BotKit Assistant. How can I help you today?', 'ai-botkit-for-lead-generation'); ?>
+                        <?php esc_html_e('Hi there! I\'m your KnowVault Assistant. How can I help you today?', 'knowvault'); ?>
                     </div>
                 </div>
             </div>
@@ -38,7 +38,7 @@
     </div>
     <form class="ai-botkit-input-form">
         <div class="ai-botkit-input-wrapper">
-            <textarea class="ai-botkit-doc-bot-input" placeholder="<?php esc_html_e('Type your message...', 'ai-botkit-for-lead-generation'); ?>" rows="1"></textarea>
+            <textarea class="ai-botkit-doc-bot-input" placeholder="<?php esc_html_e('Type your message...', 'knowvault'); ?>" rows="1"></textarea>
             <button type="submit" class="ai-botkit-send-button">
                 <i class="ti ti-send"></i>
             </button>

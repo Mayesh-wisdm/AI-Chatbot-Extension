@@ -24,11 +24,11 @@ $styles = array_merge(array(
                 <h3><?php echo esc_html($chatbot_data['name']); ?></h3>
             </div>
             <div class="ai-botkit-chat-actions">
-                <button type="button" class="ai-botkit-clear" aria-label="<?php esc_attr_e('Clear chat', 'ai-botkit-for-lead-generation'); ?>">
+                <button type="button" class="ai-botkit-clear" aria-label="<?php esc_attr_e('Clear chat', 'knowvault'); ?>">
                     <i class="ti ti-refresh"></i>
                 </button>
                 <?php if ($is_widget): ?>
-                    <button type="button" class="ai-botkit-minimize" aria-label="<?php esc_attr_e('Minimize chat', 'ai-botkit-for-lead-generation'); ?>">
+                    <button type="button" class="ai-botkit-minimize" aria-label="<?php esc_attr_e('Minimize chat', 'knowvault'); ?>">
                     <i class="ti ti-x"></i>
                     </button>
                 <?php endif; ?>
@@ -43,7 +43,7 @@ $styles = array_merge(array(
                     <div class="ai-botkit-message-text">
                         <?php 
                         $messages_template = json_decode($chatbot_data['messages_template'], true);
-                        $greeting = $messages_template['greeting'] ?? __('Hello! How can I help you today?', 'ai-botkit-for-lead-generation');
+                        $greeting = $messages_template['greeting'] ?? __('Hello! How can I help you today?', 'knowvault');
                         echo wp_kses_post($greeting); 
                         ?>
                     </div>
@@ -56,13 +56,13 @@ $styles = array_merge(array(
             <input 
                 class="ai-botkit-input"
                 id="ai-botkit-chat-input"
-                placeholder="<?php esc_attr_e('Type your message...', 'ai-botkit-for-lead-generation'); ?>"
+                placeholder="<?php esc_attr_e('Type your message...', 'knowvault'); ?>"
                 required
-                aria-label="<?php esc_attr_e('Message input', 'ai-botkit-for-lead-generation'); ?>"
+                aria-label="<?php esc_attr_e('Message input', 'knowvault'); ?>"
             >
             <button
                 class="ai-botkit-send-button"
-                aria-label="<?php esc_attr_e('Send message', 'ai-botkit-for-lead-generation'); ?>"
+                aria-label="<?php esc_attr_e('Send message', 'knowvault'); ?>"
             >
                 <i class="ti ti-send"></i>
             </button>

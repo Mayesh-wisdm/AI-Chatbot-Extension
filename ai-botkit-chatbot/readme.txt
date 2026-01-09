@@ -1,4 +1,4 @@
-=== AI BotKit –  AI Chatbot for WordPress ===
+=== KnowVault –  AI Chatbot for WordPress ===
 Contributors: WisdmLabs
 Tags: AI, Chatbot, ChatGPT, Live Chat, Live Support
 Requires at least: 5.8
@@ -12,18 +12,18 @@ Instantly deploy AI chatbots( Open AI ChatGPT, Claude, Gemini, together.ai) with
 
 == Description ==
 
-AI BotKit provides the easiest way to add an [AI Chatbot to your WordPress website](https://aibotkit.io/ai-chatbot-for-wordpress/), offering intelligent and accurate answers tailored specifically to your business. The plugin is free and allows you to create WordPress-native, LLM-powered chatbots quickly, **without any coding or complicated external training setups**. Perfect for businesses seeking a simple solution to provide **24/7 automated live chat** or create any AI Chat powered experiences to **engage customers, generate leads, and automate customer support.**
+KnowVault provides the easiest way to add an [AI Chatbot to your WordPress website](https://aibotkit.io/ai-chatbot-for-wordpress/), offering intelligent and accurate answers tailored specifically to your business. The plugin is free and allows you to create WordPress-native, LLM-powered chatbots quickly, **without any coding or complicated external training setups**. Perfect for businesses seeking a simple solution to provide **24/7 automated live chat** or create any AI Chat powered experiences to **engage customers, generate leads, and automate customer support.**
 
 [AI Chatbot Home page](https://aibotkit.io/ai-chatbot-for-wordpress/) | [Documentation](https://aibotkit.gitbook.io/documentation) | [Get Support](https://wordpress.org/support/plugin/ai-botkit-for-lead-generation/) | [Contact us](mailto:contact@aibotkit.io)
 
-AI BotKit allows you to create **engaging chatbots** throughout your customer journey to improve visitor engagement, capture leads, provide round-the-clock assistance, handle FAQs, recommend suitable products and services, and gather valuable insights about your customers. Deploy a **site-wide bot** to automate customer support or **embed it on specific pages**  to help visitors understand your product and services.It can function as a customer support bot, helpdesk, contact bot, FAQ bot, lead generation bot, AI Shopping assistant ,feedback bot etc. **Multilingual support** enables chatbots to converse in over 50 languages, making interactions seamless whether in your native language or for a global audience.
-With AI Botkit our goal is to make the [perfect WordPress AI plugin](https://aibotkit.io/) for creating engaging customer experiences, to generate more leads, and drive higher sales -  through **ready-to-use solutions that integrate seamlessly into your WordPress site without technical hassle.**
+KnowVault allows you to create **engaging chatbots** throughout your customer journey to improve visitor engagement, capture leads, provide round-the-clock assistance, handle FAQs, recommend suitable products and services, and gather valuable insights about your customers. Deploy a **site-wide bot** to automate customer support or **embed it on specific pages**  to help visitors understand your product and services.It can function as a customer support bot, helpdesk, contact bot, FAQ bot, lead generation bot, AI Shopping assistant ,feedback bot etc. **Multilingual support** enables chatbots to converse in over 50 languages, making interactions seamless whether in your native language or for a global audience.
+With KnowVault our goal is to make the [perfect WordPress AI plugin](https://aibotkit.io/) for creating engaging customer experiences, to generate more leads, and drive higher sales -  through **ready-to-use solutions that integrate seamlessly into your WordPress site without technical hassle.**
 
 = How Does the ChatBot Work? =
-AI BotKit chatbots can be  powered by leading LLM providers such as **OpenAI, Anthropic (Claude), and Google’s Gemini**, or you can leverage open-source models like **DeepSeek, LLAMA** etc through the cloud inference provider Together.ai. The plugin operates on a **"Bring Your Own API Key"** model, providing you flexibility to experiment and full control over costs. You must obtain an API key from your preferred AI provider to utilize the plugin's features
-**Unlike other chatbot tools** that require external vector database services to train your chatbot on your business data, AI BotKit provides a native setup. Simply select the relevant website pages, posts, or other important documents, and **our native RAG training method instantly creates a knowledge base without additional services.** Create, manage, and deploy AI chatbots within minutes using our intuitive, no-code interface.
+KnowVault chatbots can be  powered by leading LLM providers such as **OpenAI, Anthropic (Claude), and Google's Gemini**, or you can leverage open-source models like **DeepSeek, LLAMA** etc through the cloud inference provider Together.ai. The plugin operates on a **"Bring Your Own API Key"** model, providing you flexibility to experiment and full control over costs. You must obtain an API key from your preferred AI provider to utilize the plugin's features
+**Unlike other chatbot tools** that require external vector database services to train your chatbot on your business data, KnowVault provides a native setup. Simply select the relevant website pages, posts, or other important documents, and **our native RAG training method instantly creates a knowledge base without additional services.** Create, manage, and deploy AI chatbots within minutes using our intuitive, no-code interface.
 
-= Why AI BotKit Stands Out =
+= Why KnowVault Stands Out =
 * **Wordpress Native training method:** Instantly trains on your website content or other relevant documents without any external service required.
 * **Easy Setup:** Intuitive chatbot builder; zero coding required.
 * **Flexible AI Models:** Supports OpenAI, Google Gemini, Anthropic Claude and Open source model via Together.ai
@@ -83,7 +83,7 @@ AI BotKit chatbots can be  powered by leading LLM providers such as **OpenAI, An
 * **WooCommerce Integration (Upcoming):** Enhance e-commerce functionalities (product queries, cart recovery).
 * **Integration with Popular Services (Upcoming):**Zapier and major CRM systems integration planned for future releases.
 
-= Benefits of AI BotKit =
+= Benefits of KnowVault =
 * Automate customer support, freeing up your team.
 * Chat with visitors 24/7
 * Reduce customer support response time
@@ -96,7 +96,7 @@ AI BotKit chatbots can be  powered by leading LLM providers such as **OpenAI, An
 * Increase user time on page and lower Webpage bounce rate
 
 = Who should use an AI Chatbot? =
-AI BotKit is made for anyone who wants to convert their website traffic into leads and automate customer support. Whether you are a developer, marketer, business owner or blogger, AI Botkit is made for suit your needs. Following are some of the business that can benefit for an AI Chatbot on their website.
+KnowVault is made for anyone who wants to convert their website traffic into leads and automate customer support. Whether you are a developer, marketer, business owner or blogger, KnowVault is made for suit your needs. Following are some of the business that can benefit for an AI Chatbot on their website.
 
 * ChatBot for Real Estate
 * ChatBot for Restaurants and Hotel
@@ -146,8 +146,8 @@ AI BotKit is made for anyone who wants to convert their website traffic into lea
 * Chatbots for SEO Service
 * Chatbots for Digital Marketers
 
-= Why Use AI BotKit? =
-* **Built Specifically for WordPress:** Unlike other Chatbot tools on Wordpress, AI Botkit is built to leverage Wordpress .No complicated external integrations needed for Training 
+= Why Use KnowVault? =
+* **Built Specifically for WordPress:** Unlike other Chatbot tools on Wordpress, KnowVault is built to leverage Wordpress .No complicated external integrations needed for Training 
 * **AI- Powered Smart Conversations:** Enable natural, human-like conversations. Answer visitor questions, guide users to relevant content, and even assist customers with WooCommerce products—all without a need to configure complicated setup or flows
 * **Boost Sales:** Reduce support requests and boost conversions by engaging customers in real time.
 * **Get Customer Insights:** AI Chatbot helps you to deeply understand your customers needs lead to better product and services and seamless sales 
@@ -167,7 +167,7 @@ AI BotKit is made for anyone who wants to convert their website traffic into lea
 
 1. Upload the plugin files to the `/wp-content/plugins/ai-botkit` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Go to the AI BotKit settings page to configure your API keys and preferences.
+3. Go to the KnowVault settings page to configure your API keys and preferences.
 4. Create your first chatbot and start training it with your content.
 
 = Requirements =
@@ -180,10 +180,10 @@ AI BotKit is made for anyone who wants to convert their website traffic into lea
 == Frequently Asked Questions ==
 
 Frequently Asked Questions (FAQs)
-** Q: Do I need coding skills to use AI BotKit?**
-A: No. AI BotKit is designed for users without coding skills, featuring a simple, visual builder that lets you create and manage chatbots easily.
-** Q: Which AI models does AI BotKit support?**
-A: AI BotKit supports OpenAI GPT-4, Anthropic Claude, Google Gemini, and open-source models like DeepSeek and LLAMA via Together.ai.
+** Q: Do I need coding skills to use KnowVault?**
+A: No. KnowVault is designed for users without coding skills, featuring a simple, visual builder that lets you create and manage chatbots easily.
+** Q: Which AI models does KnowVault support?**
+A: KnowVault supports OpenAI GPT-4, Anthropic Claude, Google Gemini, and open-source models like DeepSeek and LLAMA via Together.ai.
 ** Q: What does “Bring Your Own API Key” mean?**
 A: It means you need to obtain an API key from your chosen AI service provider, giving you control over your costs and the flexibility to choose your preferred AI provider.
 ** Q: Is there a cost associated with using AI BotKit?**
@@ -245,7 +245,7 @@ For support inquiries:
 
 = Privacy Policy =
 
-AI BotKit respects user privacy and does not collect any personal data without explicit consent. For more information, visit our [privacy policy](https://aibotkit.io/privacy).
+KnowVault respects user privacy and does not collect any personal data without explicit consent. For more information, visit our [privacy policy](https://aibotkit.io/privacy).
 
 == Third Party Services ==
 

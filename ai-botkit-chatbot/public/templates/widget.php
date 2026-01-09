@@ -6,10 +6,10 @@ $widget_settings = get_option('ai_botkit_widget_settings', [
     'position' => 'right',
     'offset_x' => 20,
     'offset_y' => 20,
-    'title' => __('AI Assistant', 'ai-botkit-for-lead-generation'),
-    'welcome_message' => __('Hello! How can I help you today?', 'ai-botkit-for-lead-generation'),
-    'placeholder' => __('Type your message...', 'ai-botkit-for-lead-generation'),
-    'button_text' => __('Chat with AI', 'ai-botkit-for-lead-generation'),
+    'title' => __('AI Assistant', 'knowvault'),
+    'welcome_message' => __('Hello! How can I help you today?', 'knowvault'),
+    'placeholder' => __('Type your message...', 'knowvault'),
+    'button_text' => __('Chat with AI', 'knowvault'),
 ]);
 
 $styles = json_decode($chatbot_data['style'], true);

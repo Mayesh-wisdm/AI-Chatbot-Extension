@@ -67,12 +67,12 @@ class Wdm_Ai_Botkit_Extension {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'WDM_AI_BOTKIT_EXTENSION_VERSION' ) ) {
-			$this->version = WDM_AI_BOTKIT_EXTENSION_VERSION;
+		if ( defined( 'WDM_KNOWVAULT_EXTENSION_VERSION' ) ) {
+			$this->version = WDM_KNOWVAULT_EXTENSION_VERSION;
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->plugin_name = 'wdm-ai-botkit-extension';
+		$this->plugin_name = 'wdm-knowvault-extension';
 
 		// Always load dependencies to ensure loader is available
 		$this->load_dependencies();
@@ -179,13 +179,13 @@ class Wdm_Ai_Botkit_Extension {
 		$this->loader->add_action( 'ai_botkit_sidebar_menu_items', $plugin_admin, 'add_extension_sidebar_menu' );
 		$this->loader->add_action( 'ai_botkit_admin_tab_content', $plugin_admin, 'add_extension_tab_content' );
 		
-		// Register tab with AI BotKit
+		// Register tab with KnowVault
 		$this->loader->add_filter( 'ai_botkit_admin_tabs', $plugin_admin, 'register_extension_tab' );
 		
 		// Add settings link to plugins page
 		$this->loader->add_filter( 'plugin_action_links_' . plugin_basename( dirname( __FILE__ ) . '/../wdm-ai-botkit-extension.php' ), $plugin_admin, 'add_plugin_action_links' );
 		
-		// Always add AI BotKit filters - runtime license checking is done within the methods
+		// Always add KnowVault filters - runtime license checking is done within the methods
 		$this->loader->add_filter( 'ai_botkit_user_aware_context', $plugin_admin, 'wdm_ai_botkit_user_aware_context', 10, 2 );
 		$this->loader->add_filter( 'ai_botkit_post_content', $plugin_admin, 'wdm_ai_botkit_post_content', 10 ,2 );
 	}
@@ -252,22 +252,22 @@ class Wdm_Ai_Botkit_Extension {
 	 * @since     1.0.0
 	 */
 	private function initialize_content_transformer() {
-		// Only initialize if AI BotKit is available
-		if (class_exists('AI_BotKit\Core\RAG_Engine')) {
+		// Only initialize if KnowVault is available (supports both old and new namespaces)
+		if (class_exists('AI_BotKit\Core\RAG_Engine') || class_exists('KnowVault\Core\RAG_Engine')) {
 			require_once plugin_dir_path(__FILE__) . 'class-wdm-ai-botkit-extension-content-transformer.php';
 			new Wdm_Ai_Botkit_Extension_Content_Transformer();
 		}
 	}
 
 	/**
-	 * Show admin notice when AI BotKit dependency is missing.
+	 * Show admin notice when KnowVault dependency is missing.
 	 *
 	 * @since     1.0.0
 	 */
 	public function show_missing_dependency_notice() {
 		echo '<div class="notice notice-error is-dismissible">';
-		echo '<p><strong>' . __( 'WDM AI BotKit Extension', 'wdm-ai-botkit-extension' ) . '</strong>: ' . 
-		     __( 'This extension requires AI BotKit plugin to be installed and activated. Please install and activate AI BotKit plugin first.', 'wdm-ai-botkit-extension' ) . '</p>';
+		echo '<p><strong>' . __( 'WDM KnowVault Extension for LearnDash', 'wdm-knowvault-extension' ) . '</strong>: ' . 
+		     __( 'This extension requires KnowVault plugin to be installed and activated. Please install and activate KnowVault plugin first.', 'wdm-knowvault-extension' ) . '</p>';
 		echo '</div>';
 	}
 

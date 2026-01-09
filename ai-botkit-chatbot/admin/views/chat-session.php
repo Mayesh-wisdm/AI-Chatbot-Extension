@@ -48,45 +48,45 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 		<div class="ai-botkit-knowledge-header-left">
 			<a class="ai-botkit-btn-outline ai-botkit-btn-sm" id="ai-botkit-chatbot-wizard-back" href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=chatbots&bot_id=' . $session->chatbot_id . '&nonce=' . $nonce)); ?>">
                 <i class="ti ti-arrow-left"></i>
-				<?php esc_html_e('Back to Chat Sessions', 'ai-botkit-for-lead-generation'); ?>
+				<?php esc_html_e('Back to Chat Sessions', 'knowvault'); ?>
 			</a>
-			<h1 class="ai-botkit-knowledge-title"><?php esc_html_e('Conversation', 'ai-botkit-for-lead-generation'); ?></h1>
+			<h1 class="ai-botkit-knowledge-title"><?php esc_html_e('Conversation', 'knowvault'); ?></h1>
 		</div>
 	</div>
 
 	<div class="ai-botkit-chat-session-container">
 		<div class="ai-botkit-chat-session-details">
 			<div class="ai-botkit-chat-session-details-item">
-				<h2><?php esc_html_e('Session Details', 'ai-botkit-for-lead-generation'); ?></h2>
+				<h2><?php esc_html_e('Session Details', 'knowvault'); ?></h2>
 			</div>
 			<div class="ai-botkit-chat-session-details-item">
-				<p><?php esc_html_e('User', 'ai-botkit-for-lead-generation'); ?></p>
+				<p><?php esc_html_e('User', 'knowvault'); ?></p>
 				<p><i class="ti ti-user"></i> <?php echo esc_html($user_name); ?></p>
 			</div>
 			<div class="ai-botkit-chat-session-details-item">
-				<p><?php esc_html_e('Chatbot', 'ai-botkit-for-lead-generation'); ?></p>
+				<p><?php esc_html_e('Chatbot', 'knowvault'); ?></p>
 				<p><i class="ti ti-robot"></i> <?php echo esc_html($chatbot_name); ?></p>
 			</div>
 			<div class="ai-botkit-chat-session-details-item">
-				<p><?php esc_html_e('Date', 'ai-botkit-for-lead-generation'); ?></p>
+				<p><?php esc_html_e('Date', 'knowvault'); ?></p>
 				<p><i class="ti ti-calendar"></i> <?php echo esc_html($date); ?></p>
 			</div>
 			<div class="ai-botkit-chat-session-details-item">
-				<p><?php esc_html_e('Time', 'ai-botkit-for-lead-generation'); ?></p>
+				<p><?php esc_html_e('Time', 'knowvault'); ?></p>
 				<p><i class="ti ti-clock"></i> <?php echo esc_html($time); ?></p>
 			</div>
 			<div class="ai-botkit-chat-session-details-item">
-				<p><?php esc_html_e('Messages', 'ai-botkit-for-lead-generation'); ?></p>
+				<p><?php esc_html_e('Messages', 'knowvault'); ?></p>
 				<p><i class="ti ti-message"></i> <?php echo esc_html($total_messages); ?></p>
 			</div>
 			<div class="ai-botkit-chat-session-details-item">
-				<p><?php esc_html_e('Tokens Utilized', 'ai-botkit-for-lead-generation'); ?></p>
+				<p><?php esc_html_e('Tokens Utilized', 'knowvault'); ?></p>
 				<p><i class="ti ti-ticket"></i> <?php echo esc_html(number_format_i18n($total_tokens)); ?></p>
 			</div>
 		</div>
 		<div class="ai-botkit-chat-session-messages">
 			<div class="ai-botkit-chat-session-messages-item">
-				<span class="ai-botkit-chat-session-messages-item-label"><?php esc_html_e('Messages', 'ai-botkit-for-lead-generation'); ?></span>
+				<span class="ai-botkit-chat-session-messages-item-label"><?php esc_html_e('Messages', 'knowvault'); ?></span>
 				<div class="ai-botkit-chat-session-messages-item-chat">
 					<div class="ai-botkit-chat-header">
 						<!-- <div class="ai-botkit-chat-avatar">

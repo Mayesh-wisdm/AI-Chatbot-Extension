@@ -3,7 +3,7 @@ defined('ABSPATH') || exit;
 
 // Ensure user has permissions
 if (!current_user_can('manage_options')) {
-    wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'ai-botkit-for-lead-generation'));
+    wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'knowvault'));
 }
 
 // Save banned keywords if form is submitted
@@ -27,7 +27,7 @@ if (isset($_POST['submit_banned_keywords'])) {
     add_settings_error(
         'ai_botkit_security_messages',
         'ai_botkit_security_message',
-        __('Security Settings Saved', 'ai-botkit-for-lead-generation'),
+        __('Security Settings Saved', 'knowvault'),
         'updated'
     );
 }
@@ -53,7 +53,7 @@ if (isset($_POST['submit_blocked_ips'])) {
     add_settings_error(
         'ai_botkit_security_messages',
         'ai_botkit_security_message',
-        __('Security Settings Saved', 'ai-botkit-for-lead-generation'),
+        __('Security Settings Saved', 'knowvault'),
         'updated'
     );
 }
@@ -70,7 +70,7 @@ $blocked_ips_string = implode(', ', $blocked_ips_array);
 ?>
 
 <div class="ai-botkit-settings-container">
-    <h2 class="ai-botkit-settings-title"><?php esc_html_e('Security Settings', 'ai-botkit-for-lead-generation'); ?></h2>
+    <h2 class="ai-botkit-settings-title"><?php esc_html_e('Security Settings', 'knowvault'); ?></h2>
     
     <?php settings_errors('ai_botkit_security_messages'); ?>
     
@@ -81,62 +81,62 @@ $blocked_ips_string = implode(', ', $blocked_ips_array);
             <!-- Banned Keywords Section -->
             <div class="ai-botkit-tab-pane ai-botkit-card">
                 <div class="ai-botkit-card-header">
-                    <h3><?php esc_html_e('Add Banned Keywords', 'ai-botkit-for-lead-generation'); ?></h3>
-                    <p><?php esc_html_e('Add words that should be blocked from chat messages', 'ai-botkit-for-lead-generation'); ?></p>
+                    <h3><?php esc_html_e('Add Banned Keywords', 'knowvault'); ?></h3>
+                    <p><?php esc_html_e('Add words that should be blocked from chat messages', 'knowvault'); ?></p>
                 </div>
 
                 <div class="ai-botkit-card-body">
                     <div class="ai-botkit-form-group">
                         <label for="ai_botkit_banned_keywords" class="ai-botkit-label">
-                            <?php esc_html_e('Banned Keywords', 'ai-botkit-for-lead-generation'); ?>
+                            <?php esc_html_e('Banned Keywords', 'knowvault'); ?>
                         </label>
                         <input 
                             type="text" 
                             id="ai_botkit_banned_keywords" 
                             name="ai_botkit_banned_keywords" 
                             class="regular-text" 
-                            placeholder="<?php esc_attr_e('badword1, badword2, badword3, ...', 'ai-botkit-for-lead-generation'); ?>" 
+                            placeholder="<?php esc_attr_e('badword1, badword2, badword3, ...', 'knowvault'); ?>" 
                             value="<?php echo esc_attr($banned_keywords_string); ?>" 
                         />
                         <p class="ai-botkit-hint">
-                            <?php esc_html_e('Enter comma-separated words that should be blocked. The chatbot will not respond to messages containing these words.', 'ai-botkit-for-lead-generation'); ?>
+                            <?php esc_html_e('Enter comma-separated words that should be blocked. The chatbot will not respond to messages containing these words.', 'knowvault'); ?>
                         </p>
                     </div>
                 </div>
                 
                 <div class="ai-botkit-card-footer">
-                    <input type="submit" class="ai-botkit-btn" name="submit_banned_keywords" value="<?php esc_html_e('Save Banned Keywords', 'ai-botkit-for-lead-generation'); ?>">
+                    <input type="submit" class="ai-botkit-btn" name="submit_banned_keywords" value="<?php esc_html_e('Save Banned Keywords', 'knowvault'); ?>">
                 </div>
             </div>
 
             <!-- Blocked IP Addresses Section -->
             <div class="ai-botkit-tab-pane ai-botkit-card">
                 <div class="ai-botkit-card-header">
-                    <h3><?php esc_html_e('Blocked IP Addresses', 'ai-botkit-for-lead-generation'); ?></h3>
-                    <p><?php esc_html_e('Block access to chatbot from specific IP addresses', 'ai-botkit-for-lead-generation'); ?></p>
+                    <h3><?php esc_html_e('Blocked IP Addresses', 'knowvault'); ?></h3>
+                    <p><?php esc_html_e('Block access to chatbot from specific IP addresses', 'knowvault'); ?></p>
                 </div>
 
                 <div class="ai-botkit-card-body">
                     <div class="ai-botkit-form-group">
                         <label for="ai_botkit_blocked_ips" class="ai-botkit-label">
-                            <?php esc_html_e('Blocked IP Addresses', 'ai-botkit-for-lead-generation'); ?>
+                            <?php esc_html_e('Blocked IP Addresses', 'knowvault'); ?>
                         </label>
                         <input 
                             type="text" 
                             id="ai_botkit_blocked_ips" 
                             name="ai_botkit_blocked_ips" 
                             class="regular-text" 
-                            placeholder="<?php esc_attr_e('192.168.1.1, 203.0.113.25, ...', 'ai-botkit-for-lead-generation'); ?>" 
+                            placeholder="<?php esc_attr_e('192.168.1.1, 203.0.113.25, ...', 'knowvault'); ?>" 
                             value="<?php echo esc_attr($blocked_ips_string); ?>" 
                         />
                         <p class="ai-botkit-hint">
-                            <?php esc_html_e('Enter comma-separated IP addresses that should be blocked from accessing the chatbot.', 'ai-botkit-for-lead-generation'); ?>
+                            <?php esc_html_e('Enter comma-separated IP addresses that should be blocked from accessing the chatbot.', 'knowvault'); ?>
                         </p>
                     </div>
                 </div>
                 
                 <div class="ai-botkit-card-footer">
-                    <input type="submit" class="ai-botkit-btn" name="submit_blocked_ips" value="<?php esc_html_e('Save Blocked IPs', 'ai-botkit-for-lead-generation'); ?>">
+                    <input type="submit" class="ai-botkit-btn" name="submit_blocked_ips" value="<?php esc_html_e('Save Blocked IPs', 'knowvault'); ?>">
                 </div>
             </div>
         </div>

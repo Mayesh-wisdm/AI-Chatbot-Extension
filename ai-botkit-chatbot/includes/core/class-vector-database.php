@@ -76,7 +76,7 @@ class Vector_Database {
 
                     if ($result === false) {
                         throw new Vector_Database_Exception(
-                            esc_html__('Failed to store embedding in Pinecone: ', 'ai-botkit-for-lead-generation') . esc_html($wpdb->last_error)
+                            esc_html__('Failed to store embedding in Pinecone: ', 'knowvault') . esc_html($wpdb->last_error)
                         );
                     }
 
@@ -95,7 +95,7 @@ class Vector_Database {
 
                     if ($result === false) {
                         throw new Vector_Database_Exception(
-                            esc_html__('Failed to store embedding: ', 'ai-botkit-for-lead-generation') . esc_html($wpdb->last_error)
+                            esc_html__('Failed to store embedding: ', 'knowvault') . esc_html($wpdb->last_error)
                         );
                     }
 
@@ -110,7 +110,7 @@ class Vector_Database {
 
         } catch (\Exception $e) {
             throw new Vector_Database_Exception(
-                esc_html__('Failed to store embeddings: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to store embeddings: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );
@@ -218,7 +218,7 @@ class Vector_Database {
                 
                 if ($results === null) {
                     throw new Vector_Database_Exception(
-                        esc_html__('Failed to fetch embeddings: ', 'ai-botkit-for-lead-generation') . esc_html($wpdb->last_error)
+                        esc_html__('Failed to fetch embeddings: ', 'knowvault') . esc_html($wpdb->last_error)
                     );
                 }
 
@@ -255,7 +255,7 @@ class Vector_Database {
 
         } catch (\Exception $e) {
             throw new Vector_Database_Exception(
-                esc_html__('Failed to find similar vectors: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to find similar vectors: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );
@@ -319,7 +319,7 @@ class Vector_Database {
 
         if ($result === false) {
             throw new Vector_Database_Exception(
-                esc_html__('Failed to store chunk: ', 'ai-botkit-for-lead-generation') . esc_html($wpdb->last_error)
+                esc_html__('Failed to store chunk: ', 'knowvault') . esc_html($wpdb->last_error)
             );
         }
 
@@ -417,7 +417,7 @@ class Vector_Database {
 
         } catch (\Exception $e) {
             throw new Vector_Database_Exception(
-                esc_html__('Failed to delete document data: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to delete document data: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );
@@ -442,7 +442,7 @@ class Vector_Database {
 
         } catch (\Exception $e) {
             throw new Vector_Database_Exception(
-                esc_html__('Failed to get database statistics: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage()),
+                esc_html__('Failed to get database statistics: ', 'knowvault') . esc_html($e->getMessage()),
                 0,
                 $e
             );

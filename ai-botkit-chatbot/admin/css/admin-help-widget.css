@@ -6,7 +6,7 @@
     width: 55px;
     height: 55px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #21C58B 0%, #038E5D 100%);
+    background: linear-gradient(180deg, #3B82F6 0%, #1E3A8A 100%);
     color: #333;
     display: flex;
     align-items: center;
@@ -23,7 +23,7 @@
 #ai-botkit-admin-help-button:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(180deg, #21C58B 0%, #038E5D 100%);    
+    background: linear-gradient(180deg, #3B82F6 0%, #1E3A8A 100%);    
 }
 
 #ai-botkit-admin-help-button span {
@@ -74,7 +74,7 @@ body.wp-admin .ai-botkit-typing {
     display: flex;
     align-items: center;
     padding: 8px 12px;
-    background-color: rgba(0, 136, 88, 0.1);
+    background-color: rgba(30, 58, 138, 0.1);
     border-radius: 12px;
     margin-bottom: 4px;
 }
@@ -84,7 +84,7 @@ body.wp-admin .ai-botkit-typing span {
     width: 8px;
     height: 8px;
     margin: 0 2px;
-    background-color: #008858;
+    background-color: #1E3A8A;
     border-radius: 50%;
     opacity: 0.7;
     animation: typing-dot 1.4s infinite ease-in-out both;
@@ -244,7 +244,7 @@ body.wp-admin .ai-botkit-typing span:nth-child(3) {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #008858;
+    background: #1E3A8A;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -261,7 +261,7 @@ body.wp-admin .ai-botkit-typing span:nth-child(3) {
 }
 
 .ai-botkit-message.user .ai-botkit-message-content {
-    background: #008858;
+    background: #1E3A8A;
     color: white;
 }
 .ai-botkit-message.assistant .ai-botkit-message-content {
@@ -314,7 +314,7 @@ body.wp-admin .ai-botkit-typing span:nth-child(3) {
 }
 
 .ai-botkit-send-button {
-    background: #008858;
+    background: #1E3A8A;
     color: white;
     border: none;
     border-radius: 6px;
@@ -329,7 +329,7 @@ body.wp-admin .ai-botkit-typing span:nth-child(3) {
 }
 
 .ai-botkit-send-button:hover {
-    background: #006e47;
+    background: #1E40AF;
 }
 
 .ai-botkit-send-button:disabled {
@@ -342,7 +342,7 @@ body.wp-admin .ai-botkit-typing span:nth-child(3) {
     display: flex;
     align-items: center;
     padding: 8px 12px;
-    background-color: rgba(0, 136, 88, 0.1);
+    background-color: rgba(30, 58, 138, 0.1);
     border-radius: 12px;
     margin-bottom: 4px;
 }
@@ -352,7 +352,7 @@ body.wp-admin .ai-botkit-typing span:nth-child(3) {
     width: 8px;
     height: 8px;
     margin: 0 2px;
-    background-color: #008858;
+    background-color: #1E3A8A;
     border-radius: 50%;
     opacity: 0.7;
     animation: typing-dot 1.4s infinite ease-in-out both;
@@ -385,13 +385,13 @@ body.wp-admin .ai-botkit-typing span:nth-child(3) {
     right: 20px;
     padding: 21px 15px;
     color: #fff;
-    background: linear-gradient(93.73deg, #1FC289 0.85%, #04915F 101.84%);
+    background: linear-gradient(93.73deg, #3B82F6 0.85%, #1E3A8A 101.84%);
     border-radius: 14px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     border: 1px solid;
-    border-image-source: linear-gradient(93.28deg, #31C792 2.76%, #29F2AB 98.3%);
+    border-image-source: linear-gradient(93.28deg, #00BFA6 2.76%, #3B82F6 98.3%);
     z-index: 999999;
     display: none;
 }
@@ -408,8 +408,8 @@ body.wp-admin .ai-botkit-typing span:nth-child(3) {
     font-size: 20px;
     cursor: pointer;
     transform: translate(50%, -50%);
-    background-color: #B7D6CB;
+    background-color: #C9E0FF;
     border-radius: 45px;
-    color: #2E6552;
+    color: #1E3A8A;
     padding: 2px;
 }

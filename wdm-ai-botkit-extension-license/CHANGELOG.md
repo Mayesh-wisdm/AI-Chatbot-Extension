@@ -102,12 +102,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **MEDIUM**: Added AJAX-based sync process with nonce security and permission checks
   - **LOW**: Enhanced UI with detailed sync results and error reporting
 - **Automatic Content Transformation System**: Implemented intelligent content management based on license status
-  - **CRITICAL**: Added automatic content downgrade when extension license expires or is deactivated
+  - **CRITICAL**: Added automatic feature disabling and cache clearing when extension license expires or is deactivated
   - **CRITICAL**: Implemented content upgrade system when license is reactivated
   - **HIGH**: Added license status monitoring with automatic event triggering
   - **HIGH**: Created content transformer engine for seamless content level management
-  - **HIGH**: Implemented comprehensive LearnDash content downgrade (lessons, topics, quizzes → title + description)
-  - **HIGH**: Added automatic embedding regeneration for transformed content
+  - **HIGH**: Implemented comprehensive cache management and feature access control
+  - **HIGH**: Added automatic sync scheduling when license is reactivated
   - **MEDIUM**: Enhanced sync button to show upgrade status and appropriate messaging
   - **MEDIUM**: Added user notifications for content transformation events
   - **LOW**: Implemented upgrade completion tracking and status display

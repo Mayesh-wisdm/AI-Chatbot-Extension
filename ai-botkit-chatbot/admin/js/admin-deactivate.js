@@ -6,7 +6,7 @@
 jQuery(document).ready(function($) {
     'use strict';
 
-    const deactivateButton = $('#the-list').find('[data-plugin="ai-botkit-for-lead-generation/ai-botkit.php"] span.deactivate a');
+    const deactivateButton = $('#the-list').find('[data-plugin="knowVault/knowVault.php"] span.deactivate a');
     deactivateButton.on('click', function(e) {
         e.preventDefault();
         $('#ai-botkit-deactivation-modal').fadeIn();

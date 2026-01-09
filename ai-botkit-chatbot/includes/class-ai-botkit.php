@@ -98,6 +98,9 @@ class AI_BotKit {
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-unified-cache-manager.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-unified-performance-monitor.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-unified-error-handler.php';
+        
+        // Utils
+        require_once AI_BOTKIT_INCLUDES_DIR . 'utils/class-table-helper.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-performance-configuration-manager.php';
 
         // Pinecone database class
@@ -267,7 +270,7 @@ class AI_BotKit {
     public function run(): void {
         // Load plugin text domain
         // load_plugin_textdomain(
-        //     'ai-botkit-for-lead-generation',
+        //     'knowvault',
         //     false,
         //     dirname(plugin_basename(dirname(__FILE__))) . '/languages'
         // );
@@ -284,7 +287,7 @@ class AI_BotKit {
      * @return string The name of the plugin.
      */
     public function get_plugin_name(): string {
-        return 'ai-botkit-for-lead-generation';
+        return 'knowvault';
     }
 
     /**

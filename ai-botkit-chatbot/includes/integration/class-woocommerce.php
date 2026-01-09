@@ -4,6 +4,7 @@ namespace AI_BotKit\Integration;
 use AI_BotKit\Core\Document_Loader;
 use AI_BotKit\Core\RAG_Engine;
 use AI_BotKit\Core\Unified_Cache_Manager;
+use AI_BotKit\Utils\Table_Helper;
 
 /**
  * WooCommerce Integration
@@ -110,8 +111,9 @@ class WooCommerce {
         global $wpdb;
 
         // Delete related content and embeddings
+        $table_name = Table_Helper::get_table_name('wp_content');
         $wpdb->delete(
-            $wpdb->prefix . 'ai_botkit_wp_content',
+            $table_name,
             [
                 'post_id' => $product_id,
                 'post_type' => 'product'
@@ -385,8 +387,9 @@ class WooCommerce {
         ];
 
         // Check if already exists
+        $table_name = Table_Helper::get_table_name('wp_content');
         $existing = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM {$wpdb->prefix}ai_botkit_wp_content
+            "SELECT id FROM {$table_name}
             WHERE post_id = %d AND post_type = %s",
             $product_id,
             'product'
@@ -394,7 +397,7 @@ class WooCommerce {
 
         if ($existing) {
             $wpdb->update(
-                $wpdb->prefix . 'ai_botkit_wp_content',
+                $table_name,
                 $data,
                 ['id' => $existing],
                 ['%s', '%s', '%s', '%s', '%s', '%s'],
@@ -402,7 +405,7 @@ class WooCommerce {
             );
         } else {
             $wpdb->insert(
-                $wpdb->prefix . 'ai_botkit_wp_content',
+                $table_name,
                 $data,
                 ['%d', '%s', '%s', '%s', '%s', '%s']
             );
@@ -423,8 +426,9 @@ class WooCommerce {
     private function update_content_status(int $product_id, string $status): void {
         global $wpdb;
 
+        $table_name = Table_Helper::get_table_name('wp_content');
         $wpdb->update(
-            $wpdb->prefix . 'ai_botkit_wp_content',
+            $table_name,
             [
                 'status' => $status,
                 'updated_at' => current_time('mysql'),
@@ -453,10 +457,11 @@ class WooCommerce {
 
         global $wpdb;
 
+        $table_name = Table_Helper::get_table_name('wp_content');
         $stats = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT status, COUNT(*) as count
-                FROM {$wpdb->prefix}ai_botkit_wp_content
+                FROM {$table_name}
                 WHERE post_type = %s
                 GROUP BY status",
                 'product'

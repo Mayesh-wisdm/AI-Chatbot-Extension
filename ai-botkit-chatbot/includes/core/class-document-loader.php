@@ -27,7 +27,7 @@ class Document_Loader {
         // Verify file exists and is readable
         if (!file_exists($file_path) || !is_readable($file_path)) {
             throw new \Exception(
-                esc_html__('File not found or not readable: ', 'ai-botkit-for-lead-generation') . esc_html($file_path)
+                esc_html__('File not found or not readable: ', 'knowvault') . esc_html($file_path)
             );
         }
 
@@ -48,7 +48,7 @@ class Document_Loader {
 
         if (!$is_allowed) {
             throw new \Exception(
-                esc_html__('File location not allowed: ', 'ai-botkit-for-lead-generation') . esc_html($file_path)
+                esc_html__('File location not allowed: ', 'knowvault') . esc_html($file_path)
             );
         }
 
@@ -81,7 +81,7 @@ class Document_Loader {
         // Verify URL is valid
         if (!wp_http_validate_url($url)) {
             throw new \Exception(
-                esc_html__('Invalid URL: ', 'ai-botkit-for-lead-generation') . esc_html($url)
+                esc_html__('Invalid URL: ', 'knowvault') . esc_html($url)
             );
         }
 
@@ -101,27 +101,27 @@ class Document_Loader {
 
         if (is_wp_error($response)) {
             throw new \Exception(
-                esc_html__('Failed to fetch document from URL: ', 'ai-botkit-for-lead-generation') . esc_html($response->get_error_message())
+                esc_html__('Failed to fetch document from URL: ', 'knowvault') . esc_html($response->get_error_message())
             );
         }
 
         $response_code = wp_remote_retrieve_response_code($response);
         if ($response_code !== 200) {
-            $error_message = esc_html__('Failed to fetch document from URL: HTTP ', 'ai-botkit-for-lead-generation') . esc_html($response_code);
+            $error_message = esc_html__('Failed to fetch document from URL: HTTP ', 'knowvault') . esc_html($response_code);
             
             // Add specific error messages for common HTTP codes
             switch ($response_code) {
                 case 403:
-                    $error_message .= ' - ' . esc_html__('Access forbidden. The website may be blocking automated requests.', 'ai-botkit-for-lead-generation');
+                    $error_message .= ' - ' . esc_html__('Access forbidden. The website may be blocking automated requests.', 'knowvault');
                     break;
                 case 404:
-                    $error_message .= ' - ' . esc_html__('Page not found.', 'ai-botkit-for-lead-generation');
+                    $error_message .= ' - ' . esc_html__('Page not found.', 'knowvault');
                     break;
                 case 429:
-                    $error_message .= ' - ' . esc_html__('Too many requests. Please try again later.', 'ai-botkit-for-lead-generation');
+                    $error_message .= ' - ' . esc_html__('Too many requests. Please try again later.', 'knowvault');
                     break;
                 case 500:
-                    $error_message .= ' - ' . esc_html__('Server error on the target website.', 'ai-botkit-for-lead-generation');
+                    $error_message .= ' - ' . esc_html__('Server error on the target website.', 'knowvault');
                     break;
             }
             
@@ -139,7 +139,7 @@ class Document_Loader {
                 $content = $readability->getContent();
             } catch (ParseException $e) {
                 throw new \Exception(
-                    esc_html__('Failed to parse HTML document from URL: ', 'ai-botkit-for-lead-generation') . esc_html($e->getMessage())
+                    esc_html__('Failed to parse HTML document from URL: ', 'knowvault') . esc_html($e->getMessage())
                 );
             }
         }
@@ -170,7 +170,7 @@ class Document_Loader {
         $post = get_post($post_id);
         if (!$post) {
             throw new \Exception(
-                esc_html__('Post not found: ', 'ai-botkit-for-lead-generation') . esc_html($post_id)
+                esc_html__('Post not found: ', 'knowvault') . esc_html($post_id)
             );
         }
 
@@ -218,13 +218,13 @@ class Document_Loader {
                     return $cleaned_text;
                 }
                 throw new \Exception(
-                    esc_html__('PDF parsing requires the Smalot PDF Parser library', 'ai-botkit-for-lead-generation')
+                    esc_html__('PDF parsing requires the Smalot PDF Parser library', 'knowvault')
                 );
             
             case 'docx':
                 // DOCX parsing requires PhpOffice/PhpWord library
                 // For now, return a helpful error message
-                throw new \Exception(__('DOCX parsing requires additional setup. Please convert to PDF or TXT format, or contact support for DOCX support.', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(__('DOCX parsing requires additional setup. Please convert to PDF or TXT format, or contact support for DOCX support.', 'knowvault'));
             
             case 'html':
             case 'htm':

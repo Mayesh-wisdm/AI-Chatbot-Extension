@@ -199,4 +199,188 @@
 	// Make toast system globally available
 	window.WdmToast = WdmToast;
 
+	// License status check functionality
+	$(document).ready(function() {
+		$('#check-license-status').on('click', function() {
+			var $btn = $(this);
+			var nonce = $('#wdm_extension_license_nonce').val();
+			
+			// Store original button content
+			var originalHtml = $btn.html();
+			
+			// Disable button and show loading state
+			$btn.prop('disabled', true);
+			$btn.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Checking...');
+			
+			$.ajax({
+				url: ajaxurl,
+				type: 'POST',
+				data: {
+					action: 'wdm_ai_botkit_extension_check_license',
+					nonce: nonce
+				},
+				success: function(response) {
+					if (response.success) {
+						var data = response.data;
+						var message = 'License status checked successfully. Status: ' + data.remote_status;
+						
+						if (data.status_changed) {
+							message += ' (Status changed from ' + data.current_status + ' to ' + data.new_status + ')';
+							WdmToast.success(message, 5000);
+							
+							// Reload page with cache busting to show updated status
+							setTimeout(function() {
+								location.href = location.href + (location.href.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
+							}, 1500);
+						} else {
+							message += ' (No change detected)';
+							WdmToast.info(message, 8000);
+						}
+					} else {
+						WdmToast.error('Failed to check license status: ' + (response.data ? response.data.message : 'Unknown error'));
+					}
+				},
+				error: function() {
+					WdmToast.error('Error checking license status');
+				},
+				complete: function() {
+					// Restore button
+					$btn.prop('disabled', false);
+					$btn.html(originalHtml);
+				}
+			});
+		});
+		
+		// LearnDash Sync functionality
+		$('#learndash-sync-btn').on('click', function() {
+			var $btn = $(this);
+			var $progress = $('#sync-progress');
+			var $results = $('#sync-results');
+			var nonce = $btn.data('nonce');
+			
+			// Store original button content
+			var originalHtml = $btn.html();
+			
+			// Disable button and show loading state
+			$btn.prop('disabled', true);
+			$btn.html('<i class="ti ti-loader-2 ai-botkit-loading-icon"></i> Processing...');
+			$progress.show();
+			$results.hide();
+			
+			// Start sync process
+			startLearndashSync(nonce, originalHtml);
+		});
+		
+		function startLearndashSync(nonce, originalHtml) {
+			$.ajax({
+				url: ajaxurl,
+				type: 'POST',
+				data: {
+					action: 'learndash_sync_courses',
+					sync_action: 'start',
+					bot_id: 0, // Will auto-detect first bot if not specified
+					nonce: nonce
+				},
+				success: function(response) {
+					if (response.success) {
+						updateProgress(0, response.data.total_courses, 'Starting content upgrade...');
+						processSyncBatch(nonce, response.data.total_courses, originalHtml);
+					} else {
+						showError(response.data.message || 'Failed to start content upgrade', originalHtml);
+					}
+				},
+				error: function() {
+					showError('Network error occurred', originalHtml);
+				}
+			});
+		}
+		
+		function processSyncBatch(nonce, totalCourses, originalHtml) {
+			$.ajax({
+				url: ajaxurl,
+				type: 'POST',
+				data: {
+					action: 'learndash_sync_courses',
+					sync_action: 'process',
+					nonce: nonce
+				},
+				success: function(response) {
+					if (response.success) {
+						var data = response.data;
+						var progress = Math.round((data.current_index / data.total_courses) * 100);
+						
+						updateProgress(data.current_index, data.total_courses, data.message);
+						
+						if (data.is_complete) {
+							showResults(data);
+							$('#learndash-sync-btn').prop('disabled', false).html(originalHtml);
+						} else {
+							// Continue processing
+							setTimeout(function() {
+								processSyncBatch(nonce, totalCourses, originalHtml);
+							}, 1000);
+						}
+					} else {
+						showError(response.data.message || 'Sync failed', originalHtml);
+					}
+				},
+				error: function() {
+					showError('Network error occurred during sync', originalHtml);
+				}
+			});
+		}
+		
+		function updateProgress(current, total, message) {
+			var progress = Math.round((current / total) * 100);
+			$('.ai-botkit-progress-fill').css('width', progress + '%');
+			$('#sync-status').text(message);
+			$('#sync-count').text(current + ' / ' + total);
+		}
+		
+		function showResults(data) {
+			var $results = $('#sync-results');
+			var $content = $('#sync-results-content');
+			
+			var html = '<div class="ai-botkit-sync-summary">';
+			html += '<p><strong>Sync Completed Successfully!</strong></p>';
+			html += '<ul>';
+			html += '<li>Total courses processed: ' + data.total_processed + '</li>';
+			html += '<li>Total courses found: ' + data.total_courses + '</li>';
+			
+			if (data.errors && data.errors.length > 0) {
+				html += '<li>Errors: ' + data.errors.length + '</li>';
+			}
+			
+			html += '</ul>';
+			
+			if (data.errors && data.errors.length > 0) {
+				html += '<div class="ai-botkit-sync-errors">';
+				html += '<h5>Errors encountered:</h5>';
+				html += '<ul>';
+				data.errors.forEach(function(error) {
+					html += '<li>Course ID ' + error.course_id + ': ' + error.error + '</li>';
+				});
+				html += '</ul>';
+				html += '</div>';
+			}
+			
+			html += '</div>';
+			
+			$content.html(html);
+			$results.show();
+			$('#sync-progress').hide();
+		}
+		
+		function showError(message, originalHtml) {
+			$('#sync-progress').hide();
+			$('#learndash-sync-btn').prop('disabled', false).html(originalHtml);
+			
+			var $results = $('#sync-results');
+			var $content = $('#sync-results-content');
+			
+			$content.html('<div class="notice notice-error"><p>' + message + '</p></div>');
+			$results.show();
+		}
+	});
+
 })( jQuery );

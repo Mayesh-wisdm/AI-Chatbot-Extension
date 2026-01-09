@@ -19,7 +19,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* AI BotKit Extension License Container */
+/* KnowVault Extension License Container */
 .ai-botkit-extension-license-container {
     max-width: 100%;
     margin: 0;
@@ -27,17 +27,22 @@
 
 .ai-botkit-extension-license-content {
     background: #fff;
-    border-radius: 8px;
-    padding: 24px;
-    margin-top: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 32px;
+    margin-top: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #E5E7EB;
 }
 
 .ai-botkit-license-status-section,
 .ai-botkit-license-key-section,
 .ai-botkit-features-section,
 .ai-botkit-support-section {
-    margin-bottom: 32px;
+    margin-bottom: 40px;
+    padding: 24px;
+    background: #F9FAFB;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
 }
 
 .ai-botkit-license-status-section h2,
@@ -45,24 +50,36 @@
 .ai-botkit-features-section h2,
 .ai-botkit-support-section h2 {
     font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 16px;
-    color: #1f2937;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1E3A8A;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .ai-botkit-license-status-item {
     margin-bottom: 20px;
-    padding: 16px;
-    background: #f9fafb;
-    border-radius: 8px;
-    border-left: 4px solid #007fff;
+    padding: 24px;
+    background: #fff;
+    border-radius: 12px;
+    border-left: 4px solid #1E3A8A;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
+}
+
+.ai-botkit-license-status-item:hover {
+    box-shadow: 0 4px 8px rgba(30, 58, 138, 0.1);
 }
 
 .ai-botkit-license-status-item h3 {
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
     margin: 0 0 12px 0;
-    color: #374151;
+    color: #1E3A8A;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .ai-botkit-license-status {
@@ -70,10 +87,14 @@
     align-items: center;
     font-weight: 600;
     margin: 8px 0;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 8px;
+    font-size: 15px;
 }
 
 .ai-botkit-license-status.valid {
-    color: #059669;
+    color: #10B981;
 }
 
 .ai-botkit-license-status.invalid,
@@ -98,38 +119,42 @@
 }
 
 .ai-botkit-feature-item {
-    padding: 20px;
-    background: #f9fafb;
-    border-radius: 8px;
+    padding: 24px;
+    background: #fff;
+    border-radius: 12px;
     text-align: center;
-    border: 1px solid #e5e7eb;
-    transition: all 0.2s ease;
+    border: 1px solid #E5E7EB;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .ai-botkit-feature-item:hover {
-    background: #f3f4f6;
-    border-color: #007fff;
-    transform: translateY(-2px);
+    background: #F5F9FB;
+    border-color: #1E3A8A;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
 }
 
 .ai-botkit-feature-item .dashicons {
-    font-size: 32px;
-    color: #007fff;
-    margin-bottom: 12px;
+    font-size: 36px;
+    color: #1E3A8A;
+    margin-bottom: 16px;
+    width: 36px;
+    height: 36px;
 }
 
 .ai-botkit-feature-item h4 {
-    margin: 12px 0;
-    color: #1f2937;
-    font-size: 1.1rem;
-    font-weight: 600;
+    margin: 16px 0 12px 0;
+    color: #1E3A8A;
+    font-size: 1.2rem;
+    font-weight: 700;
 }
 
 .ai-botkit-feature-item p {
     margin: 0;
-    color: #6b7280;
+    color: #6B7280;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .ai-botkit-support-links {
@@ -154,27 +179,88 @@
 }
 
 /* Form styling */
+.ai-botkit-license-key-section .form-table {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
 .ai-botkit-license-key-section .form-table th {
     width: 200px;
     padding: 16px 10px 16px 0;
+    font-weight: 600;
+    color: #374151;
 }
 
 .ai-botkit-license-key-section .form-table td {
     padding: 16px 10px;
 }
 
+.ai-botkit-license-key-section .form-table .description {
+    margin-top: 8px;
+    color: #6B7280;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
 .ai-botkit-license-key-section input[type="text"] {
     width: 100%;
-    max-width: 400px;
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    max-width: 500px;
+    padding: 12px 16px;
+    border: 2px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
 }
 
 .ai-botkit-license-key-section input[type="text"]:focus {
-    border-color: #007fff;
-    box-shadow: 0 0 0 3px rgba(0, 127, 255, 0.1);
+    border-color: #1E3A8A;
+    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
     outline: none;
+}
+
+.ai-botkit-license-key-section .button-primary {
+    background: #1E3A8A;
+    border-color: #1E3A8A;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.ai-botkit-license-key-section .button-primary:hover {
+    background: #1E40AF;
+    border-color: #1E40AF;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(30, 58, 138, 0.2);
+}
+
+.ai-botkit-license-key-section .button-secondary {
+    background: #fff;
+    border-color: #D1D5DB;
+    color: #374151;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.ai-botkit-license-key-section .button-secondary:hover {
+    background: #F9FAFB;
+    border-color: #1E3A8A;
+    color: #1E3A8A;
+}
+
+.ai-botkit-license-key-section .submit {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 /* Toast Notification Styles */
@@ -204,7 +290,7 @@
 }
 
 .wdm-toast.success {
-    border-left-color: #059669;
+    border-left-color: #10B981;
 }
 
 .wdm-toast.error {
@@ -216,7 +302,7 @@
 }
 
 .wdm-toast.info {
-    border-left-color: #007fff;
+    border-left-color: #1E3A8A;
 }
 
 .wdm-toast .toast-content {
@@ -231,7 +317,7 @@
 }
 
 .wdm-toast.success .toast-icon {
-    color: #059669;
+    color: #10B981;
 }
 
 .wdm-toast.error .toast-icon {
@@ -243,7 +329,7 @@
 }
 
 .wdm-toast.info .toast-icon {
-    color: #007fff;
+    color: #1E3A8A;
 }
 
 .wdm-toast .toast-message {
@@ -279,7 +365,7 @@
 
 .wdm-toast .toast-progress-bar {
     height: 100%;
-    background: #007fff;
+    background: #1E3A8A;
     width: 100%;
     transition: width linear;
 }
@@ -460,4 +546,200 @@
     background: #fff3cd;
     border-color: #ffb900;
     color: #856404;
+}
+
+/* LearnDash Sync Section Styles */
+.ai-botkit-sync-section {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 28px;
+    margin: 24px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.ai-botkit-sync-section h2 {
+    color: #1E3A8A;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.ai-botkit-sync-controls {
+    margin: 20px 0;
+}
+
+.ai-botkit-sync-controls .button-primary {
+    background: #1E3A8A;
+    border-color: #1E3A8A;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-botkit-sync-controls .button-primary:hover {
+    background: #1E40AF;
+    border-color: #1E40AF;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(30, 58, 138, 0.2);
+}
+
+.ai-botkit-sync-progress {
+    margin: 20px 0;
+    padding: 20px;
+    background: #F9FAFB;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
+}
+
+.ai-botkit-progress-bar {
+    background: #E5E7EB;
+    height: 10px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.ai-botkit-progress-fill {
+    background: linear-gradient(90deg, #1E3A8A 0%, #3B82F6 100%);
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 6px;
+}
+
+.ai-botkit-progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.ai-botkit-progress-text #sync-status {
+    color: #1E3A8A;
+    font-weight: 600;
+}
+
+.ai-botkit-sync-results {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.ai-botkit-sync-results h4 {
+    color: #1E3A8A;
+    font-weight: 700;
+    margin-bottom: 16px;
+    font-size: 1.2rem;
+}
+
+.ai-botkit-sync-summary {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+}
+
+.ai-botkit-sync-summary p {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    color: #1E3A8A;
+    font-size: 16px;
+}
+
+.ai-botkit-sync-summary ul {
+    margin: 0;
+    padding-left: 24px;
+    color: #374151;
+}
+
+.ai-botkit-sync-summary li {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.ai-botkit-sync-errors {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    border-left: 4px solid #DC2626;
+}
+
+.ai-botkit-sync-errors h5 {
+    color: #DC2626;
+    margin: 0 0 12px 0;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.ai-botkit-sync-errors ul {
+    margin: 0;
+    padding-left: 24px;
+}
+
+.ai-botkit-sync-errors li {
+    color: #DC2626;
+    font-size: 14px;
+    margin: 6px 0;
+}
+
+.ai-botkit-upgrade-notice {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    border: 2px solid #F59E0B;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.1);
+}
+
+.ai-botkit-upgrade-notice .description {
+    margin: 0;
+    color: #92400E;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.ai-botkit-upgrade-notice .description strong {
+    color: #78350F;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.ai-botkit-upgrade-completed {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    border: 2px solid #10B981;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+}
+
+.ai-botkit-upgrade-completed .description {
+    margin: 0;
+    color: #065F46;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.ai-botkit-upgrade-completed .description strong {
+    color: #047857;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
 }

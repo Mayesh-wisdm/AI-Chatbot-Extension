@@ -61,7 +61,7 @@ class Rate_Limiter {
             return new WP_Error(
                 'rate_limit_exceeded',
                 sprintf(
-                    __('Rate limit exceeded. Please wait %d seconds.', 'ai-botkit-for-lead-generation'),
+                    __('Rate limit exceeded. Please wait %d seconds.', 'knowvault'),
                     $wait_time
                 ),
                 array(

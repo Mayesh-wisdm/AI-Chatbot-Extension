@@ -3,6 +3,7 @@ namespace AI_BotKit\Integration;
 
 use AI_BotKit\Core\Document_Loader;
 use AI_BotKit\Core\RAG_Engine;
+use AI_BotKit\Utils\Table_Helper;
 
 /**
  * WordPress Content Integration
@@ -97,8 +98,9 @@ class WordPress_Content {
         global $wpdb;
 
         // Delete related content and embeddings
+        $table_name = Table_Helper::get_table_name('wp_content');
         $wpdb->delete(
-            $wpdb->prefix . 'ai_botkit_wp_content',
+            $table_name,
             ['post_id' => $post_id],
             ['%d']
         );
@@ -199,8 +201,9 @@ class WordPress_Content {
         }
 
         // Get queued items ordered by priority and creation time
+        $table_name = Table_Helper::get_table_name('wp_content');
         $items = $wpdb->get_results(
-            "SELECT * FROM {$wpdb->prefix}ai_botkit_wp_content
+            "SELECT * FROM {$table_name}
             WHERE status = 'pending'
             ORDER BY 
                 CASE priority 
@@ -353,8 +356,9 @@ class WordPress_Content {
         ];
 
         // Check if already exists
+        $table_name = Table_Helper::get_table_name('wp_content');
         $existing = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM {$wpdb->prefix}ai_botkit_wp_content
+            "SELECT id FROM {$table_name}
             WHERE post_id = %d AND post_type = %s",
             $content_id,
             $type
@@ -362,7 +366,7 @@ class WordPress_Content {
 
         if ($existing) {
             $wpdb->update(
-                $wpdb->prefix . 'ai_botkit_wp_content',
+                $table_name,
                 $data,
                 ['id' => $existing],
                 ['%s', '%s', '%s', '%s', '%s', '%s', '%s'],
@@ -370,7 +374,7 @@ class WordPress_Content {
             );
         } else {
             $wpdb->insert(
-                $wpdb->prefix . 'ai_botkit_wp_content',
+                $table_name,
                 $data,
                 ['%d', '%s', '%s', '%s', '%s', '%s', '%s']
             );
@@ -391,8 +395,9 @@ class WordPress_Content {
     private function update_content_status(int $content_id, string $status): void {
         global $wpdb;
 
+        $table_name = Table_Helper::get_table_name('wp_content');
         $wpdb->update(
-            $wpdb->prefix . 'ai_botkit_wp_content',
+            $table_name,
             [
                 'status' => $status,
                 'updated_at' => current_time('mysql'),
@@ -494,9 +499,10 @@ class WordPress_Content {
     public function get_stats(): array {
         global $wpdb;
 
+        $table_name = Table_Helper::get_table_name('wp_content');
         $stats = $wpdb->get_results(
             "SELECT status, COUNT(*) as count
-            FROM {$wpdb->prefix}ai_botkit_wp_content
+            FROM {$table_name}
             GROUP BY status",
             ARRAY_A
         );

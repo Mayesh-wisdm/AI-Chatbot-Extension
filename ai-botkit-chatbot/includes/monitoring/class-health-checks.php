@@ -111,13 +111,13 @@ class Health_Checks {
             
             return [
                 'status' => 'healthy',
-                'message' => __('API connection is working properly', 'ai-botkit-for-lead-generation')
+                'message' => __('API connection is working properly', 'knowvault')
             ];
         } catch (\Exception $e) {
             return [
                 'status' => 'critical',
                 'message' => sprintf(
-                    __('API connection error: %s', 'ai-botkit-for-lead-generation'),
+                    __('API connection error: %s', 'knowvault'),
                     $e->getMessage()
                 )
             ];
@@ -132,7 +132,7 @@ class Health_Checks {
 
         $status = [
             'status' => 'healthy',
-            'message' => __('Database is working properly', 'ai-botkit-for-lead-generation')
+            'message' => __('Database is working properly', 'knowvault')
         ];
 
         // Check required tables
@@ -147,7 +147,7 @@ class Health_Checks {
                 $status = [
                     'status' => 'critical',
                     'message' => sprintf(
-                        __('Required table %s is missing', 'ai-botkit-for-lead-generation'),
+                        __('Required table %s is missing', 'knowvault'),
                         $table
                     )
                 ];
@@ -168,20 +168,20 @@ class Health_Checks {
     //     if (!file_exists($ai_botkit_dir)) {
     //         return [
     //             'status' => 'warning',
-    //             'message' => __('Upload directory does not exist', 'ai-botkit-for-lead-generation')
+    //             'message' => __('Upload directory does not exist', 'knowvault')
     //         ];
     //     }
 
     //     if (!is_writable($ai_botkit_dir)) {
     //         return [
     //             'status' => 'critical',
-    //             'message' => __('Upload directory is not writable', 'ai-botkit-for-lead-generation')
+    //             'message' => __('Upload directory is not writable', 'knowvault')
     //         ];
     //     }
 
     //     return [
     //         'status' => 'healthy',
-    //         'message' => __('Filesystem is working properly', 'ai-botkit-for-lead-generation')
+    //         'message' => __('Filesystem is working properly', 'knowvault')
     //     ];
     // }
 
@@ -191,7 +191,7 @@ class Health_Checks {
     private function check_resource_availability(): array {
         $status = [
             'status' => 'healthy',
-            'message' => __('Resource usage is within limits', 'ai-botkit-for-lead-generation')
+            'message' => __('Resource usage is within limits', 'knowvault')
         ];
 
         // Check memory usage
@@ -202,12 +202,12 @@ class Health_Checks {
         if ($memory_percent > 90) {
             $status = [
                 'status' => 'critical',
-                'message' => __('Memory usage is critically high', 'ai-botkit-for-lead-generation')
+                'message' => __('Memory usage is critically high', 'knowvault')
             ];
         } elseif ($memory_percent > 75) {
             $status = [
                 'status' => 'warning',
-                'message' => __('Memory usage is high', 'ai-botkit-for-lead-generation')
+                'message' => __('Memory usage is high', 'knowvault')
             ];
         }
 
@@ -225,13 +225,13 @@ class Health_Checks {
         if ($total > 0 && $expired > ($total * 0.5)) {
             return [
                 'status' => 'warning',
-                'message' => __('High number of expired cache entries', 'ai-botkit-for-lead-generation')
+                'message' => __('High number of expired cache entries', 'knowvault')
             ];
         }
 
         return [
             'status' => 'healthy',
-            'message' => __('Cache system is working properly', 'ai-botkit-for-lead-generation')
+            'message' => __('Cache system is working properly', 'knowvault')
         ];
     }
 
@@ -253,7 +253,7 @@ class Health_Checks {
             return [
                 'status' => 'warning',
                 'message' => sprintf(
-                    __('%d items stuck in processing', 'ai-botkit-for-lead-generation'),
+                    __('%d items stuck in processing', 'knowvault'),
                     $stuck_items
                 )
             ];
@@ -261,7 +261,7 @@ class Health_Checks {
 
         return [
             'status' => 'healthy',
-            'message' => __('Processing queue is working properly', 'ai-botkit-for-lead-generation')
+            'message' => __('Processing queue is working properly', 'knowvault')
         ];
     }
 

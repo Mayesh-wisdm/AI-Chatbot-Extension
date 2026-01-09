@@ -348,7 +348,7 @@ jQuery(document).ready(function($) {
 
     links.forEach(link => {
         if (link.getAttribute('href') === path) {
-        link.style.backgroundColor = '#008858';
+        link.style.backgroundColor = '#1E3A8A';
         link.style.color = '#fff';
         }
     });
@@ -1048,7 +1048,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    const defaultColor = "#008858";
+    const defaultColor = "#1E3A8A";
     let selectedColor = defaultColor;
   
     // Set initial preview color
@@ -1837,38 +1837,15 @@ jQuery(document).ready(function($) {
         const engines = ai_botkitAdmin.engines;
         const apiKeyStatus = ai_botkitAdmin.api_key_status;
         
-        // Check if engine has API key
-        const hasApiKey = apiKeyStatus && apiKeyStatus[selectedEngine];
-        
-        if (!hasApiKey) {
-            // Show toast message for missing API key
-            AiBotkitToast.show(
-                'API key for ' + (engines[selectedEngine] ? engines[selectedEngine].name : selectedEngine) + ' not available. Please add the API key in settings or select a different engine.',
-                'warning',
-                { 
-                    duration: 8000,
-                    title: 'API Key Required'
-                }
-            );
-            
-            // Clear chat model dropdown
-            const $chatModelSelect = $('#ai_botkit_chat_model');
-            $chatModelSelect.empty();
-            $chatModelSelect.append('<option value="">Select a model</option>');
-            
-            // Clear embedding model dropdown
-            const $embeddingModelSelect = $('#ai_botkit_embedding_model');
-            $embeddingModelSelect.empty();
-            $embeddingModelSelect.append('<option value="">Select an embedding model</option>');
-            
-            return;
-        }
-        
-        // Show/hide API key fields
+        // Always switch fields first to allow API key entry
         $('.engine-settings').hide();
         $('.engine-' + selectedEngine).show();
         
-        // Update chat models if API key is available
+        // Check if engine has API key
+        const hasApiKey = apiKeyStatus && apiKeyStatus[selectedEngine];
+        const hasVoyageKey = apiKeyStatus && apiKeyStatus['voyageai'];
+        
+        // Always populate model dropdowns, regardless of API key status
         const $chatModelSelect = $('#ai_botkit_chat_model');
         $chatModelSelect.empty();
         
@@ -1879,9 +1856,16 @@ jQuery(document).ready(function($) {
                     text: name
                 }));
             });
+            
+            // Set safe defaults when switching engines
+            if (selectedEngine === 'anthropic' && !$chatModelSelect.val()) {
+                $chatModelSelect.val('claude-3-5-haiku-20241022');
+            } else if (selectedEngine === 'together' && !$chatModelSelect.val()) {
+                $chatModelSelect.val('meta-llama/Llama-3.3-70B-Instruct-Turbo');
+            }
         }
         
-        // Update embedding models if API key is available
+        // Update embedding models
         const $embeddingModelSelect = $('#ai_botkit_embedding_model');
         $embeddingModelSelect.empty();
         
@@ -1892,6 +1876,29 @@ jQuery(document).ready(function($) {
                     text: name
                 }));
             });
+            
+            // Set safe defaults for embeddings
+            if (selectedEngine === 'anthropic' && !$embeddingModelSelect.val()) {
+                $embeddingModelSelect.val('voyage-3-lite');
+            } else if (selectedEngine === 'together' && !$embeddingModelSelect.val()) {
+                $embeddingModelSelect.val('BAAI/bge-base-en-v1.5');
+            }
+        }
+        
+        if (selectedEngine === 'anthropic' && !hasVoyageKey) {
+            AiBotkitToast.show('Embeddings require a VoyageAI API key. Add it below.', 'warning', { title: 'VoyageAI Required', duration: 8000 });
+        }
+
+        if (!hasApiKey) {
+            // Show toast message for missing API key (but don't block field switching)
+            AiBotkitToast.show(
+                'API key for ' + (engines[selectedEngine] ? engines[selectedEngine].name : selectedEngine) + ' not available. Please add the API key below.',
+                'warning',
+                { 
+                    duration: 8000,
+                    title: 'API Key Required'
+                }
+            );
         }
     });
 
@@ -1901,19 +1908,19 @@ jQuery(document).ready(function($) {
         const $button = $(this);
         const $spinner = $(this).parent().parent().find('.spinner');
         const $status = $(this).parent().parent().find('.ai-botkit-api-test-result');
-        const provider = $('#ai_botkit_engine').val();
+        
+        // Check if this is a VoyageAI button
+        const isVoyageAI = $(this).data('provider') === 'voyageai';
+        const provider = isVoyageAI ? 'voyageai' : $('#ai_botkit_engine').val();
         const apiKey = $(`#ai_botkit_${provider}_api_key`).val();
 
         if (!apiKey) {
-            $status.removeClass('success').addClass('error')
-                .html(ai_botkitAdmin.i18n.noApiKey || 'API key is required');
+            AiBotkitToast.show((ai_botkitAdmin.i18n && ai_botkitAdmin.i18n.noApiKey) || 'API key is required', 'warning', { title: 'API Verification' });
             return;
         }
 
         $button.prop('disabled', true);
         $spinner.show();
-        $status.show();
-        $status.removeClass('success error').html(ai_botkitAdmin.i18n.processing || 'Testing...');
         $spinner.addClass('is-active');
         
         $.ajax({
@@ -1926,20 +1933,17 @@ jQuery(document).ready(function($) {
                 api_key: apiKey
             },
             beforeSend: function() {
-                $status.html(ai_botkitAdmin.i18n.processing);
+                AiBotkitToast.show((ai_botkitAdmin.i18n && ai_botkitAdmin.i18n.processing) || 'Testing...', 'info', { title: 'API Verification', duration: 2500 });
             },
             success: function(response) {
                 if (response.success) {
-                    $status.removeClass('error').addClass('success')
-                        .html(response.data.message);
+                    AiBotkitToast.show((response.data && response.data.message) || 'API connection successful.', 'success', { title: 'API Verified' });
                 } else {
-                    $status.removeClass('success').addClass('error')
-                        .html(response.data.message);
+                    AiBotkitToast.show((response.data && response.data.message) || 'API connection failed.', 'error', { title: 'API Verification' });
                 }
             },
             error: function() {
-                $status.removeClass('success').addClass('error')
-                    .html(ai_botkitAdmin.i18n.error);
+                AiBotkitToast.show((ai_botkitAdmin.i18n && ai_botkitAdmin.i18n.error) || 'An error occurred while testing.', 'error', { title: 'API Verification' });
             },
             complete: function() {
                 $button.prop('disabled', false);
@@ -3402,7 +3406,7 @@ jQuery(document).ready(function($) {
         const host = $('#ai_botkit_pinecone_host').val();
 
         if (!apiKey || !host) {
-            $result.html('<div class="ai-botkit-error">Please enter both API key and host before testing.</div>').show();
+            AiBotkitToast.show('Please enter both API key and host before testing.', 'warning', { title: 'Pinecone' });
             return;
         }
 
@@ -3421,13 +3425,13 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    $result.html('<div class="ai-botkit-success"><i class="ti ti-check"></i> ' + response.data.message + '</div>').show();
+                    AiBotkitToast.show((response.data && response.data.message) || 'Connection successful.', 'success', { title: 'Pinecone Connected' });
                 } else {
-                    $result.html('<div class="ai-botkit-error"><i class="ti ti-x"></i> ' + response.data.message + '</div>').show();
+                    AiBotkitToast.show((response.data && response.data.message) || 'Connection failed.', 'error', { title: 'Pinecone' });
                 }
             },
             error: function() {
-                $result.html('<div class="ai-botkit-error"><i class="ti ti-x"></i> Failed to test connection. Please try again.</div>').show();
+                AiBotkitToast.show('Failed to test connection. Please try again.', 'error', { title: 'Pinecone' });
             },
             complete: function() {
                 // Restore button state

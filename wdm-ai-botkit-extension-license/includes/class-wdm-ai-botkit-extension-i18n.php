@@ -35,7 +35,7 @@ class Wdm_Ai_Botkit_Extension_i18n {
 	public function load_plugin_textdomain() {
 
 		load_plugin_textdomain(
-			'wdm-ai-botkit-extension',
+			'wdm-knowvault-extension',
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);

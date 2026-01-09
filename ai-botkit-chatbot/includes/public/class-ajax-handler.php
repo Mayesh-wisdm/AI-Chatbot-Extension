@@ -89,7 +89,7 @@ class Ajax_Handler {
 
             // Check if IP is blocked
             if ($this->is_ip_blocked()) {
-                throw new \Exception(__('Access denied. Your IP address has been blocked.', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(__('Access denied. Your IP address has been blocked.', 'knowvault'));
             }
 
             // Get request data
@@ -98,7 +98,7 @@ class Ajax_Handler {
             $context = sanitize_text_field($_POST['context'] ?? '');
             $bot_id = sanitize_key($_POST['bot_id'] ?? '');
             if (empty($message)) {
-                throw new \Exception(__('Message cannot be empty', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(__('Message cannot be empty', 'knowvault'));
             }
 
             // Generate response
@@ -132,19 +132,19 @@ class Ajax_Handler {
 
             // Check if IP is blocked
             if ($this->is_ip_blocked()) {
-                throw new \Exception(__('Access denied. Your IP address has been blocked.', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(__('Access denied. Your IP address has been blocked.', 'knowvault'));
             }
 
             // Get response ID
             $response_id = sanitize_key($_POST['response_id'] ?? '');
             if (empty($response_id)) {
-                throw new \Exception(__('Invalid response ID', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(__('Invalid response ID', 'knowvault'));
             }
 
             // Get response data from transient
             $response_data = get_transient('ai_botkit_response_' . $response_id);
             if (!$response_data) {
-                throw new \Exception(__('Response not found or expired', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(__('Response not found or expired', 'knowvault'));
             }
 
             // Return response data
@@ -168,7 +168,7 @@ class Ajax_Handler {
             // Get conversation ID
             $conversation_id = sanitize_key($_POST['conversation_id'] ?? '');
             if (empty($conversation_id)) {
-                throw new \Exception(__('Invalid conversation ID', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(__('Invalid conversation ID', 'knowvault'));
             }
 
             // Get conversation history
@@ -193,7 +193,7 @@ class Ajax_Handler {
             // Get conversation ID
             $conversation_id = sanitize_key($_POST['conversation_id'] ?? '');
             if (empty($conversation_id)) {
-                throw new \Exception(__('Invalid conversation ID', 'ai-botkit-for-lead-generation'));
+                throw new \Exception(__('Invalid conversation ID', 'knowvault'));
             }
 
             // Clear conversation history
@@ -301,7 +301,7 @@ class Ajax_Handler {
      */
     private function verify_nonce(string $action): void {
         if (!check_ajax_referer($action, 'nonce', false)) {
-            throw new \Exception(esc_html__('Security check failed', 'ai-botkit-for-lead-generation'));
+            throw new \Exception(esc_html__('Security check failed', 'knowvault'));
         }
     }
 
@@ -319,7 +319,7 @@ class Ajax_Handler {
             $feedback = sanitize_text_field($_POST['feedback'] ?? '');
             if ( empty($chat_id) || empty($message) || empty($feedback) ) {
                 wp_send_json_error([
-                    'message' => __('Invalid request', 'ai-botkit-for-lead-generation'),
+                    'message' => __('Invalid request', 'knowvault'),
                     'code' => 'invalid_request'
                 ]);
             }
@@ -400,7 +400,7 @@ class Ajax_Handler {
         try {
             // Only allow logged-in users with manage_options capability
             if (!is_user_logged_in() || !current_user_can('manage_options')) {
-                throw new \Exception(__('Unauthorized access', 'ai-botkit-for-lead-generation'), 403);
+                throw new \Exception(__('Unauthorized access', 'knowvault'), 403);
             }
             
             $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : get_current_user_id();
