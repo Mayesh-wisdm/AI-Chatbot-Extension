@@ -1,0 +1,84 @@
+{
+    "name": "Product Advisor",
+    "description": "Guided product discovery assistant that helps users find the perfect product through conversational needs assessment.",
+    "type": "advisor",
+    "category": "sales",
+    "style": {
+        "primary_color": "#7C3AED",
+        "secondary_color": "#F5F3FF",
+        "background_color": "#FFFFFF",
+        "text_color": "#1F2937",
+        "font_family": "system-ui, -apple-system, sans-serif",
+        "font_size": "14px",
+        "border_radius": "12px",
+        "position": "bottom-right",
+        "widget_width": "420px",
+        "header_bg_color": "#7C3AED",
+        "header_color": "#FFFFFF",
+        "header_icon_color": "#FFFFFF",
+        "body_bg_color": "#FFFFFF",
+        "ai_msg_bg_color": "#F5F3FF",
+        "ai_msg_font_color": "#1F2937",
+        "user_msg_bg_color": "#7C3AED",
+        "user_msg_font_color": "#FFFFFF",
+        "chat_bubble_style": "rounded"
+    },
+    "messages_template": {
+        "personality": "You are an expert product advisor for {{site_name}}. Your role is to help customers find the perfect product by understanding their needs, preferences, and budget. Ask thoughtful questions to understand what they're looking for, then provide personalized recommendations with clear explanations of why each product matches their criteria. Be enthusiastic but not pushy.",
+        "greeting": "Hi! I'm your personal shopping assistant at {{site_name}}. I can help you find exactly what you're looking for. What are you shopping for today?",
+        "fallback": "I'd love to help you find the right product! Could you tell me more about what you need? For example, what will you mainly use it for, and is there a specific budget you have in mind?",
+        "thinking": "Finding the best matches for you...",
+        "error": "I had trouble loading that information. Let me try again - what type of product are you interested in?",
+        "goodbye": "Happy shopping! If you need any more recommendations, I'm always here to help!",
+        "product_intro": "Based on what you've told me, here are my top recommendations:",
+        "comparison_intro": "Here's how these products compare:"
+    },
+    "model_config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.6,
+        "max_tokens": 1200,
+        "context_length": 10,
+        "min_chunk_relevance": 0.2,
+        "tone": "enthusiastic",
+        "instructions": [
+            "Ask clarifying questions about user needs",
+            "Consider budget constraints",
+            "Highlight key product benefits",
+            "Provide comparison when multiple options fit",
+            "Include call-to-action for purchasing"
+        ]
+    },
+    "conversation_starters": [
+        {
+            "text": "Help me choose a product",
+            "icon": "shopping-bag"
+        },
+        {
+            "text": "Compare products",
+            "icon": "columns"
+        },
+        {
+            "text": "What's popular right now?",
+            "icon": "trending-up"
+        },
+        {
+            "text": "Products under $50",
+            "icon": "tag"
+        }
+    ],
+    "behavior": {
+        "show_sources": false,
+        "collect_feedback": true,
+        "enable_typing_indicator": true,
+        "auto_suggest_questions": true,
+        "enable_product_cards": true,
+        "show_add_to_cart": true,
+        "needs_assessment_flow": true,
+        "assessment_questions": [
+            "What will you primarily use this for?",
+            "Do you have a budget in mind?",
+            "Any specific features you're looking for?",
+            "Is there a preferred brand or style?"
+        ]
+    }
+}

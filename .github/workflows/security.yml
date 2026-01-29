@@ -1,0 +1,168 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Monday at midnight
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Composer security audit
+        run: |
+          cd ai-botkit-chatbot/includes
+          composer audit --format=json > ../../security-audit-composer.json || true
+          composer audit
+        continue-on-error: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: NPM security audit
+        if: hashFiles('package-lock.json') != ''
+        run: |
+          npm audit --json > security-audit-npm.json || true
+          npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-reports
+          path: |
+            security-audit-*.json
+
+  phpcs-security:
+    name: PHPCS Security Rules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install PHPCS Security Audit
+        run: |
+          composer global require squizlabs/php_codesniffer
+          composer global require pheromone/phpcs-security-audit
+
+      - name: Run security scan
+        run: |
+          ~/.composer/vendor/bin/phpcs \
+            --standard=~/.composer/vendor/pheromone/phpcs-security-audit/example_base_ruleset.xml \
+            --extensions=php \
+            --ignore=*/vendor/*,*/node_modules/* \
+            --report=json \
+            --report-file=phpcs-security-report.json \
+            ai-botkit-chatbot/ || true
+
+      - name: Display security issues
+        run: |
+          if [ -f phpcs-security-report.json ]; then
+            cat phpcs-security-report.json | jq '.totals'
+          fi
+        continue-on-error: true
+
+      - name: Upload PHPCS security report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpcs-security-report
+          path: phpcs-security-report.json
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, GPL-2.0, GPL-3.0
+
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+        continue-on-error: true
+
+  wordpress-security:
+    name: WordPress Security Best Practices
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for security issues
+        run: |
+          echo "Checking for common WordPress security issues..."
+
+          # Check for direct file access without ABSPATH check
+          echo "=== Files missing ABSPATH check ===" > security-issues.txt
+          grep -rL "defined.*ABSPATH\|defined.*WPINC" ai-botkit-chatbot/*.php >> security-issues.txt 2>/dev/null || true
+
+          # Check for potential SQL injection (direct $wpdb queries without prepare)
+          echo "" >> security-issues.txt
+          echo "=== Potential SQL injection points ===" >> security-issues.txt
+          grep -rn '\$wpdb->query\s*(' ai-botkit-chatbot/ --include="*.php" | grep -v 'prepare' >> security-issues.txt || true
+
+          # Check for unescaped output
+          echo "" >> security-issues.txt
+          echo "=== Potential XSS (unescaped echo) ===" >> security-issues.txt
+          grep -rn 'echo\s*\$' ai-botkit-chatbot/ --include="*.php" | grep -v 'esc_\|wp_kses\|sanitize_' | head -20 >> security-issues.txt || true
+
+          # Check for eval usage
+          echo "" >> security-issues.txt
+          echo "=== Eval usage (dangerous) ===" >> security-issues.txt
+          grep -rn 'eval\s*(' ai-botkit-chatbot/ --include="*.php" >> security-issues.txt || true
+
+          cat security-issues.txt
+
+      - name: Upload security issues
+        uses: actions/upload-artifact@v4
+        with:
+          name: wordpress-security-check
+          path: security-issues.txt

@@ -3,7 +3,7 @@
  * Plugin Name: KnowVault –  AI Chatbot for WordPress
  * Plugin URI: https://wisdmlabs.com/
  * Description: An advanced RAG-based chatbot plugin for WordPress with vector search capabilities.
- * Version: 1.1.0
+ * Version: 2.0.0
  * Author: WisdmLabs
  * Author URI: https://wisdmlabs.com/
  * License: GPL v2 or later
@@ -20,7 +20,7 @@ if (!defined('WPINC')) {
 }
 
 // Plugin version and constants
-define('AI_BOTKIT_VERSION', '1.1.0');
+define('AI_BOTKIT_VERSION', '2.0.0');
 define('AI_BOTKIT_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AI_BOTKIT_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AI_BOTKIT_INCLUDES_DIR', AI_BOTKIT_PLUGIN_DIR . 'includes/');

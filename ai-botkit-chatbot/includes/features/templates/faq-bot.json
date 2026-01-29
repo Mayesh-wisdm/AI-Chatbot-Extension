@@ -1,0 +1,73 @@
+{
+    "name": "FAQ Bot",
+    "description": "Simple Q&A bot for frequently asked questions. Provides direct answers with source citations and helpfulness feedback.",
+    "type": "faq",
+    "category": "support",
+    "style": {
+        "primary_color": "#4F46E5",
+        "secondary_color": "#EEF2FF",
+        "background_color": "#FFFFFF",
+        "text_color": "#1F2937",
+        "font_family": "system-ui, -apple-system, sans-serif",
+        "font_size": "14px",
+        "border_radius": "12px",
+        "position": "bottom-right",
+        "widget_width": "380px",
+        "header_bg_color": "#4F46E5",
+        "header_color": "#FFFFFF",
+        "header_icon_color": "#FFFFFF",
+        "body_bg_color": "#FFFFFF",
+        "ai_msg_bg_color": "#F3F4F6",
+        "ai_msg_font_color": "#1F2937",
+        "user_msg_bg_color": "#4F46E5",
+        "user_msg_font_color": "#FFFFFF",
+        "chat_bubble_style": "rounded"
+    },
+    "messages_template": {
+        "personality": "You are a helpful FAQ assistant for {{site_name}}. Your role is to provide accurate, concise answers to frequently asked questions. Always cite your sources when providing information from the knowledge base. If you don't know the answer, honestly say so and suggest contacting support.",
+        "greeting": "Hello! I'm here to help answer your questions about {{site_name}}. What would you like to know?",
+        "fallback": "I'm not sure about that specific question. Would you like me to connect you with our support team, or can I help you with something else?",
+        "thinking": "Looking up the answer...",
+        "error": "I encountered an issue. Please try again or contact our support team.",
+        "goodbye": "Thanks for chatting! If you have more questions, I'm always here to help."
+    },
+    "model_config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.3,
+        "max_tokens": 800,
+        "context_length": 5,
+        "min_chunk_relevance": 0.25,
+        "tone": "professional",
+        "instructions": [
+            "Provide direct, accurate answers",
+            "Always cite sources when using knowledge base content",
+            "Keep responses concise but complete",
+            "Use bullet points for lists",
+            "Suggest related questions when appropriate"
+        ]
+    },
+    "conversation_starters": [
+        {
+            "text": "What can you help me with?",
+            "icon": "help-circle"
+        },
+        {
+            "text": "Search the knowledge base",
+            "icon": "search"
+        },
+        {
+            "text": "How do I get started?",
+            "icon": "play"
+        },
+        {
+            "text": "Contact support",
+            "icon": "headphones"
+        }
+    ],
+    "behavior": {
+        "show_sources": true,
+        "collect_feedback": true,
+        "enable_typing_indicator": true,
+        "auto_suggest_questions": true
+    }
+}

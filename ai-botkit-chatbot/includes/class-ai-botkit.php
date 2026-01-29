@@ -160,6 +160,11 @@ class AI_BotKit {
         // Models
         require_once AI_BOTKIT_INCLUDES_DIR . 'models/class-chatbot.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'models/class-conversation.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'models/class-template.php';
+
+        // Features (Phase 2)
+        require_once AI_BOTKIT_INCLUDES_DIR . 'features/class-template-manager.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'features/class-template-ajax-handler.php';
 
         // No external dependencies - using lightweight PDF extraction
 

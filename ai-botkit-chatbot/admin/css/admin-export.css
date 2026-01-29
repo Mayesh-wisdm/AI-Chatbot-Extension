@@ -1,0 +1,238 @@
+/**
+ * Admin Export Styles
+ *
+ * Styles for the PDF export functionality in admin.
+ * Part of Phase 2: Chat Transcripts Export (FR-240 to FR-249).
+ *
+ * @package AI_BotKit
+ * @since   2.0.0
+ */
+
+/* Export Modal Overlay */
+.ai-botkit-export-modal-overlay,
+.ai-botkit-export-progress-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Export Modal */
+.ai-botkit-export-modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-botkit-export-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #f9f9f9;
+}
+
+.ai-botkit-export-modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.ai-botkit-export-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.ai-botkit-export-modal-close:hover {
+    color: #d63638;
+}
+
+.ai-botkit-export-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.ai-botkit-export-modal-body p {
+    margin: 0 0 15px;
+    color: #50575e;
+}
+
+.ai-botkit-export-options {
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.ai-botkit-export-options h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.ai-botkit-export-options label {
+    display: block;
+    margin-bottom: 10px;
+    color: #50575e;
+    cursor: pointer;
+}
+
+.ai-botkit-export-options label:last-child {
+    margin-bottom: 0;
+}
+
+.ai-botkit-export-options input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.ai-botkit-export-option-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.ai-botkit-export-option-row label {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.ai-botkit-export-option-row select {
+    min-width: 100px;
+}
+
+.ai-botkit-export-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    border-top: 1px solid #e5e5e5;
+    background: #f9f9f9;
+}
+
+/* Progress Modal */
+.ai-botkit-export-progress-modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.ai-botkit-export-progress-modal h3 {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.ai-botkit-export-progress-bar {
+    height: 20px;
+    background: #e5e5e5;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.ai-botkit-export-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2271b1, #135e96);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.ai-botkit-export-progress-text {
+    margin: 0 0 5px;
+    font-size: 14px;
+    color: #50575e;
+}
+
+.ai-botkit-export-progress-count {
+    margin: 0 0 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Export Buttons */
+.ai-botkit-export-single-pdf,
+.ai-botkit-bulk-export-pdf {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ai-botkit-export-single-pdf .dashicons,
+.ai-botkit-bulk-export-pdf .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Notice styling */
+.ai-botkit-notice {
+    margin: 15px 0;
+}
+
+/* Table row export button */
+.ai-botkit-conversation-actions .ai-botkit-export-single-pdf {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+/* Bulk actions */
+.ai-botkit-bulk-actions {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ai-botkit-bulk-actions .select-all-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #50575e;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    .ai-botkit-export-modal,
+    .ai-botkit-export-progress-modal {
+        width: 95%;
+    }
+
+    .ai-botkit-export-modal-footer {
+        flex-direction: column;
+    }
+
+    .ai-botkit-export-modal-footer .button {
+        width: 100%;
+        text-align: center;
+    }
+}

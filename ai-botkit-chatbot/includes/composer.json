@@ -6,7 +6,11 @@
         "guzzlehttp/guzzle": "^7.9",
         "phpfastcache/phpfastcache": "^9.2",
         "fivefilters/readability.php": ">=3.0",
-        "smalot/pdfparser": "*"
+        "smalot/pdfparser": "*",
+        "dompdf/dompdf": "^2.0"
+    },
+    "suggest": {
+        "dompdf/dompdf": "Required for PDF export functionality (FR-240 to FR-249)"
     },
     "authors": [
         {

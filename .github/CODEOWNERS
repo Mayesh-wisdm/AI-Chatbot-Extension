@@ -1,0 +1,33 @@
+# Code Owners for KnowVault AI Chatbot
+# These owners will be requested for review when someone opens a pull request.
+
+# Default owners for everything in the repo
+* @wisdmlabs
+
+# Core plugin files
+/ai-botkit-chatbot/includes/core/ @wisdmlabs
+/ai-botkit-chatbot/knowVault.php @wisdmlabs
+
+# Security-sensitive files
+/ai-botkit-chatbot/includes/admin/class-rate-limiter.php @wisdmlabs
+/ai-botkit-chatbot/includes/core/class-rate-limiter.php @wisdmlabs
+/ai-botkit-chatbot/includes/integration/class-user-authentication.php @wisdmlabs
+
+# Database and migrations
+/ai-botkit-chatbot/includes/core/class-database-*.php @wisdmlabs
+/ai-botkit-chatbot/includes/core/class-migration-*.php @wisdmlabs
+
+# API integrations
+/ai-botkit-chatbot/includes/core/class-llm-client.php @wisdmlabs
+/ai-botkit-chatbot/includes/core/class-pinecone-database.php @wisdmlabs
+/ai-botkit-chatbot/includes/core/class-embeddings-generator.php @wisdmlabs
+
+# Tests
+/tests/ @wisdmlabs
+
+# CI/CD configuration
+/.github/ @wisdmlabs
+
+# Documentation
+/docs/ @wisdmlabs
+*.md @wisdmlabs

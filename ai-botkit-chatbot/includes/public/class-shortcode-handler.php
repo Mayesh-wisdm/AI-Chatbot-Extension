@@ -171,20 +171,54 @@ class Shortcode_Handler {
             true
         );
 
-        // Localize script
-        wp_localize_script('ai-botkit-chat', 'ai_botkitChat', [
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('ai_botkit_chat'),
-            'chatId' => $chat_id,
-            'botID' => $chatbot_data['id'],
-            'color' => $styles['primary_color'],
-            'i18n' => [
-                'errorMessage' => __('An error occurred. Please try again.', 'knowvault'),
-                'networkError' => __('Network error. Please check your connection.', 'knowvault'),
-                'sendError' => __('Failed to send message. Please try again.', 'knowvault'),
-                'welcomeMessage' => $messages_template['greeting']
-            ]
-        ]);
+        // Localize script.
+        wp_localize_script(
+            'ai-botkit-chat',
+            'ai_botkitChat',
+            array(
+                'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+                'nonce'      => wp_create_nonce( 'ai_botkit_chat' ),
+                'chatId'     => $chat_id,
+                'botID'      => $chatbot_data['id'],
+                'color'      => $styles['primary_color'],
+                'isLoggedIn' => is_user_logged_in(),
+                'i18n'       => array(
+                    'errorMessage'   => __( 'An error occurred. Please try again.', 'knowvault' ),
+                    'networkError'   => __( 'Network error. Please check your connection.', 'knowvault' ),
+                    'sendError'      => __( 'Failed to send message. Please try again.', 'knowvault' ),
+                    'welcomeMessage' => $messages_template['greeting'],
+                    // Phase 2: Chat History i18n strings.
+                    'messages'       => __( 'messages', 'knowvault' ),
+                    'toggleFavorite' => __( 'Toggle favorite', 'knowvault' ),
+                    'archive'        => __( 'Archive', 'knowvault' ),
+                    'delete'         => __( 'Delete', 'knowvault' ),
+                    'deleteTitle'    => __( 'Delete Conversation?', 'knowvault' ),
+                    'deleteConfirm'  => __( 'Are you sure you want to delete this conversation? This action cannot be undone.', 'knowvault' ),
+                    'deleteButton'   => __( 'Yes, delete it!', 'knowvault' ),
+                    'cancelButton'   => __( 'Cancel', 'knowvault' ),
+                    'loadError'      => __( 'Failed to load conversations.', 'knowvault' ),
+                    'switchError'    => __( 'Failed to load conversation.', 'knowvault' ),
+                    'filterError'    => __( 'Failed to filter conversations.', 'knowvault' ),
+                    'errorTitle'     => __( 'Error', 'knowvault' ),
+                    'historyTitle'   => __( 'Chat History', 'knowvault' ),
+                    'noHistory'      => __( 'No conversations yet', 'knowvault' ),
+                    'noHistoryDesc'  => __( 'Start a conversation and it will appear here.', 'knowvault' ),
+                    'loadMore'       => __( 'Load more', 'knowvault' ),
+                    'today'          => __( 'Today', 'knowvault' ),
+                    'thisWeek'       => __( 'This week', 'knowvault' ),
+                    'favorites'      => __( 'Favorites', 'knowvault' ),
+                    'newChat'        => __( 'New conversation', 'knowvault' ),
+                ),
+            )
+        );
+
+        // Phase 2: Enqueue chat history assets for logged-in users.
+        if ( is_user_logged_in() ) {
+            $this->enqueue_chat_history_assets();
+        }
+
+        // Phase 2: Enqueue rich media assets (FR-220 to FR-229).
+        $this->enqueue_media_assets();
 
         // Add SweetAlert configuration
         wp_add_inline_script('sweetalert2', '
@@ -341,19 +375,105 @@ class Shortcode_Handler {
     }
 
     /**
-     * Render sitewide chatbot
+     * Render sitewide chatbot.
+     *
+     * @since 1.0.0
      */
     public function render_sitewide_chatbot(): void {
-        $site_wide_chatbot_id = get_option('ai_botkit_chatbot_sitewide_enabled');
-        // check if there is already a widget on the page
+        $site_wide_chatbot_id = get_option( 'ai_botkit_chatbot_sitewide_enabled' );
+        // Check if there is already a widget on the page.
         global $post;
 
-        if ( isset($post->post_content) && has_shortcode($post->post_content, 'ai_botkit_widget') ) {
+        if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'ai_botkit_widget' ) ) {
             return;
         }
-        if ( is_numeric($site_wide_chatbot_id) && $site_wide_chatbot_id > 0 ) {
-            echo do_shortcode('[ai_botkit_widget id="' . $site_wide_chatbot_id . '"]');
+        if ( is_numeric( $site_wide_chatbot_id ) && $site_wide_chatbot_id > 0 ) {
+            echo do_shortcode( '[ai_botkit_widget id="' . $site_wide_chatbot_id . '"]' );
         }
     }
-    
+
+    /**
+     * Enqueue chat history assets.
+     *
+     * Phase 2: Chat History Feature (FR-201 to FR-209)
+     * Only loaded for logged-in users.
+     *
+     * @since 2.0.0
+     */
+    private function enqueue_chat_history_assets(): void {
+        // Enqueue chat history CSS.
+        wp_enqueue_style(
+            'ai-botkit-chat-history',
+            AI_BOTKIT_PLUGIN_URL . 'public/css/chat-history.css',
+            array( 'ai-botkit-chat' ),
+            AI_BOTKIT_VERSION
+        );
+
+        // Enqueue chat history JavaScript.
+        wp_enqueue_script(
+            'ai-botkit-chat-history',
+            AI_BOTKIT_PLUGIN_URL . 'public/js/chat-history.js',
+            array( 'jquery', 'ai-botkit-chat', 'sweetalert2' ),
+            AI_BOTKIT_VERSION,
+            true
+        );
+    }
+
+    /**
+     * Enqueue rich media assets.
+     *
+     * Phase 2: Rich Media Support (FR-220 to FR-229)
+     * Handles images, videos, files, and link previews.
+     *
+     * @since 2.0.0
+     */
+    private function enqueue_media_assets(): void {
+        // Enqueue chat media CSS.
+        wp_enqueue_style(
+            'ai-botkit-chat-media',
+            AI_BOTKIT_PLUGIN_URL . 'public/css/chat-media.css',
+            array( 'ai-botkit-chat' ),
+            AI_BOTKIT_VERSION
+        );
+
+        // Enqueue chat media JavaScript.
+        wp_enqueue_script(
+            'ai-botkit-chat-media',
+            AI_BOTKIT_PLUGIN_URL . 'public/js/chat-media.js',
+            array( 'jquery', 'ai-botkit-chat' ),
+            AI_BOTKIT_VERSION,
+            true
+        );
+
+        // Get max file size from options.
+        $max_file_size = get_option( 'ai_botkit_max_media_size', 10485760 ); // 10MB default
+
+        // Localize script with media settings.
+        wp_localize_script(
+            'ai-botkit-chat-media',
+            'aiBotKitSettings',
+            array(
+                'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+                'nonce'        => wp_create_nonce( 'ai_botkit_chat' ),
+                'maxMediaSize' => $max_file_size,
+                'i18n'         => array(
+                    'uploadError'        => __( 'Failed to upload file.', 'knowvault' ),
+                    'fileTooLarge'       => __( 'File is too large. Maximum size is %s.', 'knowvault' ),
+                    'invalidFileType'    => __( 'File type not allowed.', 'knowvault' ),
+                    'networkError'       => __( 'Network error. Please try again.', 'knowvault' ),
+                    'dropToUpload'       => __( 'Drop file to upload', 'knowvault' ),
+                    'uploading'          => __( 'Uploading...', 'knowvault' ),
+                    'uploadComplete'     => __( 'Upload complete', 'knowvault' ),
+                    'clickToExpand'      => __( 'Click to expand', 'knowvault' ),
+                    'download'           => __( 'Download', 'knowvault' ),
+                    'close'              => __( 'Close', 'knowvault' ),
+                    'previous'           => __( 'Previous', 'knowvault' ),
+                    'next'               => __( 'Next', 'knowvault' ),
+                    'swipeToNavigate'    => __( 'Swipe to navigate', 'knowvault' ),
+                    'loadingPreview'     => __( 'Loading preview...', 'knowvault' ),
+                    'previewUnavailable' => __( 'Preview unavailable', 'knowvault' ),
+                ),
+            )
+        );
+    }
 } 

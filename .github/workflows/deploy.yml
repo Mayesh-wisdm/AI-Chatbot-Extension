@@ -1,0 +1,189 @@
+name: Build and Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., 2.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build Release Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Install PHP dependencies (production)
+        run: |
+          cd ai-botkit-chatbot/includes
+          composer install --no-dev --optimize-autoloader --prefer-dist
+
+      - name: Install and build frontend assets
+        run: |
+          if [ -f "ai-botkit-chatbot/package.json" ]; then
+            cd ai-botkit-chatbot
+            npm ci
+            npm run build --if-present
+          fi
+        continue-on-error: true
+
+      - name: Create distribution package
+        run: |
+          # Create dist directory
+          mkdir -p dist
+
+          # Copy plugin files
+          rsync -av \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='tests' \
+            --exclude='*.log' \
+            --exclude='.DS_Store' \
+            --exclude='Thumbs.db' \
+            --exclude='phpunit.xml' \
+            --exclude='phpcs.xml' \
+            --exclude='composer.lock' \
+            --exclude='package-lock.json' \
+            --exclude='.env*' \
+            ai-botkit-chatbot/ dist/knowvault/
+
+          # Create ZIP archive
+          cd dist
+          zip -r knowvault-${{ steps.version.outputs.version }}.zip knowvault/
+
+          # Create checksums
+          sha256sum knowvault-${{ steps.version.outputs.version }}.zip > knowvault-${{ steps.version.outputs.version }}.zip.sha256
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: knowvault-${{ steps.version.outputs.version }}
+          path: |
+            dist/knowvault-${{ steps.version.outputs.version }}.zip
+            dist/knowvault-${{ steps.version.outputs.version }}.zip.sha256
+
+      - name: Upload release assets
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/knowvault-${{ steps.version.outputs.version }}.zip
+            dist/knowvault-${{ steps.version.outputs.version }}.zip.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == true
+    environment: staging
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: knowvault-${{ needs.build.outputs.version }}
+
+      - name: Deploy to staging server
+        run: |
+          echo "Deploying to staging environment..."
+          echo "This step would deploy to your staging server"
+          # Example: scp, rsync, or API call to staging server
+          # scp knowvault-*.zip user@staging-server:/path/to/plugins/
+        continue-on-error: true
+
+  deploy-production:
+    name: Deploy to Production
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false
+    environment: production
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: knowvault-${{ needs.build.outputs.version }}
+
+      - name: Verify checksum
+        run: |
+          sha256sum -c knowvault-*.zip.sha256
+
+      - name: Deploy notification
+        run: |
+          echo "Production deployment initiated for version ${{ needs.build.outputs.version }}"
+          echo "Manual deployment steps:"
+          echo "1. Download the release ZIP from GitHub releases"
+          echo "2. Upload to production WordPress sites"
+          echo "3. Verify plugin activation"
+          echo "4. Run post-deployment verification"
+
+  # WordPress.org deployment (uncomment when ready for public release)
+  # deploy-wporg:
+  #   name: Deploy to WordPress.org
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.event.release.prerelease == false
+  #   environment: wordpress-org
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Deploy to WordPress.org
+  #       uses: 10up/action-wordpress-plugin-deploy@stable
+  #       env:
+  #         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+  #         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+  #         SLUG: knowvault
+
+  notify:
+    name: Send Notifications
+    needs: [build, deploy-production]
+    runs-on: ubuntu-latest
+    if: always() && github.event_name == 'release'
+
+    steps:
+      - name: Send deployment notification
+        run: |
+          if [ "${{ needs.deploy-production.result }}" = "success" ]; then
+            echo "Deployment successful! Version: ${{ github.ref_name }}"
+          else
+            echo "Deployment requires attention. Check workflow logs."
+          fi
+
+          # Add webhook notification here if needed
+          # curl -X POST -H "Content-Type: application/json" \
+          #   -d '{"text":"KnowVault ${{ github.ref_name }} deployed"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}

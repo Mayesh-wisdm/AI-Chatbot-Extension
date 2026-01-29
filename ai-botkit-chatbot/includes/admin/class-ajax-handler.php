@@ -83,6 +83,13 @@ class Ajax_Handler {
 
         // Settings validation endpoints
         add_action('wp_ajax_ai_botkit_test_pinecone_connection', array($this, 'handle_test_pinecone_connection'));
+
+        // =========================================================
+        // Phase 2: Chat Transcripts Export endpoints (FR-240 to FR-249)
+        // =========================================================
+        add_action('wp_ajax_ai_botkit_export_pdf', array($this, 'handle_export_pdf'));
+        add_action('wp_ajax_ai_botkit_batch_export', array($this, 'handle_batch_export'));
+        add_action('wp_ajax_ai_botkit_export_status', array($this, 'handle_export_status'));
     }
 
     /**
@@ -2056,8 +2063,213 @@ class Ajax_Handler {
             // Restore original values on error
             update_option('ai_botkit_pinecone_api_key', $original_api_key);
             update_option('ai_botkit_pinecone_host', $original_host);
-            
+
             wp_send_json_error(['message' => esc_html__('Failed to test connection: ', 'knowvault') . $e->getMessage()]);
+        }
+    }
+
+    // =========================================================
+    // Phase 2: Chat Transcripts Export Handlers (FR-240 to FR-249)
+    // =========================================================
+
+    /**
+     * Handle admin export of any conversation to PDF.
+     *
+     * Admin can export any conversation regardless of ownership.
+     *
+     * Implements: FR-240 (Admin Export), FR-241 (PDF Generation)
+     *
+     * @since 2.0.0
+     */
+    public function handle_export_pdf() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
+        }
+
+        $conversation_id = isset($_POST['conversation_id']) ? absint($_POST['conversation_id']) : 0;
+
+        if (empty($conversation_id)) {
+            wp_send_json_error(['message' => esc_html__('Conversation ID is required.', 'knowvault')]);
+        }
+
+        try {
+            // Initialize export handler.
+            require_once dirname(__FILE__, 2) . '/features/class-export-handler.php';
+
+            if (!class_exists('AI_BotKit\Features\Export_Handler')) {
+                wp_send_json_error(['message' => esc_html__('Export handler not available.', 'knowvault')]);
+            }
+
+            $export_handler = new \AI_BotKit\Features\Export_Handler();
+
+            // Check if dompdf is available.
+            if (!$export_handler->is_dompdf_available()) {
+                wp_send_json_error([
+                    'message' => esc_html__('PDF export requires the dompdf library. Please run "composer require dompdf/dompdf" in the plugin includes directory.', 'knowvault'),
+                    'dompdf_missing' => true
+                ]);
+            }
+
+            // Get export options.
+            $options = array(
+                'include_metadata' => isset($_POST['include_metadata']) ? (bool) $_POST['include_metadata'] : true,
+                'include_branding' => isset($_POST['include_branding']) ? (bool) $_POST['include_branding'] : true,
+                'paper_size'       => isset($_POST['paper_size']) && in_array($_POST['paper_size'], array('a4', 'letter'), true)
+                    ? sanitize_text_field($_POST['paper_size'])
+                    : 'a4',
+            );
+
+            // Stream PDF to browser.
+            $export_handler->stream_pdf($conversation_id, $options);
+
+            // Note: stream_pdf exits after sending file.
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle batch export of multiple conversations.
+     *
+     * Implements: FR-246 (Batch Export)
+     *
+     * @since 2.0.0
+     */
+    public function handle_batch_export() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
+        }
+
+        $conversation_ids = isset($_POST['conversation_ids']) ? array_map('absint', (array) $_POST['conversation_ids']) : array();
+
+        if (empty($conversation_ids)) {
+            wp_send_json_error(['message' => esc_html__('No conversations selected for export.', 'knowvault')]);
+        }
+
+        try {
+            // Initialize export handler.
+            require_once dirname(__FILE__, 2) . '/features/class-export-handler.php';
+
+            if (!class_exists('AI_BotKit\Features\Export_Handler')) {
+                wp_send_json_error(['message' => esc_html__('Export handler not available.', 'knowvault')]);
+            }
+
+            $export_handler = new \AI_BotKit\Features\Export_Handler();
+
+            // Check if dompdf is available.
+            if (!$export_handler->is_dompdf_available()) {
+                wp_send_json_error([
+                    'message' => esc_html__('PDF export requires the dompdf library. Please run "composer require dompdf/dompdf" in the plugin includes directory.', 'knowvault'),
+                    'dompdf_missing' => true
+                ]);
+            }
+
+            // Get export options.
+            $options = array(
+                'include_metadata' => isset($_POST['include_metadata']) ? (bool) $_POST['include_metadata'] : true,
+                'include_branding' => isset($_POST['include_branding']) ? (bool) $_POST['include_branding'] : true,
+                'paper_size'       => isset($_POST['paper_size']) && in_array($_POST['paper_size'], array('a4', 'letter'), true)
+                    ? sanitize_text_field($_POST['paper_size'])
+                    : 'a4',
+            );
+
+            // For small batches (5 or less), process synchronously.
+            if (count($conversation_ids) <= 5) {
+                $batch_id = $export_handler->schedule_export($conversation_ids, $options);
+                $result = $export_handler->process_batch_export($batch_id);
+
+                if (is_wp_error($result)) {
+                    wp_send_json_error(['message' => $result->get_error_message()]);
+                }
+
+                // Get upload URL for the ZIP file.
+                $upload_dir = wp_upload_dir();
+                $download_url = str_replace($upload_dir['basedir'], $upload_dir['baseurl'], $result);
+
+                wp_send_json_success([
+                    'message' => sprintf(
+                        /* translators: %d: number of conversations exported */
+                        esc_html__('%d conversation(s) exported successfully.', 'knowvault'),
+                        count($conversation_ids)
+                    ),
+                    'download_url' => $download_url,
+                    'batch_id' => $batch_id,
+                    'status' => 'completed'
+                ]);
+            } else {
+                // For larger batches, schedule async processing.
+                $batch_id = $export_handler->schedule_export($conversation_ids, $options);
+
+                // Schedule background processing.
+                add_action('ai_botkit_process_batch_export', function($batch_id) use ($export_handler) {
+                    $export_handler->process_batch_export($batch_id);
+                });
+
+                // Trigger via WP-Cron or immediately if possible.
+                if (!wp_next_scheduled('ai_botkit_process_batch_export', array($batch_id))) {
+                    wp_schedule_single_event(time(), 'ai_botkit_process_batch_export', array($batch_id));
+                }
+
+                wp_send_json_success([
+                    'message' => sprintf(
+                        /* translators: %d: number of conversations */
+                        esc_html__('Batch export of %d conversations has been scheduled. You will be notified when it is ready.', 'knowvault'),
+                        count($conversation_ids)
+                    ),
+                    'batch_id' => $batch_id,
+                    'status' => 'processing'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle checking batch export status.
+     *
+     * Implements: FR-245 (Export Progress Indicator)
+     *
+     * @since 2.0.0
+     */
+    public function handle_export_status() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
+        }
+
+        $batch_id = isset($_POST['batch_id']) ? sanitize_text_field($_POST['batch_id']) : '';
+
+        if (empty($batch_id)) {
+            wp_send_json_error(['message' => esc_html__('Batch ID is required.', 'knowvault')]);
+        }
+
+        try {
+            // Initialize export handler.
+            require_once dirname(__FILE__, 2) . '/features/class-export-handler.php';
+
+            if (!class_exists('AI_BotKit\Features\Export_Handler')) {
+                wp_send_json_error(['message' => esc_html__('Export handler not available.', 'knowvault')]);
+            }
+
+            $export_handler = new \AI_BotKit\Features\Export_Handler();
+            $status = $export_handler->get_export_status($batch_id);
+
+            if (is_wp_error($status)) {
+                wp_send_json_error(['message' => $status->get_error_message()]);
+            }
+
+            wp_send_json_success($status);
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
         }
     }
 } 
