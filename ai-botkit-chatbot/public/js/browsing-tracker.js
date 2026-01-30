@@ -46,13 +46,10 @@
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
                 try {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response.success) {
-                        // Successfully tracked
-                        console.debug('AI BotKit: Tracked ' + tracker.itemType + ' view for ID ' + tracker.itemId);
-                    }
+                    // Response parsed successfully, tracking complete
+                    JSON.parse(xhr.responseText);
                 } catch (e) {
-                    // Silently fail
+                    // Silently fail on parse error
                 }
             }
         };

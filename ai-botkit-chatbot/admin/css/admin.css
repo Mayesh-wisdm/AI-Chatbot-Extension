@@ -1,8 +1,82 @@
-/* Manin Layout */
+/* ==========================================================================
+   AI BotKit Admin CSS Variables
+   ========================================================================== */
+:root {
+  /* Primary Colors */
+  --ai-botkit-primary: #1E3A8A;
+  --ai-botkit-primary-hover: #1E40AF;
+  --ai-botkit-primary-light: #3B82F6;
+
+  /* Status Colors */
+  --ai-botkit-success: #10B981;
+  --ai-botkit-success-bg: #D1FAE5;
+  --ai-botkit-warning: #F59E0B;
+  --ai-botkit-warning-bg: #FEF3C7;
+  --ai-botkit-danger: #EF4444;
+  --ai-botkit-danger-bg: #FEE2E2;
+  --ai-botkit-info: #3B82F6;
+  --ai-botkit-info-bg: #DBEAFE;
+
+  /* Neutral Colors */
+  --ai-botkit-gray-50: #F9FAFB;
+  --ai-botkit-gray-100: #F3F4F6;
+  --ai-botkit-gray-200: #E5E7EB;
+  --ai-botkit-gray-300: #D1D5DB;
+  --ai-botkit-gray-400: #9CA3AF;
+  --ai-botkit-gray-500: #6B7280;
+  --ai-botkit-gray-600: #4B5563;
+  --ai-botkit-gray-700: #374151;
+  --ai-botkit-gray-800: #1F2937;
+  --ai-botkit-gray-900: #111827;
+
+  /* Background Colors */
+  --ai-botkit-bg-primary: #FFFFFF;
+  --ai-botkit-bg-secondary: #F5F9FB;
+  --ai-botkit-bg-tertiary: #F9FAFB;
+
+  /* Border Colors */
+  --ai-botkit-border: #E5E7EB;
+  --ai-botkit-border-light: #F3F4F6;
+
+  /* Typography */
+  --ai-botkit-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --ai-botkit-font-size-xs: 0.75rem;
+  --ai-botkit-font-size-sm: 0.875rem;
+  --ai-botkit-font-size-base: 1rem;
+  --ai-botkit-font-size-lg: 1.125rem;
+  --ai-botkit-font-size-xl: 1.25rem;
+
+  /* Spacing */
+  --ai-botkit-spacing-xs: 0.25rem;
+  --ai-botkit-spacing-sm: 0.5rem;
+  --ai-botkit-spacing-md: 1rem;
+  --ai-botkit-spacing-lg: 1.5rem;
+  --ai-botkit-spacing-xl: 2rem;
+
+  /* Border Radius */
+  --ai-botkit-radius-sm: 0.25rem;
+  --ai-botkit-radius-md: 0.375rem;
+  --ai-botkit-radius-lg: 0.5rem;
+  --ai-botkit-radius-xl: 0.75rem;
+  --ai-botkit-radius-full: 9999px;
+
+  /* Shadows */
+  --ai-botkit-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --ai-botkit-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --ai-botkit-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --ai-botkit-transition-fast: 150ms ease;
+  --ai-botkit-transition-normal: 300ms ease;
+}
+
+/* ==========================================================================
+   Main Layout
+   ========================================================================== */
   .ai-botkit-sidebar-wrapper {
     min-width: 250px;
     background-color: #ffffff;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid var(--ai-botkit-border);
     overflow-y: auto;
     transition: transform 0.3s ease;
   }
@@ -100,7 +174,7 @@
   }
   
   .ai-botkit-button {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
     color: white;
     border: none;
     padding: 0.5rem;
@@ -111,7 +185,7 @@
   }
   
   .ai-botkit-button:hover {
-    background-color: #1E40AF;
+    background-color: var(--ai-botkit-primary-hover);
   }
   
   .ai-botkit-sidebar-nav {
@@ -140,13 +214,13 @@
 
   .ai-botkit-sidebar-link.active {
     background-color: #E6F2FF;
-    color: #1E3A8A;
+    color: var(--ai-botkit-primary);
   }
   .ai-botkit-sidebar-link.active i{
-    color: #1E3A8A;
+    color: var(--ai-botkit-primary);
   }
   .ai-botkit-sidebar-link.active svg{
-    fill: #1E3A8A;
+    fill: var(--ai-botkit-primary);
   }
   .ai-botkit-sidebar-link:focus{
     box-shadow: none;
@@ -174,7 +248,7 @@
     height: 2rem;
     width: 2rem;
     background-color: #e5e7eb;
-    color: #374151;
+    color: var(--ai-botkit-gray-700);
     font-weight: 600;
     font-size: 0.8rem;
     border-radius: 50%;
@@ -205,7 +279,7 @@
   
   .ai-botkit-user-plan {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
   }
 
   /* Welcome screen */
@@ -231,7 +305,7 @@
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
-    color: #1E3A8A; /* primary */
+    color: var(--ai-botkit-primary); /* primary */
   }
   
   .ai-botkit-welcome-title {
@@ -242,7 +316,7 @@
   
   .ai-botkit-welcome-subtext {
     font-size: 1.125rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin-bottom: 2rem;
     max-width: 520px;
     margin-left: auto;
@@ -259,7 +333,7 @@
   .ai-botkit-feature-card {
     flex-grow: 1;
     background-color: #fff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     border-radius: 0.5rem;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.03);
@@ -300,11 +374,11 @@
   
   .ai-botkit-feature-desc {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
   }
   
   .ai-botkit-button-lg {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
     color: white;
     font-size: 1rem;
     padding: 0.75rem 1.5rem;
@@ -316,19 +390,19 @@
   }
   
   .ai-botkit-button-lg:hover {
-    background-color: #1E40AF;
+    background-color: var(--ai-botkit-primary-hover);
     color: white;
   }
   
   .ai-botkit-login-note {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin-top: 1rem;
     text-align: center;
   }
   
   .ai-botkit-link {
-    color: #1E3A8A;
+    color: var(--ai-botkit-primary);
     text-decoration: none;
     margin-left: 0.25rem;
   }
@@ -376,7 +450,7 @@
   .ai-botkit-chatbot-hide-preview{
     cursor: pointer;
     margin: 0;
-    color: #1E3A8A;
+    color: var(--ai-botkit-primary);
     font-size: 0.875rem;
     font-weight: 500;
     display: flex;
@@ -385,7 +459,7 @@
   }
   
   .ai-botkit-create-btn {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -399,7 +473,7 @@
   }
   
   .ai-botkit-create-btn:hover {
-    background-color: #1E40AF;
+    background-color: var(--ai-botkit-primary-hover);
   }
 
   .ai-botkit-chatbot-grid {
@@ -415,7 +489,7 @@
   }
   
   .ai-botkit-empty-text {
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin-bottom: 1rem;
     font-size: 1rem;
   }
@@ -454,7 +528,7 @@
   
   .ai-botkit-page-info {
     font-size: 0.875rem;
-    color: #374151;
+    color: var(--ai-botkit-gray-700);
   }
   
   /* CTA button */
@@ -464,7 +538,7 @@
 
   /* Chatbot card */
   .ai-botkit-chatbot-card {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     border-radius: 0.5rem;
     padding: 1.5rem;
     box-shadow: 0 1px 4px rgba(0,0,0,0.03);
@@ -520,7 +594,7 @@
   
   .ai-botkit-chatbot-desc {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin-bottom: 0.5rem;
     margin: 0;
   }
@@ -565,7 +639,7 @@
   }
 
   .ai-botkit-badge-sitewide{
-    color: #1E3A8A;
+    color: var(--ai-botkit-primary);
     background-color: #1E3A8A1A;
   }
   #ai-botkit-chatbot-wizard-sitewide{
@@ -603,13 +677,13 @@
   
   .ai-botkit-info-icon {
     font-size: 1rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
   }
   
   .ai-botkit-info-label {
     font-size: 0.875rem;
     line-height: 1.25rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin: 0;
   }
   
@@ -628,7 +702,7 @@
   }
   
   .ai-botkit-btn-view-chat {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -640,7 +714,7 @@
   }
 
   .ai-botkit-btn-view-chat:hover {
-    background-color: #1E40AF;
+    background-color: var(--ai-botkit-primary-hover);
     color: white;
   }
   
@@ -657,7 +731,7 @@
   }
 
   .ai-botkit-btn-outline:hover {
-    background-color: #1E40AF;
+    background-color: var(--ai-botkit-primary-hover);
     color: white;
   }
   .ai-botkit-btn-outline:focus {
@@ -732,7 +806,7 @@
   
   .ai-botkit-progress-fill {
     height: 100%;
-    background: #1E3A8A;
+    background: var(--ai-botkit-primary);
     width: 0%;
     transition: width 0.4s ease;
   }
@@ -763,7 +837,7 @@
   .ai-botkit-kb-content-scroll{
     max-height: 375px;
     overflow-y: auto;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     border-radius: 0.5rem;
   }
   .ai-botkit-kb-footer{
@@ -773,7 +847,7 @@
     gap: 1rem;
   }
   .ai-botkit-tab.active {
-    background: #1E3A8A;
+    background: var(--ai-botkit-primary);
     color: #fff;
   }
   
@@ -786,7 +860,7 @@
   
   .ai-botkit-card {
     background: #fff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     border-radius: 0.5rem;
     padding: 1.5rem;
     overflow: hidden;
@@ -801,7 +875,7 @@
   }
   
   .ai-botkit-btn-primary {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
     color: white;
     border: 1px solid #1E3A8A;
     padding: 0.5rem 0.75rem; /* Averaged padding */
@@ -816,7 +890,7 @@
   }
   
   .ai-botkit-btn-primary:hover {
-    background-color: #1E40AF;
+    background-color: var(--ai-botkit-primary-hover);
     color: white; /* Added for consistency */
   }
   
@@ -842,7 +916,7 @@
   
   .ai-botkit-step-subtext {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin: 0;
   }
   
@@ -861,11 +935,17 @@
   .ai-botkit-label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #374151;
+    color: var(--ai-botkit-gray-700);
     display: block;
     margin-bottom: 0.25rem;
   }
-  
+
+  .ai-botkit-optional-label {
+    font-weight: 400;
+    color: var(--ai-botkit-gray-500);
+    font-size: 0.8rem;
+  }
+
   .ai-botkit-input {
     padding: 0.5rem 0.75rem;
     border: 1px solid #d1d5db;
@@ -875,7 +955,7 @@
   
   .ai-botkit-help-text {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin: 0;
   }
   
@@ -1032,7 +1112,7 @@
   }
 
   .ai-botkit-btn-sm:hover {
-    background-color: #1E40AF;
+    background-color: var(--ai-botkit-primary-hover);
     color: white;
   }
   
@@ -1097,7 +1177,7 @@
   .ai-botkit-wp-types label {
     padding: 12px;
     background-color: #fff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     border-radius: 10px;
   }
   
@@ -1173,7 +1253,7 @@
   }
   
   .ai-botkit-switch input:checked + .ai-botkit-slider {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
   }
   
   .ai-botkit-switch input:checked + .ai-botkit-slider:before {
@@ -1199,7 +1279,7 @@
   }
   
   .ai-botkit-model-option:hover {
-    border-color: #1E3A8A;
+    border-color: var(--ai-botkit-primary);
     background-color: #f5f7ff;
   }
   
@@ -1226,7 +1306,7 @@
   
   .ai-botkit-model-description {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin: 0;
   }
   
@@ -1259,7 +1339,7 @@
     padding: 10px 1rem;
     border-radius: 0.5rem;
     font-size: 0.875rem;
-    color: #374151;
+    color: var(--ai-botkit-gray-700);
   }
 
   .ai-botkit-model-notes p {
@@ -1290,7 +1370,7 @@
     align-items: center;
     justify-content: center;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     background-color: #f9fafb;
   }
   
@@ -1315,7 +1395,7 @@
     gap: 0.5rem;
     align-items: center;
     padding: 2px;
-    color: #374151;
+    color: var(--ai-botkit-gray-700);
     background-color: #FFF;
     border: 1px solid #D6E5DF;
   }
@@ -1326,7 +1406,7 @@
     gap: 0.5rem;
     align-items: center;
     padding: 2px;
-    color: #374151;
+    color: var(--ai-botkit-gray-700);
     background-color: #FFF;
     border: 1px solid #D6E5DF;
   }
@@ -1352,12 +1432,12 @@
   
   .ai-botkit-step-subtext {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
   }
   
   /* Browser shell */
   .ai-botkit-browser-shell {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     border-radius: 0.5rem;
     overflow: hidden;
     background: #f9fafb;
@@ -1385,7 +1465,7 @@
   .ai-botkit-browser-url {
     margin-left: auto;
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
   }
   
   /* Chat Page Layout */
@@ -1393,7 +1473,7 @@
     position: relative;
     height: fit-content;
     background: #fff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     border-radius: 0.5rem;
     padding: 1.5rem;
   }
@@ -1407,7 +1487,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     z-index: 10;
     margin-bottom: 15px;
     max-height: 700px;
@@ -1439,7 +1519,7 @@
   }
   
   .ai-botkit-chat-avatar {
-    background: linear-gradient(180deg, #3B82F6 0%, #1E3A8A 100%);
+    background: linear-gradient(180deg, var(--ai-botkit-primary-light) 0%, var(--ai-botkit-primary) 100%);
     height: 2.5rem;
     width: 2.5rem;
     border-radius: 9999px;
@@ -1466,7 +1546,7 @@
   
   .ai-botkit-chat-status {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin: 0;
   }
   
@@ -1510,7 +1590,7 @@
   }
   
   .user-msg {
-    background: #1E3A8A;
+    background: var(--ai-botkit-primary);
     color: #FFF;
     align-self: flex-end;
   }
@@ -1537,7 +1617,7 @@
   }
   
   .ai-botkit-chat-form button {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
     color: white;
     border: none;
     padding: 0 1rem;
@@ -1546,7 +1626,7 @@
   
   /* Chat bubble */
   .ai-botkit-chat-bubble {
-    background: #1E3A8A;
+    background: var(--ai-botkit-primary);
     color: white;
     border-radius: 9999px;
     font-size: 1.25rem;
@@ -1574,7 +1654,7 @@
   
   /* Summary box */
   .ai-botkit-summary-box {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     background: #f3f4f6;
     border-radius: 0.5rem;
     padding: 1rem;
@@ -1599,7 +1679,7 @@
   
   .label {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
   }
   .ai-botkit-kb-item {
     padding: 0.75rem;
@@ -1643,7 +1723,7 @@
     display: flex;
     align-items: center;
     font-size: 0.75rem;
-    color: #6b7280; /* muted */
+    color: var(--ai-botkit-gray-500); /* muted */
     margin-top: 0.25rem;
   }
   
@@ -1660,7 +1740,7 @@
   
   .ai-botkit-kb-tag {
     background-color: #f3f4f6;
-    color: #374151;
+    color: var(--ai-botkit-gray-700);
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
     border-radius: 9999px;
@@ -1685,7 +1765,7 @@
   }
   
   .ai-botkit-tab.active {
-    background: #1E3A8A;
+    background: var(--ai-botkit-primary);
     color: white;
   }
   
@@ -1712,7 +1792,7 @@
   
   .ai-botkit-card-header p {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin-top: 0.25rem;
   }
   
@@ -1776,12 +1856,12 @@
   
   .ai-botkit-hint {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin-top: 0.25rem;
   }
   
   .ai-botkit-btn {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
     color: white;
     padding: 0.5rem 1.5rem;
     border: none;
@@ -1789,7 +1869,7 @@
     cursor: pointer;
   }
   .ai-botkit-btn:hover {
-    background-color: #1E40AF;
+    background-color: var(--ai-botkit-primary-hover);
   }
   
   .ai-botkit-switch {
@@ -1825,7 +1905,7 @@
   }
   
   .ai-botkit-switch input:checked + .ai-botkit-slider {
-    background-color: #1E3A8A;
+    background-color: var(--ai-botkit-primary);
   }
   
   .ai-botkit-switch input:checked + .ai-botkit-slider::before {
@@ -1859,7 +1939,7 @@
   
   .ai-botkit-select-input:focus {
     outline: none;
-    border-color: #1E3A8A; /* Primary color on focus */
+    border-color: var(--ai-botkit-primary); /* Primary color on focus */
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
   }
   .ai-botkit-api-test-result-container {
@@ -1931,7 +2011,7 @@
   }
   
   .ai-botkit-tab.active {
-    background: #1E3A8A;
+    background: var(--ai-botkit-primary);
     color: #ffffff;
   }
   
@@ -1968,7 +2048,7 @@
   /* Table Section */
   .ai-botkit-knowledge-table {
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--ai-botkit-border);
     border-radius: 0.5rem;
     padding: 1rem;
     min-height: 300px;
@@ -1977,7 +2057,7 @@
   .ai-botkit-placeholder-text {
     text-align: center;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ai-botkit-gray-500);
     margin-top: 2rem;
   }
   
@@ -2019,7 +2099,7 @@
 
 .ai-botkit-modal-header p {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
   margin-top: 0.5rem;
 }
 
@@ -2053,7 +2133,7 @@
 
 .ai-botkit-delete-modal .ai-botkit-modal-body p {
   font-size: 0.95rem;
-  color: #374151;
+  color: var(--ai-botkit-gray-700);
   line-height: 1.5;
   margin: 0;
 }
@@ -2152,7 +2232,7 @@
   background: #f9fafb;
   padding: 0.75rem;
   border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ai-botkit-border);
   gap: 0.5rem;
 }
 
@@ -2181,7 +2261,7 @@
 .ai-botkit-knowledge-table-wrapper {
   overflow-x: auto;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ai-botkit-border);
   border-radius: 0.5rem;
   margin-top: 1rem;
 }
@@ -2217,7 +2297,7 @@
   text-align: center;
   padding: 2rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
 }
 
 .ai-botkit-btn-danger {
@@ -2242,7 +2322,7 @@
 
 .ai-botkit-upload-dropzone p {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
   margin-top: 0.5rem;
 }
 
@@ -2266,7 +2346,7 @@
 
 .ai-botkit-selected-file-box p {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
 }
 
 .ai-botkit-remove-file {
@@ -2293,7 +2373,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 2rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ai-botkit-border);
   border-radius: 10px;
   flex-grow: 1;
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / .05);
@@ -2308,7 +2388,7 @@
 }
 .ai-botkit-knowledge-stats-item-label{
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
   font-weight: 500;
 }
 .ai-botkit-knowledge-stats-item-value{
@@ -2318,7 +2398,7 @@
 }
 .ai-botkit-stats-icon {
   font-size: 1.5rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
   padding: 1rem;
   border-radius: 100px;
   background: #C9E0FF;
@@ -2330,7 +2410,7 @@
 
 .ai-botkit-chat-session-details{
   background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ai-botkit-border);
   border-radius: 0.5rem;
   padding: 1rem;
   min-height: 500px;
@@ -2338,7 +2418,7 @@
 }
 .ai-botkit-chat-session-messages{
   background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ai-botkit-border);
   border-radius: 0.5rem;
   padding: 1rem;
   min-height: 500px;
@@ -2358,7 +2438,7 @@
 }
 .ai-botkit-chat-session-details-item p{
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
   font-weight: 500;
   margin: 0;
 }
@@ -2372,7 +2452,7 @@
 .ai-botkit-save-chatbot-status,
 .ai-botkit-notice{
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
   font-weight: 500;
   margin: 0;
 }
@@ -2380,7 +2460,7 @@
 .ai-botkit-notice{
   display: none;
   padding: 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ai-botkit-border);
   border-radius: 0.75rem;
 }
 .ai-botkit-save-chatbot-status.success,
@@ -2589,7 +2669,7 @@
 }
 
 .ai-botkit-style-section {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ai-botkit-border);
   border-radius: 0.5rem;
   overflow: hidden;
 }
@@ -2666,7 +2746,7 @@
 }
 
 .ai-botkit-size-input span {
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
   font-size: 0.875rem;
 }
 
@@ -2676,7 +2756,7 @@
   padding: 1rem;
   background: #f9fafb;
   border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ai-botkit-border);
 }
 .ai-botkit-add-data-btn{
   position: relative;
@@ -2842,7 +2922,7 @@
   padding: 0;
   margin: 0;
   font-size: 1.25rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
 }
 .ai-botkit-training-modal {
   background: white;
@@ -2863,7 +2943,7 @@
 }
 .ai-botkit-training-modal-subtext{
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--ai-botkit-gray-500);
   margin-top: 0.5rem;
 }
 .ai-botkit-training-modal-body .ai-botkit-form-group{
@@ -2880,7 +2960,7 @@
   margin-top: 1rem;
 }
 .ai-botkit-training-pdf-upload{
-  color: #1E3A8A;
+  color: var(--ai-botkit-primary);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2919,7 +2999,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(180deg, #3B82F6 0%, #1E3A8A 100%);
+  background: linear-gradient(180deg, var(--ai-botkit-primary-light) 0%, var(--ai-botkit-primary) 100%);
   border-radius: 50%;
   overflow: hidden;
 }
@@ -3007,7 +3087,7 @@
 }
 .ai-botkit-bot-theme-item .check{
   border: 1px solid #1E3A8A;
-  background-color: #1E3A8A;
+  background-color: var(--ai-botkit-primary);
   color: #fff;
   height: 1rem;
   width: 1rem;
@@ -3023,7 +3103,7 @@
   display: flex;
 }
 .ai-botkit-background-image-label{
-  color: #1E3A8A;
+  color: var(--ai-botkit-primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -3126,7 +3206,7 @@
   border: 1px solid #1E3A8A;
   border-radius: 9999px;
   padding: 0.5rem 1rem;
-  color: #1E3A8A;
+  color: var(--ai-botkit-primary);
   background: #1E3A8A1A;
 }
 .ai-botkit-error-message{
@@ -3145,7 +3225,7 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1E3A8A;
+  color: var(--ai-botkit-primary);
   background: #1E3A8A1A;
   padding: 6px 12px;
   border-radius: 9999px;
@@ -3234,7 +3314,7 @@
   padding: 0;
 }
 input[type=radio]:checked::before{
-  background-color: #1E3A8A;
+  background-color: var(--ai-botkit-primary);
 }
 .ai-botkit-wp-header-back{
   display: none;
@@ -3664,7 +3744,7 @@ input[type=radio]:checked::before{
 
 /* Reprocess button styling */
 .ai-botkit-reprocess-btn {
-    background: #1E3A8A;
+    background: var(--ai-botkit-primary);
     color: white;
     border: none;
     border-radius: 4px;

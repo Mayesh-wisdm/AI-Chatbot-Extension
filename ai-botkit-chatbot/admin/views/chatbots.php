@@ -10,7 +10,7 @@ $create_chatbot = isset($_GET['create']) ? true : false;
 
 // Get chatbots
 global $wpdb;
-$total_chatbots = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ai_botkit_chatbots");
+$total_chatbots = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ai_botkit_chatbots" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe
 $total_pages = ceil($total_chatbots / $items_per_page);
 
 $chatbots = $wpdb->get_results($wpdb->prepare(
@@ -76,12 +76,12 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                         // Validate and set defaults for model_config properties
                         if (!$model_config || !is_object($model_config)) {
                             $model_config = (object) array(
-                                'tone' => 'Professional'
+                                'tone' => 'professional'
                             );
                         } else {
                             // Ensure required properties exist with defaults
                             if (!isset($model_config->tone)) {
-                                $model_config->tone = 'Professional';
+                                $model_config->tone = 'professional';
                             }
                         }
 
@@ -106,18 +106,18 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                     <div class="ai-botkit-chatbot-card">
                         <div class="ai-botkit-chatbot-header">
                             <div class="ai-botkit-chatbot-avatar" style="background-color: <?php echo esc_attr($style->primary_color); ?>;">
-                                <img src="<?php echo esc_url($style->avatar); ?>" alt="Chatbot avatar" class="ai-botkit-avatar-img" />        
+                                <img src="<?php echo esc_url($style->avatar); ?>" alt="<?php echo esc_attr( sprintf( __( '%s chatbot avatar', 'knowvault' ), $chatbot->name ) ); ?>" class="ai-botkit-avatar-img" />
                             </div>
                             <div class="ai-botkit-chatbot-details">
                                 <div class="ai-botkit-chatbot-badges">
                                     <h3 class="ai-botkit-chatbot-title"><?php echo esc_html($chatbot->name); ?></h3>
                                 </div>
                                 <div class="ai-botkit-chatbot-badges">
-                                    <span class="ai-botkit-badge ai-botkit-badge-status <?php echo 1 == $chatbot->active ? 'ai-botkit-status-active' : 'ai-botkit-status-inactive'; ?>"><?php echo 1 == $chatbot->active ? 'Active' : 'Inactive'; ?></span>
+                                    <span class="ai-botkit-badge ai-botkit-badge-status <?php echo 1 == $chatbot->active ? 'ai-botkit-status-active' : 'ai-botkit-status-inactive'; ?>"><?php echo 1 == $chatbot->active ? esc_html__( 'Active', 'knowvault' ) : esc_html__( 'Inactive', 'knowvault' ); ?></span>
                                     <?php if( intval($chatbot->id) === intval(get_option('ai_botkit_chatbot_sitewide_enabled', 0)) ) { ?>
-                                        <span class="ai-botkit-badge ai-botkit-badge-sitewide">Sitewide</span>
+                                        <span class="ai-botkit-badge ai-botkit-badge-sitewide"><?php esc_html_e( 'Sitewide', 'knowvault' ); ?></span>
                                     <?php } ?>
-                                    <span class="ai-botkit-badge ai-botkit-badge-outline"><?php echo esc_html($model_config->tone); ?></span>
+                                    <span class="ai-botkit-badge ai-botkit-badge-outline"><?php echo esc_html( ucfirst( $model_config->tone ) ); ?></span>
                                 </div>
                                 <div class="ai-botkit-chatbot-content">
                                     <div class="ai-botkit-chatbot-info">
@@ -136,27 +136,27 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                             </div>
                         </div>
                         <div class="ai-botkit-chatbot-footer">
-                            <button class="ai-botkit-btn-outline ai-botkit-edit-bot ai-masters-show-title" data-title="<?php esc_html_e('Edit Bot', 'knowvault'); ?>" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>">
-                                <i class="ti ti-edit"></i>
+                            <button class="ai-botkit-btn-outline ai-botkit-edit-bot ai-masters-show-title" data-title="<?php esc_html_e('Edit Bot', 'knowvault'); ?>" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Edit %s', 'knowvault' ), $chatbot->name ) ); ?>">
+                                <i class="ti ti-edit" aria-hidden="true"></i>
                             </button>
-                            <a class="ai-botkit-btn-outline ai-botkit-view-chat" href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=chatbots&bot_id=' . $chatbot->id . '&nonce=' . $nonce)); ?>">
-                                <i class="ti ti-users"></i> <?php esc_html_e('View Conversations', 'knowvault'); ?>
+                            <a class="ai-botkit-btn-outline ai-botkit-view-chat" href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=chatbots&bot_id=' . $chatbot->id . '&nonce=' . $nonce)); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'View conversations for %s', 'knowvault' ), $chatbot->name ) ); ?>">
+                                <i class="ti ti-users" aria-hidden="true"></i> <?php esc_html_e('View Conversations', 'knowvault'); ?>
                             </a>
                             <div class="ai-botkit-copy-code-wrapper">
                                 <div class="ai-botkit-shortcode-wrapper" style="display: none;">
-                                    <button class="ai-botkit-copy-shortcode" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>">
-                                        <i class="ti ti-copy"></i> <?php esc_html_e('Copy Shortcode', 'knowvault'); ?>
+                                    <button class="ai-botkit-copy-shortcode" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Copy shortcode for %s', 'knowvault' ), $chatbot->name ) ); ?>">
+                                        <i class="ti ti-copy" aria-hidden="true"></i> <?php esc_html_e('Copy Shortcode', 'knowvault'); ?>
                                     </button>
-                                    <button class="ai-botkit-copy-widget-code" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>">
-                                        <i class="ti ti-copy"></i> <?php esc_html_e('Copy Widget Code', 'knowvault'); ?>
+                                    <button class="ai-botkit-copy-widget-code" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Copy widget code for %s', 'knowvault' ), $chatbot->name ) ); ?>">
+                                        <i class="ti ti-copy" aria-hidden="true"></i> <?php esc_html_e('Copy Widget Code', 'knowvault'); ?>
                                     </button>
                                 </div>
-                                <button class="ai-botkit-btn-outline ai-botkit-copy-code" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>">
-                                    <i class="ti ti-copy"></i> <?php esc_html_e('Copy Code', 'knowvault'); ?>
+                                <button class="ai-botkit-btn-outline ai-botkit-copy-code" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Copy embed code for %s', 'knowvault' ), $chatbot->name ) ); ?>">
+                                    <i class="ti ti-copy" aria-hidden="true"></i> <?php esc_html_e('Copy Code', 'knowvault'); ?>
                                 </button>
                             </div>
-                            <button class="ai-botkit-btn-outline ai-botkit-delete-bot ai-masters-show-title" data-title="<?php esc_html_e('Delete Bot', 'knowvault'); ?>" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>">
-                                <i class="ti ti-trash"></i>
+                            <button class="ai-botkit-btn-outline ai-botkit-delete-bot ai-masters-show-title" data-title="<?php esc_html_e('Delete Bot', 'knowvault'); ?>" data-chatbot-id="<?php echo esc_attr($chatbot->id); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Delete %s', 'knowvault' ), $chatbot->name ) ); ?>">
+                                <i class="ti ti-trash" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -288,6 +288,14 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
                                 </p>
                             </div>
                             <input type="hidden" id="ai-botkit-chatbot-id" name="chatbot_id" value="">
+                            <!-- Start from Template -->
+                            <div class="ai-botkit-form-group" id="ai-botkit-template-selector-group">
+                                <label for="ai-botkit-template-selector" class="ai-botkit-label"><?php esc_html_e('Start from Template', 'knowvault'); ?> <span class="ai-botkit-optional-label">(<?php esc_html_e('Optional', 'knowvault'); ?>)</span></label>
+                                <select id="ai-botkit-template-selector" class="ai-botkit-select-input">
+                                    <option value=""><?php esc_html_e('-- Select a template or start from scratch --', 'knowvault'); ?></option>
+                                </select>
+                                <p class="ai-botkit-help-text"><?php esc_html_e('Choose a pre-built template to quickly configure your chatbot with recommended settings.', 'knowvault'); ?></p>
+                            </div>
                             <!-- Bot Name -->
                             <div class="ai-botkit-form-group">
                                 <label for="chatbot_name" class="ai-botkit-label"><?php esc_html_e('Bot Name', 'knowvault'); ?></label>

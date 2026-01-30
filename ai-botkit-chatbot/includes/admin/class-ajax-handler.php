@@ -88,6 +88,7 @@ class Ajax_Handler {
         // Phase 2: Chat Transcripts Export endpoints (FR-240 to FR-249)
         // =========================================================
         add_action('wp_ajax_ai_botkit_export_pdf', array($this, 'handle_export_pdf'));
+        add_action('wp_ajax_ai_botkit_export_csv', array($this, 'handle_export_csv'));
         add_action('wp_ajax_ai_botkit_batch_export', array($this, 'handle_batch_export'));
         add_action('wp_ajax_ai_botkit_export_status', array($this, 'handle_export_status'));
     }
@@ -165,15 +166,23 @@ class Ajax_Handler {
 
         $chatbot_id = isset($_POST['chatbot_id']) ? intval($_POST['chatbot_id']) : 0;
 
+        // Avatar can be an attachment ID (integer) or a URL string for predefined icons
+        // The avatar column stores attachment IDs only; URLs are stored in style.avatar JSON
+        $avatar_value = isset($_POST['chatbot_avatar']) ? sanitize_text_field($_POST['chatbot_avatar']) : '';
+        $avatar_id = is_numeric($avatar_value) ? intval($avatar_value) : 0;
+        $avatar_url = is_numeric($avatar_value)
+            ? wp_get_attachment_url($avatar_id)
+            : ($avatar_value ?: esc_url(AI_BOTKIT_PLUGIN_URL . '/public/images/bot-1.png'));
+
         $chatbot_data = array(
             'name' => sanitize_text_field($_POST['name']),
             'active' => isset($_POST['active']) ? 1 : 0,
-            'avatar' => isset($_POST['chatbot_avatar']) ? sanitize_text_field($_POST['chatbot_avatar']) : esc_url(AI_BOTKIT_PLUGIN_URL . '/public/images/bot-1.png'),
+            'avatar' => $avatar_id,
             'feedback' => isset($_POST['enable_feedback']) ? 1 : 0,
         
             // Combine all style-related fields into JSON
             'style' => wp_json_encode(array(
-                'avatar' => isset($_POST['chatbot_avatar']) ? sanitize_text_field($_POST['chatbot_avatar']) : esc_url(AI_BOTKIT_PLUGIN_URL . '/public/images/bot-1.png'),
+                'avatar' => $avatar_url,
                 'widget' => isset($_POST['chatbot_widget']) ? sanitize_text_field($_POST['chatbot_widget']) : esc_url(AI_BOTKIT_PLUGIN_URL . '/public/images/widget-1.png'),
                 'location' => sanitize_text_field($_POST['location']),
                 'primary_color' => sanitize_text_field($_POST['chatbot_primary_color']),
@@ -2125,6 +2134,49 @@ class Ajax_Handler {
             $export_handler->stream_pdf($conversation_id, $options);
 
             // Note: stream_pdf exits after sending file.
+
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle CSV export of a single conversation.
+     *
+     * @since 2.0.0
+     */
+    public function handle_export_csv() {
+        check_ajax_referer('ai_botkit_admin', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => esc_html__('Insufficient permissions.', 'knowvault')]);
+        }
+
+        $conversation_id = isset($_POST['conversation_id']) ? absint($_POST['conversation_id']) : 0;
+
+        if (empty($conversation_id)) {
+            wp_send_json_error(['message' => esc_html__('Conversation ID is required.', 'knowvault')]);
+        }
+
+        try {
+            // Initialize export handler.
+            require_once dirname(__FILE__, 2) . '/features/class-export-handler.php';
+
+            if (!class_exists('AI_BotKit\Features\Export_Handler')) {
+                wp_send_json_error(['message' => esc_html__('Export handler not available.', 'knowvault')]);
+            }
+
+            $export_handler = new \AI_BotKit\Features\Export_Handler();
+
+            // Get export options.
+            $options = array(
+                'include_metadata' => isset($_POST['include_metadata']) ? (bool) $_POST['include_metadata'] : true,
+            );
+
+            // Stream CSV to browser.
+            $export_handler->stream_csv($conversation_id, $options);
+
+            // Note: stream_csv exits after sending file.
 
         } catch (\Exception $e) {
             wp_send_json_error(['message' => $e->getMessage()]);

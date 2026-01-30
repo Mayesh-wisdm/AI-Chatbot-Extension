@@ -163,13 +163,11 @@
                     item_id: itemId,
                     metadata: JSON.stringify(metadata || {})
                 },
-                success: function(response) {
-                    if (response.success) {
-                        console.log('AI BotKit: Page view tracked for', itemType, itemId);
-                    }
+                success: function() {
+                    // Page view tracked successfully
                 },
-                error: function(xhr, status, error) {
-                    console.warn('AI BotKit: Failed to track page view:', error);
+                error: function() {
+                    // Silently fail - non-critical tracking
                 }
             });
         },
@@ -209,15 +207,15 @@
                             callback(response.data.recommendations);
                         }
                     } else {
-                        console.warn('AI BotKit: No recommendations returned');
+                        // No recommendations available
                         if (typeof callback === 'function') {
                             callback([]);
                         }
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function() {
                     self.state.isLoading = false;
-                    console.error('AI BotKit: Failed to get recommendations:', error);
+                    // Failed to get recommendations - callback with empty array
 
                     if (typeof callback === 'function') {
                         callback([]);

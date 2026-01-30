@@ -308,12 +308,26 @@ class Phase2_Migration {
             );
         }
 
-        // Add the column.
+        // Check if is_favorite column exists to determine AFTER clause.
+        $favorite_exists = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = %s
+                 AND TABLE_NAME = %s
+                 AND COLUMN_NAME = 'is_favorite'",
+                DB_NAME,
+                $table_name
+            )
+        );
+
+        // Add the column. Position depends on whether is_favorite exists.
+        $after_clause = $favorite_exists ? 'AFTER is_favorite' : 'AFTER user_id';
+
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $result = $wpdb->query(
             "ALTER TABLE {$table_name}
              ADD COLUMN is_archived TINYINT(1) NOT NULL DEFAULT 0
-             AFTER is_favorite"
+             {$after_clause}"
         );
 
         if ( $result === false ) {

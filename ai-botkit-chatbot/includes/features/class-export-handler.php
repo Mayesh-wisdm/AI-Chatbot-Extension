@@ -787,19 +787,21 @@ class Export_Handler {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param array $export_data Export data.
+	 * @param array  $export_data Export data.
+	 * @param string $extension   File extension (default 'pdf').
 	 * @return string Generated filename.
 	 */
-	public function generate_filename( array $export_data ): string {
+	public function generate_filename( array $export_data, string $extension = 'pdf' ): string {
 		$chatbot_slug = sanitize_title( $export_data['chatbot_name'] );
 		$date         = gmdate( 'Y-m-d', strtotime( $export_data['created_at'] ) );
 		$id           = $export_data['conversation_id'];
 
 		$filename = sprintf(
-			'chat-transcript-%s-%s-%d.pdf',
+			'chat-transcript-%s-%s-%d.%s',
 			$chatbot_slug,
 			$date,
-			$id
+			$id,
+			$extension
 		);
 
 		/**
@@ -811,6 +813,153 @@ class Export_Handler {
 		 * @param int    $conversation_id Conversation ID.
 		 */
 		return apply_filters( 'ai_botkit_export_filename', $filename, $export_data['conversation_id'] );
+	}
+
+	/**
+	 * Export conversation to CSV format.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int   $conversation_id Conversation ID.
+	 * @param array $options {
+	 *     Export options.
+	 *
+	 *     @type bool $include_metadata Include timestamps, tokens, model info. Default true.
+	 * }
+	 * @return string|\WP_Error CSV content or error.
+	 */
+	public function export_to_csv( int $conversation_id, array $options = array() ) {
+		// Parse options.
+		$defaults = array(
+			'include_metadata' => true,
+		);
+		$options  = wp_parse_args( $options, $defaults );
+
+		// Get export data.
+		$data = $this->get_export_data( $conversation_id );
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		// Build CSV lines.
+		$csv_lines = array();
+
+		// Header row.
+		$headers = array( 'Timestamp', 'Role', 'Message' );
+		if ( ! empty( $options['include_metadata'] ) ) {
+			$headers[] = 'Tokens';
+			$headers[] = 'Model';
+		}
+		$csv_lines[] = $this->csv_line( $headers );
+
+		// Data rows.
+		foreach ( $data['messages'] as $message ) {
+			$row = array(
+				$message['created_at'],
+				$message['role'],
+				$message['content'],
+			);
+
+			if ( ! empty( $options['include_metadata'] ) ) {
+				$metadata = array();
+				if ( ! empty( $message['metadata'] ) ) {
+					$metadata = json_decode( $message['metadata'], true );
+					if ( ! is_array( $metadata ) ) {
+						$metadata = array();
+					}
+				}
+				$row[] = isset( $metadata['tokens']['total'] ) ? $metadata['tokens']['total'] : '';
+				$row[] = isset( $metadata['model'] ) ? $metadata['model'] : '';
+			}
+
+			$csv_lines[] = $this->csv_line( $row );
+		}
+
+		return implode( "\n", $csv_lines );
+	}
+
+	/**
+	 * Format array as CSV line.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param array $fields Array of field values.
+	 * @return string Formatted CSV line.
+	 */
+	private function csv_line( array $fields ): string {
+		$escaped = array_map(
+			function ( $field ) {
+				// Convert to string.
+				$field = (string) $field;
+				// Escape double quotes.
+				$field = str_replace( '"', '""', $field );
+				// Wrap in quotes if contains special characters.
+				if ( strpos( $field, ',' ) !== false || strpos( $field, '"' ) !== false || strpos( $field, "\n" ) !== false || strpos( $field, "\r" ) !== false ) {
+					return '"' . $field . '"';
+				}
+				return $field;
+			},
+			$fields
+		);
+
+		return implode( ',', $escaped );
+	}
+
+	/**
+	 * Stream CSV to browser.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int   $conversation_id Conversation ID.
+	 * @param array $options         Export options.
+	 */
+	public function stream_csv( int $conversation_id, array $options = array() ): void {
+		$csv = $this->export_to_csv( $conversation_id, $options );
+
+		if ( is_wp_error( $csv ) ) {
+			wp_die(
+				esc_html( $csv->get_error_message() ),
+				esc_html__( 'Export Error', 'knowvault' ),
+				array( 'response' => $csv->get_error_data()['status'] ?? 500 )
+			);
+		}
+
+		// Get export data for filename generation.
+		$export_data = $this->get_export_data( $conversation_id );
+		if ( is_wp_error( $export_data ) ) {
+			wp_die(
+				esc_html( $export_data->get_error_message() ),
+				esc_html__( 'Export Error', 'knowvault' ),
+				array( 'response' => 500 )
+			);
+		}
+
+		$filename = $this->generate_filename( $export_data, 'csv' );
+
+		// Log export activity (FR-248).
+		$this->log_export( $conversation_id, get_current_user_id(), $filename );
+
+		/**
+		 * Fires after a CSV is exported.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param int    $conversation_id Conversation ID.
+		 * @param string $filename        Generated filename.
+		 * @param int    $user_id         User who performed the export.
+		 */
+		do_action( 'ai_botkit_csv_exported', $conversation_id, $filename, get_current_user_id() );
+
+		// Send headers.
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		// Output UTF-8 BOM for Excel compatibility.
+		echo "\xEF\xBB\xBF";
+		echo $csv;
+		exit;
 	}
 
 	/**

@@ -802,27 +802,42 @@
             };
 
             this.config.currentPage = 1;
+
+            // Mark "All" tab as active when filters are cleared
+            $('.ai-botkit-quick-filter').removeClass('is-active');
+            $('.ai-botkit-quick-filter[data-filter="all"]').addClass('is-active');
+
             this.loadConversations();
         },
 
         /**
          * Apply a quick filter preset
          *
-         * @param {string} filter Filter type (today, week, favorites)
+         * @param {string} filter Filter type (all, today, week, favorites)
          */
         applyQuickFilter: function(filter) {
             const today = new Date();
             let startDate = '';
+            let endDate = '';
             let isFavorite = null;
 
             switch (filter) {
+                case 'all':
+                    // Clear all filters to show all conversations
+                    startDate = '';
+                    endDate = '';
+                    isFavorite = null;
+                    break;
+
                 case 'today':
                     startDate = this.formatDate(today);
+                    endDate = this.formatDate(today);
                     break;
 
                 case 'week':
                     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
                     startDate = this.formatDate(weekAgo);
+                    endDate = this.formatDate(today);
                     break;
 
                 case 'favorites':
@@ -834,20 +849,25 @@
             }
 
             this.config.currentFilter.startDate = startDate;
-            this.config.currentFilter.endDate = this.formatDate(today);
+            this.config.currentFilter.endDate = endDate;
             this.config.currentFilter.isFavorite = isFavorite;
             this.config.currentPage = 1;
 
             // Update filter form inputs
             $(this.selectors.filterStartDate).val(startDate);
-            $(this.selectors.filterEndDate).val(this.formatDate(today));
+            $(this.selectors.filterEndDate).val(endDate);
             $(this.selectors.filterFavorite).val(isFavorite ? 'true' : '');
-
-            this.filterConversations();
 
             // Mark active quick filter
             $('.ai-botkit-quick-filter').removeClass('is-active');
             $('.ai-botkit-quick-filter[data-filter="' + filter + '"]').addClass('is-active');
+
+            // For 'all' filter, load without date restrictions
+            if (filter === 'all') {
+                this.clearFilters();
+            } else {
+                this.filterConversations();
+            }
         },
 
         /**

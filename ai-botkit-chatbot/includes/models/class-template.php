@@ -349,8 +349,23 @@ class Template {
         global $wpdb;
 
         $table_name = $wpdb->prefix . 'ai_botkit_templates';
-        $where      = array();
-        $values     = array();
+
+        // Check if table exists before querying.
+        $table_exists = $wpdb->get_var(
+            $wpdb->prepare(
+                'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s',
+                DB_NAME,
+                $table_name
+            )
+        );
+
+        if ( ! $table_exists ) {
+            // Table doesn't exist yet - migration hasn't been run.
+            return array();
+        }
+
+        $where  = array();
+        $values = array();
 
         // Build WHERE clause.
         if ( isset( $args['category'] ) && in_array( $args['category'], self::CATEGORIES, true ) ) {

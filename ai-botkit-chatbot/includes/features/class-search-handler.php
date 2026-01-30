@@ -149,6 +149,20 @@ class Search_Handler {
     ): array {
         $start_time = microtime( true );
 
+        // Check if FULLTEXT index exists before attempting search.
+        if ( ! $this->has_fulltext_index() ) {
+            return array(
+                'results'      => array(),
+                'total'        => 0,
+                'pages'        => 0,
+                'current_page' => 1,
+                'search_time'  => round( microtime( true ) - $start_time, 3 ),
+                'query'        => $query,
+                'from_cache'   => false,
+                'error'        => __( 'Search is not available. Please run the database migration to enable search functionality.', 'knowvault' ),
+            );
+        }
+
         // Validate query length.
         $query = trim( $query );
         if ( mb_strlen( $query ) < self::MIN_QUERY_LENGTH ) {
@@ -215,6 +229,11 @@ class Search_Handler {
         int $limit = 10
     ): array {
         global $wpdb;
+
+        // Check if FULLTEXT index exists before attempting search.
+        if ( ! $this->has_fulltext_index() ) {
+            return array();
+        }
 
         $query = trim( $query );
         if ( mb_strlen( $query ) < self::MIN_QUERY_LENGTH ) {

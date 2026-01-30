@@ -4,6 +4,52 @@ jQuery(document).ready(function($) {
     let isProcessing = false;
     let currentConversationId = null;
 
+    /**
+     * Sanitize HTML content to prevent XSS attacks
+     * Allows safe formatting tags while removing dangerous elements
+     *
+     * @param {string} html - HTML string to sanitize
+     * @return {string} Sanitized HTML
+     */
+    function sanitizeHtml(html) {
+        if (!html || typeof html !== 'string') {
+            return '';
+        }
+
+        // Create a temporary element to parse HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+
+        // Remove script tags
+        const scripts = temp.querySelectorAll('script');
+        scripts.forEach(function(script) { script.remove(); });
+
+        // Remove iframe tags
+        const iframes = temp.querySelectorAll('iframe');
+        iframes.forEach(function(iframe) { iframe.remove(); });
+
+        // Remove object/embed tags
+        const objects = temp.querySelectorAll('object, embed');
+        objects.forEach(function(obj) { obj.remove(); });
+
+        // Remove event handlers from all elements
+        const allElements = temp.querySelectorAll('*');
+        allElements.forEach(function(el) {
+            // Remove all on* attributes (onclick, onerror, etc.)
+            Array.from(el.attributes).forEach(function(attr) {
+                if (attr.name.startsWith('on') || attr.name === 'href' && attr.value.toLowerCase().startsWith('javascript:')) {
+                    el.removeAttribute(attr.name);
+                }
+            });
+        });
+
+        // Remove style tags (can contain expressions in old IE)
+        const styles = temp.querySelectorAll('style');
+        styles.forEach(function(style) { style.remove(); });
+
+        return temp.innerHTML;
+    }
+
     initChat(ai_botkitChat.chatId, ai_botkitChat.botID);
 
     // Initialize chat functionality
@@ -188,11 +234,22 @@ jQuery(document).ready(function($) {
     function handleStreamResponse(chatContainer, responseId) {
         let content = '';
         let sources = [];
-        
+        let pollCount = 0;
+        const maxPolls = 120; // Max 2 minutes of polling (120 * 1 second)
+
         function pollResponse() {
+            pollCount++;
+
+            // Prevent infinite polling
+            if (pollCount > maxPolls) {
+                handleError(chatContainer, chatConfig.i18n?.responseTimeout || 'Response timed out. Please try again.');
+                return;
+            }
+
             $.ajax({
                 url: chatConfig.ajaxUrl,
                 type: 'POST',
+                timeout: 30000, // 30 second timeout per request
                 data: {
                     action: 'ai_botkit_stream_response',
                     response_id: responseId,
@@ -203,39 +260,44 @@ jQuery(document).ready(function($) {
                         // Append new content
                         if (response.data.content) {
                             content += response.data.content;
-                            
+
                             // Update or create message
                             const messageElement = chatContainer.find('.ai-botkit-message.assistant:last');
                             if (messageElement.length) {
-                                messageElement.find('.ai-botkit-message-text').html(content);
+                                messageElement.find('.ai-botkit-message-text').html(sanitizeHtml(content));
                             } else {
                                 appendMessage(chatContainer, 'assistant', content);
                             }
-                            
+
                             // Update sources if available
                             if (response.data.sources) {
                                 sources = response.data.sources;
                                 updateMessageSources(chatContainer, sources);
                             }
-                            
+
                             // Scroll to bottom
                             scrollToBottom(chatContainer);
                         }
-                        
+
                         // Continue polling if not done
                         if (!response.data.done) {
                             setTimeout(pollResponse, 1000);
                         }
                     } else {
-                        handleError(chatContainer, response.data.message);
+                        handleError(chatContainer, response.data.message || chatConfig.i18n?.genericError || 'An error occurred.');
                     }
                 },
                 error: function(xhr, status, error) {
-                    handleAjaxError(chatContainer, xhr, status, error);
+                    // On timeout or network error, retry a few times before giving up
+                    if (status === 'timeout' && pollCount < 3) {
+                        setTimeout(pollResponse, 2000); // Retry with longer delay
+                    } else {
+                        handleAjaxError(chatContainer, xhr, status, error);
+                    }
                 }
             });
         }
-        
+
         // Start polling
         pollResponse();
     }
@@ -246,7 +308,7 @@ jQuery(document).ready(function($) {
         const message = $(template);
         
         message.addClass(role);
-        message.find('.ai-botkit-message-text').html(content);
+        message.find('.ai-botkit-message-text').html(sanitizeHtml(content));
         
         // if (sources && sources.length > 0) {
         //     updateMessageSources(message, sources);

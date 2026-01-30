@@ -427,7 +427,7 @@ class LLM_Client {
                     'messages' => $parameters['messages'],
                     'temperature' => (float) $parameters['temperature'],
                     'max_tokens' => (int) $parameters['max_tokens'],
-                    'stream' => $parameters['stream'] ? true : false,
+                    'stream' => isset($parameters['stream']) && $parameters['stream'] ? true : false,
                 )),
             )
         );

@@ -26,14 +26,16 @@
     justify-content: center;
     width: 36px;
     height: 36px;
+    min-width: 36px;
     padding: 0;
-    margin-right: 8px;
     background: transparent;
     border: none;
     border-radius: 50%;
     color: #6b7280;
     cursor: pointer;
     transition: all 0.2s ease;
+    flex-shrink: 0;
+    align-self: center;
 }
 
 .ai-botkit-media-btn:hover {

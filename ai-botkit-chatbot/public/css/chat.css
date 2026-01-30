@@ -1,4 +1,25 @@
-/* Chat Container */
+/* ==========================================================================
+   AI BotKit Chat Widget CSS Variables
+   ========================================================================== */
+:root {
+    --ai-botkit-chat-primary: #2271b1;
+    --ai-botkit-chat-primary-dark: #1E3A8A;
+    --ai-botkit-chat-bg: #ffffff;
+    --ai-botkit-chat-text: #333333;
+    --ai-botkit-chat-text-muted: #888888;
+    --ai-botkit-chat-border: #E7E7E7;
+    --ai-botkit-chat-user-bg: #1E3A8A;
+    --ai-botkit-chat-user-text: #ffffff;
+    --ai-botkit-chat-bot-bg: #f0f0f0;
+    --ai-botkit-chat-bot-text: #333333;
+    --ai-botkit-chat-radius: 8px;
+    --ai-botkit-chat-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --ai-botkit-chat-focus: #2271b1;
+}
+
+/* ==========================================================================
+   Chat Container
+   ========================================================================== */
 .ai-botkit-chat {
     width: 100%;
     max-width: 800px;
@@ -68,6 +89,16 @@
 
 .ai-botkit-chat-actions button:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+.ai-botkit-chat-actions button:focus {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.ai-botkit-chat-actions button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
 }
 
 /* Chat Messages */
@@ -189,9 +220,13 @@
 }
 
 .ai-botkit-input:focus {
-    outline: none;
-    /* border-color: #2271b1; */
-    /* box-shadow: 0 0 0 1px #2271b1; */
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.ai-botkit-input:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
 }
 
 .ai-botkit-send-button {
@@ -377,8 +412,14 @@
     transform: translateY(1px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-.ai-botkit-widget-button:focus{
-    outline: none;
+.ai-botkit-widget-button:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.ai-botkit-widget-button:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
 }
 
 .ai-botkit-widget-button-icon {

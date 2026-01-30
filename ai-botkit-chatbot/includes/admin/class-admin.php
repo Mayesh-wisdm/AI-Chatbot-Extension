@@ -465,6 +465,16 @@ class Admin {
                 true
             );
 
+            // Localize templates script with AJAX data.
+            wp_localize_script(
+                'ai-botkit-templates',
+                'ai_botkit_admin',
+                array(
+                    'ajax_url' => admin_url( 'admin-ajax.php' ),
+                    'nonce'    => wp_create_nonce( 'ai_botkit_admin' ),
+                )
+            );
+
             wp_enqueue_style(
                 'ai-botkit-templates',
                 AI_BOTKIT_PLUGIN_URL . 'admin/css/templates.css',

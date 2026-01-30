@@ -121,6 +121,9 @@ $styles = array_merge(array(
 
         <!-- Quick Filters -->
         <div class="ai-botkit-quick-filters">
+            <button type="button" class="ai-botkit-quick-filter is-active" data-filter="all">
+                <?php esc_html_e( 'All', 'knowvault' ); ?>
+            </button>
             <button type="button" class="ai-botkit-quick-filter" data-filter="today">
                 <?php esc_html_e( 'Today', 'knowvault' ); ?>
             </button>

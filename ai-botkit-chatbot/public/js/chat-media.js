@@ -90,19 +90,16 @@
                 fileInput.accept = [...this.options.allowedImageTypes, ...this.options.allowedDocTypes].join(',');
                 fileInput.style.display = 'none';
 
-                // Insert into DOM
-                const inputWrapper = chatInput.parentElement;
-                if (inputWrapper) {
-                    inputWrapper.insertBefore(mediaBtn, chatInput);
-                    inputWrapper.appendChild(fileInput);
-                }
+                // Insert into DOM - place media button inside the chat input container for proper flex alignment
+                chatInput.insertBefore(mediaBtn, chatInput.firstChild);
+                chatInput.appendChild(fileInput);
 
                 this.mediaBtn = mediaBtn;
                 this.fileInput = fileInput;
             }
 
             // Create media preview container
-            const chatContainer = document.querySelector('.ai-botkit-chat-container');
+            const chatContainer = document.querySelector('.ai-botkit-chat');
             if (chatContainer) {
                 const previewContainer = document.createElement('div');
                 previewContainer.className = 'ai-botkit-media-preview-container';
@@ -225,7 +222,7 @@
          * Initialize drag and drop
          */
         initDragDrop() {
-            const chatContainer = document.querySelector('.ai-botkit-chat-container');
+            const chatContainer = document.querySelector('.ai-botkit-chat');
             if (!chatContainer) return;
 
             // Create drop overlay
@@ -317,11 +314,15 @@
                 return;
             }
 
-            // Show preview
-            this.showUploadPreview(file);
+            // Show preview and get the previewId
+            const previewId = this.showUploadPreview(file);
 
-            // Upload file
-            this.uploadFile(file);
+            // Only upload if preview was created successfully
+            if (previewId) {
+                this.uploadFile(file, previewId);
+            } else {
+                this.showError('Unable to create upload preview. Please try again.');
+            }
         }
 
         /**
@@ -352,12 +353,30 @@
         }
 
         /**
+         * Ensure preview container exists (lazy initialization)
+         */
+        ensurePreviewContainer() {
+            if (this.previewContainer) return true;
+
+            const chatContainer = document.querySelector('.ai-botkit-chat');
+            if (!chatContainer) return false;
+
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'ai-botkit-media-preview-container';
+            previewContainer.style.display = 'none';
+            chatContainer.appendChild(previewContainer);
+            this.previewContainer = previewContainer;
+            return true;
+        }
+
+        /**
          * Show upload preview
          *
          * @param {File} file File being uploaded
+         * @returns {string|null} Preview ID or null if preview couldn't be created
          */
         showUploadPreview(file) {
-            if (!this.previewContainer) return;
+            if (!this.ensurePreviewContainer()) return null;
 
             const previewId = 'upload_' + Date.now();
             const isImage = this.options.allowedImageTypes.includes(file.type);
@@ -388,6 +407,8 @@
                             </svg>
                         </button>
                     `;
+                    // Add cancel button handler after innerHTML is set
+                    this.addCancelButtonHandler(preview, previewId);
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -410,12 +431,9 @@
                         </svg>
                     </button>
                 `;
+                // Add cancel button handler for non-image files
+                this.addCancelButtonHandler(preview, previewId);
             }
-
-            // Cancel button handler
-            preview.querySelector('.ai-botkit-preview-cancel').addEventListener('click', () => {
-                this.cancelUpload(previewId);
-            });
 
             this.previewContainer.appendChild(preview);
             this.previewContainer.style.display = 'flex';
@@ -424,11 +442,27 @@
         }
 
         /**
+         * Add cancel button handler to preview element
+         *
+         * @param {HTMLElement} preview Preview element containing the cancel button
+         * @param {string} previewId Preview ID for this upload
+         */
+        addCancelButtonHandler(preview, previewId) {
+            const cancelBtn = preview.querySelector('.ai-botkit-preview-cancel');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    this.cancelUpload(previewId);
+                });
+            }
+        }
+
+        /**
          * Upload file to server
          *
          * @param {File} file File to upload
+         * @param {string} previewId Preview ID from showUploadPreview
          */
-        uploadFile(file) {
+        uploadFile(file, previewId) {
             const formData = new FormData();
             formData.append('action', 'ai_botkit_upload_chat_media');
             formData.append('nonce', this.options.nonce);
@@ -441,7 +475,6 @@
             }
 
             const xhr = new XMLHttpRequest();
-            const previewId = 'upload_' + Date.now();
 
             this.currentUploads.set(previewId, xhr);
 
@@ -483,6 +516,7 @@
          * @param {number} percent Progress percentage
          */
         updateProgress(previewId, percent) {
+            if (!this.previewContainer || !previewId) return;
             const preview = this.previewContainer.querySelector(`[data-upload-id="${previewId}"]`);
             if (preview) {
                 const progressBar = preview.querySelector('.ai-botkit-progress-bar');
@@ -499,10 +533,12 @@
          * @param {Object} media Media data from server
          */
         onUploadSuccess(previewId, media) {
-            const preview = this.previewContainer.querySelector(`[data-upload-id="${previewId}"]`);
-            if (preview) {
-                preview.classList.add('success');
-                preview.querySelector('.ai-botkit-preview-progress').style.display = 'none';
+            if (this.previewContainer && previewId) {
+                const preview = this.previewContainer.querySelector(`[data-upload-id="${previewId}"]`);
+                if (preview) {
+                    preview.classList.add('success');
+                    preview.querySelector('.ai-botkit-preview-progress').style.display = 'none';
+                }
             }
 
             // Store media data for message attachment
@@ -523,12 +559,14 @@
          * @param {string} error Error message
          */
         onUploadError(previewId, error) {
-            const preview = this.previewContainer.querySelector(`[data-upload-id="${previewId}"]`);
-            if (preview) {
-                preview.classList.add('error');
-                preview.querySelector('.ai-botkit-preview-progress').innerHTML = `
-                    <span class="ai-botkit-preview-error">${error}</span>
-                `;
+            if (this.previewContainer && previewId) {
+                const preview = this.previewContainer.querySelector(`[data-upload-id="${previewId}"]`);
+                if (preview) {
+                    preview.classList.add('error');
+                    preview.querySelector('.ai-botkit-preview-progress').innerHTML = `
+                        <span class="ai-botkit-preview-error">${error}</span>
+                    `;
+                }
             }
 
             this.showError(error);
@@ -779,7 +817,7 @@
          * @returns {string|null} Conversation ID
          */
         getCurrentConversationId() {
-            const container = document.querySelector('.ai-botkit-chat-container');
+            const container = document.querySelector('.ai-botkit-chat');
             return container?.dataset.conversationId || null;
         }
 

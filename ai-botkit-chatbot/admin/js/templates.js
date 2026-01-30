@@ -180,18 +180,18 @@
                     .replace(/{{primary_color}}/g, primaryColor)
                     .replace(/{{usage_count}}/g, item.usage_count || 0);
 
-                // Handle system badge
+                // Handle system badge (positive conditional)
                 if (item.is_system) {
-                    cardHtml = cardHtml.replace(/{{#is_system}}([\s\S]*?){{\/is_system}}/g, '$1');
+                    cardHtml = cardHtml.replace(/\{\{#is_system\}\}([\s\S]*?)\{\{\/is_system\}\}/g, '$1');
                 } else {
-                    cardHtml = cardHtml.replace(/{{#is_system}}[\s\S]*?{{\/is_system}}/g, '');
+                    cardHtml = cardHtml.replace(/\{\{#is_system\}\}[\s\S]*?\{\{\/is_system\}\}/g, '');
                 }
 
-                // Handle delete button
+                // Handle delete button (inverted conditional)
                 if (item.is_system) {
-                    cardHtml = cardHtml.replace(/{{^is_system}}[\s\S]*?{{\/is_system}}/g, '');
+                    cardHtml = cardHtml.replace(/\{\{\^is_system\}\}[\s\S]*?\{\{\/is_system\}\}/g, '');
                 } else {
-                    cardHtml = cardHtml.replace(/{{\^is_system}}([\s\S]*?){{\/is_system}}/g, '$1');
+                    cardHtml = cardHtml.replace(/\{\{\^is_system\}\}([\s\S]*?)\{\{\/is_system\}\}/g, '$1');
                 }
 
                 html += cardHtml;
@@ -461,7 +461,7 @@
             });
 
             // Clean up remaining mustache tags
-            html = html.replace(/{{#is_\w+}}selected{{\/is_\w+}}/g, '');
+            html = html.replace(/\{\{#is_\w+\}\}selected\{\{\/is_\w+\}\}/g, '');
 
             $('#conversation-starters-list').append(html);
             this.starterIndex++;

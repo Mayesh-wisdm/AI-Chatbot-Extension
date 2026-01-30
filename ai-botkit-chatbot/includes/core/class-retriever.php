@@ -255,7 +255,7 @@ class Retriever {
             ];
 
             // Get surrounding chunks if from same document
-            if (isset($chunk['metadata']['document_id'])) {
+            if (isset($chunk['metadata']['document_id']) && isset($chunk['metadata']['chunk_index'])) {
                 $current_index = $chunk['metadata']['chunk_index'];
                 $document_id = $chunk['metadata']['document_id'];
 

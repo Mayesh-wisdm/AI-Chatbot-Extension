@@ -357,14 +357,214 @@ jQuery(document).ready(function($) {
         $('.ai-botkit-wizard-container').show();
         $('.ai-botkit-dashboard-wrapper').hide();
         $('.ai-botkit-sidebar-wrapper').hide();
-        
+
         // Reset form and button state for new bot creation
         $('#ai-botkit-chatbot-id').val('');
         $('#ai-botkit-save-btn').html('Create Bot');
         $('#ai-botkit-save-btn').prop('disabled', false);
         // loadAvailableDocuments();
 
+        // Show template selector for new bots and load templates
+        $('#ai-botkit-template-selector-group').show();
+        $('#ai-botkit-template-selector').val('');
+        loadTemplatesForSelector();
     });
+
+    /**
+     * Load templates for the template selector dropdown
+     */
+    function loadTemplatesForSelector() {
+        const $selector = $('#ai-botkit-template-selector');
+
+        // Only load if selector exists and is empty (except for default option)
+        if ($selector.length === 0) {
+            return;
+        }
+
+        // Check if templates already loaded
+        if ($selector.find('option').length > 1) {
+            return;
+        }
+
+        $.ajax({
+            url: ai_botkitAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'ai_botkit_list_templates',
+                nonce: ai_botkitAdmin.nonce,
+                is_active: 1
+            },
+            success: function(response) {
+                if (response.success && response.data.templates) {
+                    const templates = response.data.templates;
+
+                    // Group templates by category
+                    const grouped = {};
+                    templates.forEach(function(template) {
+                        const category = template.category || 'general';
+                        if (!grouped[category]) {
+                            grouped[category] = [];
+                        }
+                        grouped[category].push(template);
+                    });
+
+                    // Add templates to selector grouped by category
+                    Object.keys(grouped).sort().forEach(function(category) {
+                        const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
+                        const $optgroup = $('<optgroup>').attr('label', categoryLabel);
+
+                        grouped[category].forEach(function(template) {
+                            const label = template.name + (template.is_system ? ' (System)' : '');
+                            $optgroup.append(
+                                $('<option>').val(template.id).text(label)
+                            );
+                        });
+
+                        $selector.append($optgroup);
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * Handle template selection - populate form fields with template data
+     */
+    $('#ai-botkit-template-selector').on('change', function() {
+        const templateId = $(this).val();
+
+        if (!templateId) {
+            return;
+        }
+
+        // Show loading state
+        $(this).prop('disabled', true);
+
+        $.ajax({
+            url: ai_botkitAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'ai_botkit_get_template',
+                nonce: ai_botkitAdmin.nonce,
+                template_id: templateId
+            },
+            success: function(response) {
+                if (response.success && response.data.template) {
+                    applyTemplateToForm(response.data.template);
+                    AiBotkitToast.show('Template applied! You can customize any settings before saving.', 'success', { duration: 3000 });
+                } else {
+                    AiBotkitToast.show('Failed to load template data.', 'error');
+                }
+            },
+            error: function() {
+                AiBotkitToast.show('Error loading template.', 'error');
+            },
+            complete: function() {
+                $('#ai-botkit-template-selector').prop('disabled', false);
+            }
+        });
+    });
+
+    /**
+     * Apply template data to the chatbot form fields
+     */
+    function applyTemplateToForm(template) {
+        // Messages template
+        if (template.messages_template) {
+            const messages = template.messages_template;
+            if (messages.personality) {
+                $('#chatbot_personality').val(messages.personality);
+            }
+            if (messages.greeting) {
+                $('textarea[name="greeting"]').val(messages.greeting);
+            }
+            if (messages.fallback) {
+                $('textarea[name="fallback"]').val(messages.fallback);
+            }
+        }
+
+        // Model config
+        if (template.model_config) {
+            const config = template.model_config;
+
+            if (config.tone) {
+                $('input[name="tone"][value="' + config.tone + '"]').prop('checked', true);
+            }
+            if (config.engine) {
+                $('#ai_botkit_engine').val(config.engine).trigger('change');
+            }
+            if (config.model) {
+                // Need slight delay for model options to load after engine change
+                setTimeout(function() {
+                    $('#ai_botkit_chat_model').val(config.model);
+                }, 100);
+            }
+            if (config.max_tokens) {
+                $('input[name="max_tokens"]').val(config.max_tokens);
+            }
+            if (config.temperature !== undefined) {
+                $('input[name="model_temperature"]').val(config.temperature);
+            }
+            if (config.context_length) {
+                $('input[name="context_length"]').val(config.context_length);
+            }
+        }
+
+        // Style settings
+        if (template.style) {
+            const style = template.style;
+
+            if (style.primary_color) {
+                $('input[name="chatbot_primary_color"]').val(style.primary_color).trigger('input');
+            }
+            if (style.header_bg_color) {
+                $('input[name="chatbot_header_bg_color"]').val(style.header_bg_color).trigger('input');
+            }
+            if (style.header_font_color) {
+                $('input[name="chatbot_header_font_color"]').val(style.header_font_color).trigger('input');
+            }
+            if (style.body_bg_color) {
+                $('input[name="chatbot_bg_color"]').val(style.body_bg_color).trigger('input');
+            }
+            if (style.ai_msg_bg_color) {
+                $('input[name="chatbot_ai_msg_bg_color"]').val(style.ai_msg_bg_color).trigger('input');
+            }
+            if (style.ai_msg_font_color) {
+                $('input[name="chatbot_ai_msg_font_color"]').val(style.ai_msg_font_color).trigger('input');
+            }
+            if (style.user_msg_bg_color) {
+                $('input[name="chatbot_user_msg_bg_color"]').val(style.user_msg_bg_color).trigger('input');
+            }
+            if (style.user_msg_font_color) {
+                $('input[name="chatbot_user_msg_font_color"]').val(style.user_msg_font_color).trigger('input');
+            }
+            if (style.font_family) {
+                $('select[name="chatbot_font_family"]').val(style.font_family);
+            }
+            if (style.font_size) {
+                $('input[name="chatbot_font_size"]').val(style.font_size);
+            }
+            if (style.position) {
+                $('select[name="location"]').val(style.position);
+            }
+            if (style.width) {
+                $('input[name="chatbot_width"]').val(style.width);
+            }
+            if (style.max_height) {
+                $('input[name="chatbot_max_height"]').val(style.max_height);
+            }
+        }
+
+        // Update live preview if available
+        if (typeof updatePreviewStyles === 'function') {
+            updatePreviewStyles();
+        }
+    }
+
+    // Load templates when wizard is shown via URL param
+    if ($('.ai-botkit-wizard-container').is(':visible') && !$('#ai-botkit-chatbot-id').val()) {
+        loadTemplatesForSelector();
+    }
 
     $('#ai-botkit-chatbot-wizard-back').click(function() {
         // remove create=1 from url
@@ -792,7 +992,7 @@ jQuery(document).ready(function($) {
         const loadingHtml = $('#ai-botkit-document-uploading').html();
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -870,7 +1070,7 @@ jQuery(document).ready(function($) {
         const $btnLoading = button.find('.ai-botkit-btn-loading');
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -964,7 +1164,7 @@ jQuery(document).ready(function($) {
         });
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -1013,7 +1213,7 @@ jQuery(document).ready(function($) {
         const button = $(this);
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -1241,7 +1441,7 @@ jQuery(document).ready(function($) {
         formData.append('nonce', ai_botkitAdmin.nonce);
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -1308,7 +1508,7 @@ jQuery(document).ready(function($) {
         formData.append('avatar', file);
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -1379,7 +1579,7 @@ jQuery(document).ready(function($) {
         formData.append('background_image', file);
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -1482,7 +1682,7 @@ jQuery(document).ready(function($) {
         formData.append('chatbot_id', chatbotId);
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -1515,7 +1715,7 @@ jQuery(document).ready(function($) {
         $(this).html('<i style="font-size: 0.875rem;" class="ti ti-loader-2 ai-botkit-loading-icon"></i>');
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -1528,6 +1728,9 @@ jQuery(document).ready(function($) {
                 $('#ai-botkit-save-btn').removeAttr('disabled');
                 $(".ai-botkit-edit-bot").html('<i class="ti ti-edit"></i>');
                 loadAvailableDocuments(chatbotId);
+
+                // Hide template selector when editing existing bot
+                $('#ai-botkit-template-selector-group').hide();
 
                 response.data.model_config = JSON.parse(response.data.model_config);
                 response.data.style = JSON.parse(response.data.style);
@@ -1924,7 +2127,7 @@ jQuery(document).ready(function($) {
         $spinner.addClass('is-active');
         
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'ai_botkit_test_api_connection',
@@ -2029,7 +2232,7 @@ jQuery(document).ready(function($) {
         const button = $(this);
         if (deleteTargetId) {
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'ai_botkit_delete_document',
@@ -2128,7 +2331,7 @@ jQuery(document).ready(function($) {
     formData.append('file', files[0]);
 
     $.ajax({
-        url: ajaxurl,
+        url: ai_botkitAdmin.ajaxUrl,
         type: 'POST',
         data: formData,
         processData: false,
@@ -2231,7 +2434,7 @@ jQuery(document).ready(function($) {
         formData.append('title', title);
         
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -2287,7 +2490,7 @@ jQuery(document).ready(function($) {
         const buttonHtml = button.html();
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -2986,7 +3189,7 @@ jQuery(document).ready(function($) {
     $('#chatbot_active_sitewide').on('change', function() {
         const chatbotId = $('#saved_chatbot_id').val();
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'ai_botkit_enable_chatbot_sitewide',
@@ -3022,7 +3225,7 @@ jQuery(document).ready(function($) {
         formData.append('nonce', ai_botkitAdmin.nonce);
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -3179,7 +3382,7 @@ jQuery(document).ready(function($) {
             $pagination.hide();
 
             $.ajax({
-                url: ajaxurl,
+                url: ai_botkitAdmin.ajaxUrl,
                 type: 'POST',
                 data: {
                     action: 'ai_botkit_get_knowledge_base_data',
@@ -3251,7 +3454,7 @@ jQuery(document).ready(function($) {
         // Function to show error details modal
         function showErrorDetails(documentId) {
             $.ajax({
-                url: ajaxurl,
+                url: ai_botkitAdmin.ajaxUrl,
                 type: 'POST',
                 data: {
                     action: 'ai_botkit_get_document_error_details',
@@ -3353,7 +3556,7 @@ jQuery(document).ready(function($) {
                     $btn.html('<i class="ti ti-loader-2 ai-botkit-spin"></i>').prop('disabled', true);
 
                     $.ajax({
-                        url: ajaxurl,
+                        url: ai_botkitAdmin.ajaxUrl,
                         type: 'POST',
                         data: {
                             action: 'ai_botkit_reprocess_document',
@@ -3415,7 +3618,7 @@ jQuery(document).ready(function($) {
         $result.hide();
 
         $.ajax({
-            url: ajaxurl,
+            url: ai_botkitAdmin.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'ai_botkit_test_pinecone_connection',
