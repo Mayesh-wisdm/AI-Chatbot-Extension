@@ -31,7 +31,12 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
           <?php esc_html_e('My Bots', 'knowvault'); ?>
         </a>
       </li>
-      <!-- <li><a href="/templates" class="ai-botkit-sidebar-link">💬 Templates</a></li> -->
+      <li>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=templates&nonce=' . $nonce)); ?>" class="ai-botkit-sidebar-link <?php echo $current_tab === 'templates' ? esc_attr('active') : ''; ?>">
+          <i class="ti ti-template"></i>
+          <?php esc_html_e('Templates', 'knowvault'); ?>
+        </a>
+      </li>
       <li>
         <a href="<?php echo esc_url(admin_url('admin.php?page=ai-botkit&tab=knowledge&nonce=' . $nonce)); ?>" class="ai-botkit-sidebar-link <?php echo $current_tab === 'knowledge' ? esc_attr('active') : ''; ?>">
           <i class="ti ti-database"></i>

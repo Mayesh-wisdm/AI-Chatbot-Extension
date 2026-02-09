@@ -3,12 +3,17 @@ namespace AI_BotKit\Integration;
 
 use AI_BotKit\Core\RAG_Engine;
 use AI_BotKit\Core\Unified_Cache_Manager;
+use AI_BotKit\Features\Recommendation_Engine;
+use AI_BotKit\Features\Browsing_Tracker;
 
 /**
  * WooCommerce Assistant
- * 
+ *
  * Handles advanced WooCommerce interactions including shopping cart assistance
  * and product recommendations.
+ *
+ * Extended in Phase 2 for:
+ * - FR-250 to FR-259: LMS/WooCommerce Suggestions
  */
 class WooCommerce_Assistant {
     /**
@@ -22,12 +27,62 @@ class WooCommerce_Assistant {
     private $cache_manager;
 
     /**
+     * Recommendation engine instance
+     *
+     * @since 2.0.0
+     * @var Recommendation_Engine|null
+     */
+    private $recommendation_engine;
+
+    /**
+     * Browsing tracker instance
+     *
+     * @since 2.0.0
+     * @var Browsing_Tracker|null
+     */
+    private $browsing_tracker;
+
+    /**
      * Initialize the assistant
      */
     public function __construct(RAG_Engine $rag_engine, Unified_Cache_Manager $cache_manager) {
         $this->rag_engine = $rag_engine;
         $this->cache_manager = $cache_manager;
+
+        // Initialize Phase 2 components.
+        $this->init_phase2_components();
+
         $this->init_hooks();
+    }
+
+    /**
+     * Initialize Phase 2 components.
+     *
+     * @since 2.0.0
+     */
+    private function init_phase2_components(): void {
+        // Initialize browsing tracker.
+        try {
+            require_once dirname( __FILE__, 2 ) . '/features/class-browsing-tracker.php';
+            if ( class_exists( 'AI_BotKit\Features\Browsing_Tracker' ) ) {
+                $this->browsing_tracker = new Browsing_Tracker();
+            }
+        } catch ( \Exception $e ) {
+            $this->browsing_tracker = null;
+        }
+
+        // Initialize recommendation engine.
+        try {
+            require_once dirname( __FILE__, 2 ) . '/features/class-recommendation-engine.php';
+            if ( class_exists( 'AI_BotKit\Features\Recommendation_Engine' ) ) {
+                $this->recommendation_engine = new Recommendation_Engine(
+                    $this->cache_manager,
+                    $this->browsing_tracker
+                );
+            }
+        } catch ( \Exception $e ) {
+            $this->recommendation_engine = null;
+        }
     }
 
     /**
@@ -184,11 +239,65 @@ class WooCommerce_Assistant {
     }
 
     /**
-     * Enhance response with product recommendations
+     * Enhance response with product recommendations.
+     *
+     * Uses the Recommendation_Engine (FR-250) for personalized suggestions
+     * based on conversation context, browsing history, and purchase history.
+     *
+     * @since 2.0.0 - Integrated with Recommendation_Engine
      */
     private function enhance_with_recommendations(array $response, string $message): array {
+        // Try Phase 2 recommendation engine first (FR-250 to FR-259).
+        if ( $this->recommendation_engine ) {
+            $user_id = get_current_user_id();
+            $context = array(
+                'conversation_text' => $message,
+                'intent'            => 'product_recommendation',
+            );
+
+            $suggestions = $this->recommendation_engine->get_recommendations( $user_id, $context, 5 );
+
+            if ( ! empty( $suggestions ) ) {
+                // Add suggestion cards to response (FR-255).
+                $response['suggestion_cards'] = $suggestions;
+
+                // Also add text recommendations for backwards compatibility.
+                $response['content'] .= "\n\nRecommended Products:\n";
+                foreach ( $suggestions as $card ) {
+                    if ( 'product' === $card['type'] ) {
+                        $response['content'] .= sprintf(
+                            "\n- %s: %s\n  Price: %s\n  %s\n",
+                            $card['title'],
+                            $card['description'],
+                            $card['price'],
+                            $card['url']
+                        );
+                    }
+                }
+
+                $response['recommendations'] = array_map(
+                    function( $card ) {
+                        return array(
+                            'id'                => $card['id'],
+                            'name'              => $card['title'],
+                            'price'             => $card['price'],
+                            'short_description' => $card['description'],
+                            'url'               => $card['url'],
+                            'image_url'         => $card['image'],
+                            'rating'            => $card['rating'] ?? 0,
+                            'review_count'      => $card['review_count'] ?? 0,
+                        );
+                    },
+                    array_filter( $suggestions, function( $s ) { return 'product' === $s['type']; } )
+                );
+
+                return $response;
+            }
+        }
+
+        // Fallback to original recommendation logic.
         $recommendations = $this->get_product_recommendations($message);
-        
+
         if (empty($recommendations)) {
             return $response;
         }
@@ -414,6 +523,91 @@ class WooCommerce_Assistant {
                 '_ai_botkit_interaction_count',
                 (int)get_post_meta($product['id'], '_ai_botkit_interaction_count', true) + 1
             );
+
+            // Track interaction in recommendation engine (FR-252).
+            if ( $this->recommendation_engine ) {
+                $this->recommendation_engine->track_interaction(
+                    get_current_user_id(),
+                    'recommendation_shown',
+                    'product',
+                    $product['id'],
+                    array( 'message' => $message )
+                );
+            }
         }
+    }
+
+    // =========================================================
+    // Phase 2: Recommendation Engine Integration (FR-250 to FR-259)
+    // =========================================================
+
+    /**
+     * Get personalized recommendations using the Recommendation Engine.
+     *
+     * Implements: FR-250 (Recommendation Engine Core)
+     *
+     * @since 2.0.0
+     *
+     * @param array $context {
+     *     Context for generating recommendations.
+     *
+     *     @type string $conversation_text Recent conversation content.
+     *     @type int    $chatbot_id        Current chatbot ID.
+     * }
+     * @param int   $limit Maximum recommendations to return.
+     * @return array Formatted suggestion cards.
+     */
+    public function get_personalized_recommendations( array $context = array(), int $limit = 5 ): array {
+        if ( ! $this->recommendation_engine ) {
+            return array();
+        }
+
+        return $this->recommendation_engine->get_recommendations(
+            get_current_user_id(),
+            $context,
+            $limit
+        );
+    }
+
+    /**
+     * Track a browsing interaction.
+     *
+     * Implements: FR-252 (Browsing History Tracking)
+     *
+     * @since 2.0.0
+     *
+     * @param string $item_type Item type (product, course).
+     * @param int    $item_id   Item ID.
+     * @param array  $metadata  Additional metadata.
+     * @return bool Success.
+     */
+    public function track_browse( string $item_type, int $item_id, array $metadata = array() ): bool {
+        if ( $this->browsing_tracker ) {
+            return $this->browsing_tracker->track_page_view( $item_type, $item_id, $metadata );
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the recommendation engine instance.
+     *
+     * @since 2.0.0
+     *
+     * @return Recommendation_Engine|null
+     */
+    public function get_recommendation_engine(): ?Recommendation_Engine {
+        return $this->recommendation_engine;
+    }
+
+    /**
+     * Get the browsing tracker instance.
+     *
+     * @since 2.0.0
+     *
+     * @return Browsing_Tracker|null
+     */
+    public function get_browsing_tracker(): ?Browsing_Tracker {
+        return $this->browsing_tracker;
     }
 } 

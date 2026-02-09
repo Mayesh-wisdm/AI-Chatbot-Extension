@@ -1,0 +1,657 @@
+/**
+ * AI BotKit Chat History Styles
+ *
+ * Styles for the chat history panel and conversation list.
+ *
+ * @package AI_BotKit
+ * @since   2.0.0
+ *
+ * Implements: FR-201 to FR-209 (Chat History Feature)
+ */
+
+/* ==========================================================================
+   History Panel Container
+   ========================================================================== */
+
+.ai-botkit-history-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+.ai-botkit-history-panel.is-open {
+    transform: translateX(0);
+}
+
+/* ==========================================================================
+   History Header
+   ========================================================================== */
+
+.ai-botkit-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0;
+}
+
+.ai-botkit-history-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.ai-botkit-history-close {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: #666;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-botkit-history-close:hover {
+    background: #e5e5e5;
+    color: #333;
+}
+
+.ai-botkit-history-close i {
+    font-size: 1.25rem;
+}
+
+/* ==========================================================================
+   Quick Filters
+   ========================================================================== */
+
+.ai-botkit-quick-filters {
+    display: flex;
+    gap: 8px;
+    padding: 0.75rem 1rem;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0;
+    overflow-x: auto;
+}
+
+.ai-botkit-quick-filter {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #555;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.ai-botkit-quick-filter:hover {
+    background: #e5e5e5;
+    color: #333;
+}
+
+.ai-botkit-quick-filter.is-active {
+    background: #1E3A8A;
+    color: #fff;
+}
+
+/* ==========================================================================
+   Filter Form
+   ========================================================================== */
+
+.ai-botkit-history-filters {
+    padding: 0.75rem 1rem;
+    background: #fafafa;
+    border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0;
+}
+
+.ai-botkit-history-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.ai-botkit-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 100px;
+}
+
+.ai-botkit-filter-group label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ai-botkit-filter-group input,
+.ai-botkit-filter-group select {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    color: #333;
+    width: 100%;
+}
+
+.ai-botkit-filter-group input:focus,
+.ai-botkit-filter-group select:focus {
+    outline: none;
+    border-color: #1E3A8A;
+    box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+}
+
+.ai-botkit-filter-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.ai-botkit-filter-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ai-botkit-filter-btn-apply {
+    background: #1E3A8A;
+    color: #fff;
+    border: none;
+}
+
+.ai-botkit-filter-btn-apply:hover {
+    background: #152c6b;
+}
+
+.ai-botkit-filter-btn-clear {
+    background: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+.ai-botkit-filter-btn-clear:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+/* ==========================================================================
+   Conversation List
+   ========================================================================== */
+
+.ai-botkit-conversation-list-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.ai-botkit-conversation-list {
+    padding: 0.5rem;
+}
+
+/* ==========================================================================
+   Conversation Item
+   ========================================================================== */
+
+.ai-botkit-conversation-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    margin-bottom: 4px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.ai-botkit-conversation-item:hover {
+    background: #f8f9fa;
+    border-color: #d1d5db;
+}
+
+.ai-botkit-conversation-item.is-active {
+    background: #e8f0fe;
+    border-color: #1E3A8A;
+}
+
+.ai-botkit-conversation-item.is-favorite {
+    border-left: 3px solid #f59e0b;
+}
+
+.ai-botkit-conversation-item:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.3);
+}
+
+/* Conversation Content */
+.ai-botkit-conversation-content {
+    flex: 1;
+    min-width: 0;
+    padding-right: 8px;
+}
+
+.ai-botkit-conversation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+    gap: 8px;
+}
+
+.ai-botkit-conversation-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.ai-botkit-conversation-date {
+    font-size: 0.7rem;
+    color: #888;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.ai-botkit-conversation-preview {
+    font-size: 0.8rem;
+    color: #666;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-bottom: 6px;
+}
+
+.ai-botkit-conversation-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.ai-botkit-conversation-bot {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ai-botkit-conversation-bot::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+}
+
+.ai-botkit-conversation-count {
+    color: #aaa;
+}
+
+/* ==========================================================================
+   Conversation Actions
+   ========================================================================== */
+
+.ai-botkit-conversation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.ai-botkit-conversation-item:hover .ai-botkit-conversation-actions {
+    opacity: 1;
+}
+
+.ai-botkit-conversation-actions button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #888;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-botkit-conversation-actions button:hover {
+    background: #e5e5e5;
+    color: #333;
+}
+
+.ai-botkit-conversation-actions button i {
+    font-size: 1rem;
+}
+
+/* Favorite Button States */
+.ai-botkit-favorite-btn.is-favorite {
+    color: #f59e0b;
+}
+
+.ai-botkit-favorite-btn.is-favorite:hover {
+    color: #d97706;
+    background: #fef3c7;
+}
+
+/* Delete Button */
+.ai-botkit-delete-conversation-btn:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+}
+
+/* Archive Button */
+.ai-botkit-archive-btn:hover {
+    background: #e0e7ff !important;
+    color: #4f46e5 !important;
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+
+.ai-botkit-history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.ai-botkit-history-empty-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    color: #ccc;
+}
+
+.ai-botkit-history-empty-icon i {
+    font-size: 3rem;
+}
+
+.ai-botkit-history-empty h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.ai-botkit-history-empty p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   Loading State
+   ========================================================================== */
+
+.ai-botkit-history-loading {
+    display: none;
+    padding: 2rem;
+    text-align: center;
+}
+
+.ai-botkit-history-loading.is-active {
+    display: block;
+}
+
+.ai-botkit-history-spinner {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 1rem;
+    border: 3px solid #e5e5e5;
+    border-top-color: #1E3A8A;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.ai-botkit-history-loading-text {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+/* ==========================================================================
+   Load More Button
+   ========================================================================== */
+
+.ai-botkit-load-more-wrapper {
+    padding: 1rem;
+    text-align: center;
+}
+
+.ai-botkit-load-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1E3A8A;
+    background: transparent;
+    border: 1px solid #1E3A8A;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ai-botkit-load-more:hover {
+    background: #1E3A8A;
+    color: #fff;
+}
+
+.ai-botkit-load-more:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   History Toggle Button
+   ========================================================================== */
+
+.ai-botkit-history-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: #666;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.ai-botkit-history-toggle:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+.ai-botkit-history-toggle i {
+    font-size: 1.25rem;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.ai-botkit-history-footer {
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-top: 1px solid #e5e5e5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.ai-botkit-history-count {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.ai-botkit-new-conversation-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #fff;
+    background: #1E3A8A;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ai-botkit-new-conversation-btn:hover {
+    background: #152c6b;
+}
+
+.ai-botkit-new-conversation-btn i {
+    font-size: 1rem;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media screen and (max-width: 480px) {
+    .ai-botkit-history-filter-form {
+        flex-direction: column;
+    }
+
+    .ai-botkit-filter-group {
+        width: 100%;
+    }
+
+    .ai-botkit-filter-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .ai-botkit-filter-btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .ai-botkit-quick-filters {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .ai-botkit-conversation-item {
+        padding: 10px;
+    }
+
+    .ai-botkit-conversation-actions {
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   Animation for Panel
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .ai-botkit-history-panel {
+        transition: none;
+    }
+
+    .ai-botkit-conversation-item,
+    .ai-botkit-quick-filter,
+    .ai-botkit-conversation-actions {
+        transition: none;
+    }
+}
+
+/* ==========================================================================
+   Dark Mode Support (if needed)
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    /* Override styles for dark mode if the site supports it */
+}
+
+/* ==========================================================================
+   RTL Support
+   ========================================================================== */
+
+.rtl .ai-botkit-history-panel {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
+}
+
+.rtl .ai-botkit-history-panel.is-open {
+    transform: translateX(0);
+}
+
+.rtl .ai-botkit-conversation-item.is-favorite {
+    border-left: none;
+    border-right: 3px solid #f59e0b;
+}
+
+.rtl .ai-botkit-conversation-content {
+    padding-right: 0;
+    padding-left: 8px;
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .ai-botkit-history-panel {
+        display: none !important;
+    }
+
+    .ai-botkit-history-toggle {
+        display: none !important;
+    }
+}

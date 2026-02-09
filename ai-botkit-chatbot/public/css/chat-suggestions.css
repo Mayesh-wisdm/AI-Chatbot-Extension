@@ -1,0 +1,519 @@
+/**
+ * AI BotKit Chat Suggestions Styles
+ *
+ * Styles for product and course recommendation cards in the chat interface.
+ *
+ * @package AI_BotKit
+ * @since   2.0.0
+ *
+ * Implements: FR-255 (Suggestion UI Cards)
+ */
+
+/* ==========================================================================
+   Container
+   ========================================================================== */
+
+.ai-botkit-suggestions-wrapper {
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+    padding: 0;
+    width: 100%;
+}
+
+.ai-botkit-suggestions-container {
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.ai-botkit-suggestions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 0;
+}
+
+.ai-botkit-suggestions-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ai-botkit-suggestion-title-color, var(--ai-botkit-text-secondary, var(--ai-botkit-chat-text-muted, #555)));
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+/* Ensure suggestion cards use chat theme when inside chat (variables set by .ai-botkit-chat) */
+.ai-botkit-chat .ai-botkit-suggestion-card {
+    border-radius: var(--ai-botkit-chat-radius, 8px);
+    border-color: var(--ai-botkit-suggestion-card-border, var(--ai-botkit-border, var(--ai-botkit-chat-border, #E7E7E7)));
+    background: var(--ai-botkit-suggestion-card-bg, var(--ai-botkit-card-bg, var(--ai-botkit-chat-bg, #fff)));
+}
+
+/* ==========================================================================
+   Grid Layout (3 or fewer items)
+   ========================================================================== */
+
+.ai-botkit-suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+@media (max-width: 480px) {
+    .ai-botkit-suggestions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   Carousel Layout (more than 3 items)
+   ========================================================================== */
+
+.ai-botkit-suggestions-carousel {
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-botkit-suggestions-track {
+    display: flex;
+    gap: 12px;
+    transition: transform 0.3s ease-out;
+    padding: 4px 0;
+}
+
+.ai-botkit-suggestions-carousel .ai-botkit-suggestion-card {
+    flex: 0 0 220px;
+    max-width: 220px;
+}
+
+/* Carousel Navigation */
+.ai-botkit-carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: var(--ai-botkit-bg, #fff);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.2s ease;
+    color: var(--ai-botkit-text, #333);
+}
+
+.ai-botkit-carousel-nav:hover:not(:disabled) {
+    background: var(--ai-botkit-primary, #007bff);
+    color: #fff;
+}
+
+.ai-botkit-carousel-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.ai-botkit-carousel-prev {
+    left: 0;
+}
+
+.ai-botkit-carousel-next {
+    right: 0;
+}
+
+/* ==========================================================================
+   Suggestion Card
+   ========================================================================== */
+
+.ai-botkit-suggestion-card {
+    background: var(--ai-botkit-suggestion-card-bg, var(--ai-botkit-card-bg, #fff));
+    border: 1px solid var(--ai-botkit-suggestion-card-border, var(--ai-botkit-border, #e0e0e0));
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-botkit-suggestion-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--ai-botkit-primary, #007bff);
+}
+
+.ai-botkit-suggestion-card:focus {
+    outline: 2px solid var(--ai-botkit-primary, #007bff);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Card Image
+   ========================================================================== */
+
+.ai-botkit-suggestion-image {
+    position: relative;
+    width: 100%;
+    height: 120px;
+    background: var(--ai-botkit-bg-secondary, #f5f5f5);
+    overflow: hidden;
+}
+
+.ai-botkit-suggestion-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.ai-botkit-suggestion-card:hover .ai-botkit-suggestion-image img {
+    transform: scale(1.05);
+}
+
+.ai-botkit-suggestion-no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.ai-botkit-suggestion-type-badge {
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   Card Content
+   ========================================================================== */
+
+.ai-botkit-suggestion-content {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.ai-botkit-suggestion-title {
+    margin: 0 0 6px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ai-botkit-text, #333);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ai-botkit-suggestion-description {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: var(--ai-botkit-text-secondary, #666);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Card Meta Information
+   ========================================================================== */
+
+.ai-botkit-suggestion-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 12px;
+}
+
+.ai-botkit-suggestion-price {
+    font-weight: 700;
+    color: var(--ai-botkit-primary, #007bff);
+}
+
+.ai-botkit-suggestion-price del {
+    color: var(--ai-botkit-text-muted, #999);
+    font-weight: 400;
+    margin-right: 4px;
+}
+
+.ai-botkit-suggestion-price ins {
+    text-decoration: none;
+}
+
+.ai-botkit-suggestion-rating {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    color: #f5a623;
+}
+
+.ai-botkit-suggestion-reviews {
+    color: var(--ai-botkit-text-secondary, #666);
+    font-size: 11px;
+}
+
+.ai-botkit-suggestion-progress {
+    padding: 2px 8px;
+    background: var(--ai-botkit-success-bg, #e6f7ed);
+    color: var(--ai-botkit-success, #28a745);
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.ai-botkit-suggestion-lessons {
+    color: var(--ai-botkit-text-secondary, #666);
+    font-size: 11px;
+}
+
+.ai-botkit-suggestion-stock {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.ai-botkit-suggestion-stock-outofstock {
+    background: var(--ai-botkit-danger-bg, #fde8e8);
+    color: var(--ai-botkit-danger, #dc3545);
+}
+
+.ai-botkit-suggestion-stock-onbackorder {
+    background: var(--ai-botkit-warning-bg, #fff8e1);
+    color: var(--ai-botkit-warning, #ffc107);
+}
+
+/* ==========================================================================
+   Star Rating
+   ========================================================================== */
+
+.ai-botkit-star {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.ai-botkit-star-full {
+    color: #f5a623;
+}
+
+.ai-botkit-star-half {
+    color: #f5a623;
+}
+
+.ai-botkit-star-empty {
+    color: #ddd;
+}
+
+/* ==========================================================================
+   Action Button
+   ========================================================================== */
+
+.ai-botkit-suggestion-action {
+    margin-top: auto;
+}
+
+.ai-botkit-suggestion-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--ai-botkit-primary, #007bff);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ai-botkit-suggestion-btn:hover:not(:disabled) {
+    background: var(--ai-botkit-primary-dark, #0056b3);
+    transform: translateY(-1px);
+}
+
+.ai-botkit-suggestion-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.ai-botkit-suggestion-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ai-botkit-suggestion-btn svg {
+    flex-shrink: 0;
+}
+
+/* Button States */
+.ai-botkit-btn-success {
+    background: var(--ai-botkit-success, #28a745) !important;
+}
+
+.ai-botkit-btn-error {
+    background: var(--ai-botkit-danger, #dc3545) !important;
+}
+
+/* Loading Spinner */
+.ai-botkit-loading {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: ai-botkit-spin 0.8s linear infinite;
+}
+
+@keyframes ai-botkit-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================================================
+   Mobile Styles
+   ========================================================================== */
+
+@media (max-width: 480px) {
+    .ai-botkit-suggestions-carousel .ai-botkit-suggestion-card {
+        flex: 0 0 85%;
+        max-width: 85%;
+    }
+
+    .ai-botkit-carousel-nav {
+        display: none;
+    }
+
+    .ai-botkit-suggestions-track {
+        scroll-snap-type: x mandatory;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .ai-botkit-suggestions-track::-webkit-scrollbar {
+        display: none;
+    }
+
+    .ai-botkit-suggestions-track .ai-botkit-suggestion-card {
+        scroll-snap-align: center;
+    }
+
+    .ai-botkit-suggestion-image {
+        height: 140px;
+    }
+
+    .ai-botkit-suggestion-content {
+        padding: 14px;
+    }
+
+    .ai-botkit-suggestion-title {
+        font-size: 15px;
+    }
+
+    .ai-botkit-suggestion-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+/* ==========================================================================
+   Dark Mode Support
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .ai-botkit-suggestion-card {
+        background: var(--ai-botkit-card-bg-dark, #2d2d2d);
+        border-color: var(--ai-botkit-border-dark, #404040);
+    }
+
+    .ai-botkit-suggestion-title {
+        color: var(--ai-botkit-text-dark, #f0f0f0);
+    }
+
+    .ai-botkit-suggestion-description,
+    .ai-botkit-suggestion-reviews,
+    .ai-botkit-suggestion-lessons {
+        color: var(--ai-botkit-text-secondary-dark, #aaa);
+    }
+
+    .ai-botkit-suggestions-title {
+        color: var(--ai-botkit-text-secondary-dark, #aaa);
+    }
+
+    .ai-botkit-carousel-nav {
+        background: var(--ai-botkit-card-bg-dark, #2d2d2d);
+        color: var(--ai-botkit-text-dark, #f0f0f0);
+    }
+
+    .ai-botkit-suggestion-no-image {
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    }
+}
+
+/* Dark mode class override */
+.ai-botkit-dark .ai-botkit-suggestion-card,
+[data-theme="dark"] .ai-botkit-suggestion-card {
+    background: var(--ai-botkit-card-bg-dark, #2d2d2d);
+    border-color: var(--ai-botkit-border-dark, #404040);
+}
+
+.ai-botkit-dark .ai-botkit-suggestion-title,
+[data-theme="dark"] .ai-botkit-suggestion-title {
+    color: var(--ai-botkit-text-dark, #f0f0f0);
+}
+
+/* ==========================================================================
+   Animation
+   ========================================================================== */
+
+.ai-botkit-suggestion-card {
+    animation: ai-botkit-fade-in 0.3s ease-out;
+}
+
+@keyframes ai-botkit-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation for multiple cards */
+.ai-botkit-suggestions-grid .ai-botkit-suggestion-card:nth-child(1) { animation-delay: 0s; }
+.ai-botkit-suggestions-grid .ai-botkit-suggestion-card:nth-child(2) { animation-delay: 0.05s; }
+.ai-botkit-suggestions-grid .ai-botkit-suggestion-card:nth-child(3) { animation-delay: 0.1s; }
+.ai-botkit-suggestions-grid .ai-botkit-suggestion-card:nth-child(4) { animation-delay: 0.15s; }
+.ai-botkit-suggestions-grid .ai-botkit-suggestion-card:nth-child(5) { animation-delay: 0.2s; }
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .ai-botkit-suggestions-container {
+        display: none;
+    }
+}

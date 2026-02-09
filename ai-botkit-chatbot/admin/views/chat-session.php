@@ -52,6 +52,16 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 			</a>
 			<h1 class="ai-botkit-knowledge-title"><?php esc_html_e('Conversation', 'knowvault'); ?></h1>
 		</div>
+		<div class="ai-botkit-knowledge-header-right">
+			<button type="button" class="ai-botkit-btn ai-botkit-btn-primary ai-botkit-export-pdf-btn" data-conversation-id="<?php echo absint( $chat_session_id ); ?>">
+				<i class="ti ti-file-type-pdf"></i>
+				<?php esc_html_e( 'Export PDF', 'knowvault' ); ?>
+			</button>
+			<button type="button" class="ai-botkit-btn ai-botkit-btn-outline ai-botkit-export-csv-btn" data-conversation-id="<?php echo absint( $chat_session_id ); ?>">
+				<i class="ti ti-file-type-csv"></i>
+				<?php esc_html_e( 'Export CSV', 'knowvault' ); ?>
+			</button>
+		</div>
 	</div>
 
 	<div class="ai-botkit-chat-session-container">

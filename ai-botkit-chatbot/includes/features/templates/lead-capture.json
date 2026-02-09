@@ -1,0 +1,114 @@
+{
+    "name": "Lead Capture",
+    "description": "Conversational lead generation assistant that collects visitor information through engaging dialogue.",
+    "type": "lead",
+    "category": "marketing",
+    "style": {
+        "primary_color": "#DC2626",
+        "secondary_color": "#FEF2F2",
+        "background_color": "#FFFFFF",
+        "text_color": "#1F2937",
+        "font_family": "system-ui, -apple-system, sans-serif",
+        "font_size": "14px",
+        "border_radius": "12px",
+        "position": "bottom-right",
+        "widget_width": "380px",
+        "header_bg_color": "#DC2626",
+        "header_color": "#FFFFFF",
+        "header_icon_color": "#FFFFFF",
+        "body_bg_color": "#FFFFFF",
+        "ai_msg_bg_color": "#FEF2F2",
+        "ai_msg_font_color": "#1F2937",
+        "user_msg_bg_color": "#DC2626",
+        "user_msg_font_color": "#FFFFFF",
+        "chat_bubble_style": "rounded"
+    },
+    "messages_template": {
+        "personality": "You are a friendly lead qualification assistant for {{site_name}}. Your goal is to engage visitors, understand their needs, and collect their contact information for follow-up. Be conversational and helpful, not pushy. Make the lead capture process feel like a natural conversation, not a form fill. Respect user privacy and clearly explain how their information will be used.",
+        "greeting": "Hi! Welcome to {{site_name}}! I'm here to help you learn more about what we offer. May I ask a few questions to better assist you?",
+        "fallback": "I'd love to help you learn more! Could you tell me a bit about what you're looking for? I can then connect you with our team.",
+        "thinking": "Got it, let me note that down...",
+        "error": "Sorry about that! Please try again or leave your email and we'll reach out directly.",
+        "goodbye": "Thank you for your interest in {{site_name}}! Our team will be in touch soon. Have a great day!",
+        "thank_you": "Thank you for sharing that information! Our team will review your needs and reach out within 24 hours.",
+        "privacy_note": "Your information is safe with us and will only be used to help you find the right solution."
+    },
+    "model_config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.5,
+        "max_tokens": 600,
+        "context_length": 10,
+        "min_chunk_relevance": 0.3,
+        "tone": "friendly",
+        "instructions": [
+            "Be conversational, not form-like",
+            "Ask one question at a time",
+            "Show genuine interest in their needs",
+            "Clearly explain the value they'll receive",
+            "Respect privacy and explain data usage"
+        ]
+    },
+    "conversation_starters": [
+        {
+            "text": "Tell me about your services",
+            "icon": "info"
+        },
+        {
+            "text": "Get a free consultation",
+            "icon": "calendar"
+        },
+        {
+            "text": "Request a demo",
+            "icon": "play-circle"
+        },
+        {
+            "text": "Download our guide",
+            "icon": "download"
+        }
+    ],
+    "behavior": {
+        "show_sources": false,
+        "collect_feedback": false,
+        "enable_typing_indicator": true,
+        "auto_suggest_questions": false,
+        "lead_capture_enabled": true,
+        "required_fields": ["name", "email"],
+        "optional_fields": ["company", "phone", "interest", "budget"],
+        "form_flow": [
+            {
+                "field": "interest",
+                "question": "What brings you to {{site_name}} today?",
+                "type": "text"
+            },
+            {
+                "field": "name",
+                "question": "Great! And what should I call you?",
+                "type": "text",
+                "validation": "required"
+            },
+            {
+                "field": "email",
+                "question": "Perfect, {{name}}! What's the best email to reach you at?",
+                "type": "email",
+                "validation": "email"
+            },
+            {
+                "field": "company",
+                "question": "And which company or organization are you with?",
+                "type": "text"
+            },
+            {
+                "field": "budget",
+                "question": "One last question - do you have a budget range in mind for this project?",
+                "type": "select",
+                "options": ["Under $1,000", "$1,000 - $5,000", "$5,000 - $10,000", "$10,000+", "Not sure yet"]
+            }
+        ],
+        "webhook_url": "",
+        "crm_integration": {
+            "enabled": false,
+            "provider": "",
+            "api_key": ""
+        }
+    }
+}

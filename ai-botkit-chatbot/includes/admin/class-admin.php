@@ -68,6 +68,11 @@ class Admin {
         $this->rag_engine = $rag_engine;
         $this->ajax_handler = new Ajax_Handler();
 
+        // Initialize Template AJAX Handler (FR-230 to FR-239).
+        if ( class_exists( '\\AI_BotKit\\Features\\Template_Ajax_Handler' ) ) {
+            new \AI_BotKit\Features\Template_Ajax_Handler();
+        }
+
         // Initialize admin hooks
         $this->init_hooks();
 
@@ -408,6 +413,15 @@ class Admin {
             false
         );
 
+        // Enqueue export functionality script (Phase 2: FR-240 to FR-249)
+        wp_enqueue_script(
+            'ai-botkit-admin-export',
+            AI_BOTKIT_PLUGIN_URL . 'admin/js/admin-export.js',
+            array('jquery', 'ai-botkit-admin'),
+            $this->version,
+            true
+        );
+
         // Enqueue Color Picker
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('jquery-ui-sortable');
@@ -448,6 +462,36 @@ class Admin {
             ));
         }
 
+        // Enqueue templates scripts on templates page.
+        $is_templates_page = ( strpos( $hook, 'ai-botkit' ) !== false && isset( $_GET['tab'] ) && $_GET['tab'] === 'templates' );
+
+        if ( $is_templates_page ) {
+            wp_enqueue_script(
+                'ai-botkit-templates',
+                AI_BOTKIT_PLUGIN_URL . 'admin/js/templates.js',
+                array( 'jquery' ),
+                $this->version,
+                true
+            );
+
+            // Localize templates script with AJAX data.
+            wp_localize_script(
+                'ai-botkit-templates',
+                'ai_botkit_admin',
+                array(
+                    'ajax_url' => admin_url( 'admin-ajax.php' ),
+                    'nonce'    => wp_create_nonce( 'ai_botkit_admin' ),
+                )
+            );
+
+            wp_enqueue_style(
+                'ai-botkit-templates',
+                AI_BOTKIT_PLUGIN_URL . 'admin/css/templates.css',
+                array(),
+                $this->version
+            );
+        }
+
         // Localize script with plugin data
         wp_localize_script('ai-botkit-admin', 'ai_botkitAdmin', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -477,6 +521,10 @@ class Admin {
             ),
             'knowledge' => array(
                 'title' => __('Knowledge Base', 'knowvault'),
+                'capability' => 'manage_options'
+            ),
+            'templates' => array(
+                'title' => __('Templates', 'knowvault'),
                 'capability' => 'manage_options'
             ),
             'analytics' => array(
@@ -511,7 +559,7 @@ class Admin {
         if (array_key_exists($this->tab, $registered_tabs)) {
             // Check if this is a core tab or an extension tab
             // Core tabs are the ones that have view files in admin/views/
-            $core_tabs = array('knowledge', 'chatbots', 'analytics', 'settings', 'security');
+            $core_tabs = array('knowledge', 'chatbots', 'templates', 'analytics', 'settings', 'security');
             
             if (in_array($this->tab, $core_tabs)) {
                 // Handle known core tabs
@@ -536,6 +584,9 @@ class Admin {
                 } else {
                     require_once AI_BOTKIT_PLUGIN_DIR . 'admin/views/chatbots.php';
                 }
+                break;
+            case 'templates':
+                require_once AI_BOTKIT_PLUGIN_DIR . 'admin/views/templates.php';
                 break;
             case 'analytics':
                 require_once AI_BOTKIT_PLUGIN_DIR . 'admin/views/analytics.php';

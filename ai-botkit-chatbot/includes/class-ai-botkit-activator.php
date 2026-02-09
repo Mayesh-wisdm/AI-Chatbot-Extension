@@ -50,9 +50,37 @@ class Activator {
 
         // Schedule tasks
         self::schedule_tasks();
-        
+
+        // Run Phase 2 migrations (adds is_favorite, is_archived columns, etc.)
+        self::run_phase2_migrations();
+
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+
+    /**
+     * Run Phase 2 database migrations
+     *
+     * Adds new columns and tables for Phase 2 features:
+     * - is_favorite and is_archived columns to conversations table
+     * - media table for rich media support
+     * - templates table for conversation templates
+     * - user_interactions table for recommendations
+     * - Various performance indexes
+     */
+    public static function run_phase2_migrations() {
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-phase2-migration.php';
+
+        $migration = new \AI_BotKit\Core\Phase2_Migration();
+
+        if ( $migration->is_migration_needed() ) {
+            $result = $migration->run_migrations();
+
+            if ( ! $result['success'] && ! empty( $result['errors'] ) ) {
+                // Log migration errors for debugging
+                error_log( 'AI BotKit Phase 2 Migration Errors: ' . implode( ', ', $result['errors'] ) );
+            }
+        }
     }
     
     /**

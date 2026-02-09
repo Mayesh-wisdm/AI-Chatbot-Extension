@@ -1,0 +1,573 @@
+/**
+ * AI BotKit Templates Admin Styles
+ *
+ * @package AI_BotKit\Admin
+ * @since   2.0.0
+ *
+ * Implements: FR-231 (Admin Template List View)
+ * Implements: FR-232 (Template Builder/Editor)
+ */
+
+/* ============================================
+   Templates Page Layout
+   ============================================ */
+
+.ai-botkit-templates-filters {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.ai-botkit-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-botkit-filter-group label {
+    font-weight: 500;
+    color: #50575e;
+}
+
+.ai-botkit-filter-select {
+    min-width: 150px;
+}
+
+/* ============================================
+   Template Grid
+   ============================================ */
+
+.ai-botkit-templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.ai-botkit-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.ai-botkit-loading .spinner {
+    float: none;
+    margin: 0 10px 0 0;
+}
+
+.ai-botkit-no-items {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #666;
+}
+
+/* ============================================
+   Template Card
+   ============================================ */
+
+.ai-botkit-template-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.ai-botkit-template-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.ai-botkit-template-card-header {
+    padding: 16px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ai-botkit-template-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.ai-botkit-badge-support { background: #059669; }
+.ai-botkit-badge-sales { background: #7C3AED; }
+.ai-botkit-badge-marketing { background: #DC2626; }
+.ai-botkit-badge-education { background: #2563EB; }
+.ai-botkit-badge-general { background: #6B7280; }
+.ai-botkit-badge-system { background: rgba(255, 255, 255, 0.2); }
+
+.ai-botkit-template-card-body {
+    padding: 16px;
+}
+
+.ai-botkit-template-name {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.ai-botkit-template-description {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 40px;
+}
+
+.ai-botkit-template-meta {
+    font-size: 12px;
+    color: #888;
+}
+
+.ai-botkit-template-usage i {
+    margin-right: 4px;
+}
+
+.ai-botkit-template-card-actions {
+    display: flex;
+    border-top: 1px solid #eee;
+    padding: 8px;
+    gap: 4px;
+}
+
+.ai-botkit-template-card-actions .button {
+    flex: 1;
+    padding: 6px 8px;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-botkit-template-card-actions .button i {
+    font-size: 16px;
+}
+
+.ai-botkit-template-card-actions .button:hover {
+    background: #f0f0f1;
+}
+
+/* ============================================
+   Modal Styles
+   ============================================ */
+
+.ai-botkit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+}
+
+.ai-botkit-modal-content {
+    background: #fff;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-botkit-modal-large {
+    max-width: 800px;
+}
+
+.ai-botkit-modal-small {
+    max-width: 400px;
+}
+
+.ai-botkit-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.ai-botkit-modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.ai-botkit-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.ai-botkit-modal-close:hover {
+    color: #d63638;
+}
+
+.ai-botkit-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.ai-botkit-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-top: 1px solid #ddd;
+    background: #f6f7f7;
+    border-radius: 0 0 8px 8px;
+}
+
+.ai-botkit-modal-footer-left {
+    flex: 1;
+}
+
+.ai-botkit-modal-footer-right {
+    display: flex;
+    gap: 8px;
+}
+
+/* ============================================
+   Template Form Tabs
+   ============================================ */
+
+.ai-botkit-template-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.ai-botkit-tab-btn {
+    background: none;
+    border: none;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.ai-botkit-tab-btn:hover {
+    color: #2271b1;
+}
+
+.ai-botkit-tab-btn.active {
+    color: #2271b1;
+    border-bottom-color: #2271b1;
+}
+
+.ai-botkit-tab-panel {
+    display: none;
+}
+
+.ai-botkit-tab-panel.active {
+    display: block;
+}
+
+/* ============================================
+   Form Styles
+   ============================================ */
+
+.ai-botkit-form-row {
+    margin-bottom: 16px;
+}
+
+.ai-botkit-form-row label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.ai-botkit-form-row input[type="text"],
+.ai-botkit-form-row input[type="number"],
+.ai-botkit-form-row input[type="email"],
+.ai-botkit-form-row input[type="url"],
+.ai-botkit-form-row textarea,
+.ai-botkit-form-row select {
+    width: 100%;
+}
+
+.ai-botkit-form-row textarea {
+    min-height: 80px;
+}
+
+.ai-botkit-form-row .description {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+.ai-botkit-form-row .required {
+    color: #d63638;
+}
+
+.ai-botkit-form-row-inline {
+    display: flex;
+    gap: 16px;
+}
+
+.ai-botkit-form-row-inline > div {
+    flex: 1;
+}
+
+.ai-botkit-form-row input[type="color"] {
+    width: 60px;
+    height: 36px;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.ai-botkit-form-row input[type="range"] {
+    width: calc(100% - 50px);
+    vertical-align: middle;
+}
+
+.ai-botkit-form-row input[type="range"] + span {
+    display: inline-block;
+    width: 40px;
+    text-align: right;
+    margin-left: 10px;
+}
+
+/* ============================================
+   Radio Group
+   ============================================ */
+
+.ai-botkit-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ai-botkit-radio-group label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.ai-botkit-radio-group label input {
+    margin-top: 3px;
+}
+
+.ai-botkit-radio-group .description {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-left: 22px;
+    margin-top: 2px;
+}
+
+/* ============================================
+   Conversation Starters
+   ============================================ */
+
+#conversation-starters-list {
+    margin-bottom: 16px;
+}
+
+.ai-botkit-starter-item {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.ai-botkit-starter-item-content {
+    display: flex;
+    flex: 1;
+    gap: 8px;
+}
+
+.ai-botkit-starter-item-content input {
+    flex: 1;
+}
+
+.ai-botkit-starter-item-content select {
+    width: 120px;
+}
+
+.ai-botkit-remove-starter {
+    padding: 4px 8px !important;
+    color: #d63638 !important;
+}
+
+/* ============================================
+   Notices
+   ============================================ */
+
+.ai-botkit-notice {
+    padding: 12px;
+    border-radius: 4px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-botkit-notice i {
+    font-size: 18px;
+}
+
+.ai-botkit-notice-warning {
+    background: #fcf0e0;
+    border-left: 4px solid #dba617;
+    color: #8a6d3b;
+}
+
+.ai-botkit-notice-inline {
+    font-size: 12px;
+    color: #666;
+}
+
+.ai-botkit-notice-inline i {
+    font-size: 14px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* ============================================
+   Toast Notifications
+   ============================================ */
+
+.ai-botkit-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 40px 12px 16px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100001;
+    display: none;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.ai-botkit-toast-success {
+    background: #00a32a;
+    color: #fff;
+}
+
+.ai-botkit-toast-error {
+    background: #d63638;
+    color: #fff;
+}
+
+.ai-botkit-toast-close {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.ai-botkit-toast-close:hover {
+    opacity: 1;
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+
+.button-danger {
+    background: #d63638 !important;
+    border-color: #d63638 !important;
+    color: #fff !important;
+}
+
+.button-danger:hover {
+    background: #b32d2e !important;
+    border-color: #b32d2e !important;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media screen and (max-width: 782px) {
+    .ai-botkit-templates-filters {
+        flex-wrap: wrap;
+    }
+
+    .ai-botkit-filter-group {
+        flex: 1 1 200px;
+    }
+
+    .ai-botkit-templates-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-botkit-modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .ai-botkit-template-tabs {
+        overflow-x: auto;
+    }
+
+    .ai-botkit-form-row-inline {
+        flex-direction: column;
+    }
+
+    .ai-botkit-modal-footer {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ai-botkit-modal-footer-left,
+    .ai-botkit-modal-footer-right {
+        width: 100%;
+        text-align: center;
+    }
+
+    .ai-botkit-modal-footer-right {
+        justify-content: center;
+    }
+}

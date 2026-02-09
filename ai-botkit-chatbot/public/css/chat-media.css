@@ -1,0 +1,883 @@
+/**
+ * AI BotKit Chat Media Styles
+ *
+ * Styles for rich media support including:
+ * - Media container and gallery
+ * - Image display with lightbox
+ * - Video embed responsive styles
+ * - File attachment cards
+ * - Link preview cards
+ * - Upload preview and progress
+ * - Drag and drop overlay
+ *
+ * @package AI_BotKit
+ * @since 2.0.0
+ *
+ * Implements: FR-220 to FR-229 (Rich Media Support)
+ */
+
+/* =========================================================
+   Media Button
+   ========================================================= */
+
+.ai-botkit-media-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.ai-botkit-media-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.ai-botkit-media-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.ai-botkit-media-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* =========================================================
+   Media Preview Container
+   ========================================================= */
+
+.ai-botkit-media-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+    margin: 8px 0;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.ai-botkit-upload-preview {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    min-width: 240px;
+    max-width: 320px;
+}
+
+.ai-botkit-upload-preview.success {
+    border-color: #10b981;
+    background: #ecfdf5;
+}
+
+.ai-botkit-upload-preview.error {
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+
+.ai-botkit-preview-image,
+.ai-botkit-preview-file {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.ai-botkit-preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ai-botkit-preview-file svg {
+    width: 24px;
+    height: 24px;
+    color: #6b7280;
+}
+
+.ai-botkit-preview-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ai-botkit-preview-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ai-botkit-preview-size {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.ai-botkit-preview-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #e5e7eb;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+.ai-botkit-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    transition: width 0.3s ease;
+    width: 0;
+}
+
+.ai-botkit-preview-error {
+    font-size: 12px;
+    color: #ef4444;
+    padding: 4px 8px;
+}
+
+.ai-botkit-preview-cancel {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: #ef4444;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.ai-botkit-preview-cancel:hover {
+    transform: scale(1.1);
+}
+
+.ai-botkit-preview-cancel svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* =========================================================
+   Image Media
+   ========================================================= */
+
+.ai-botkit-media-image {
+    display: inline-block;
+    max-width: 100%;
+    margin: 8px 0;
+}
+
+.ai-botkit-media-image a {
+    display: block;
+    cursor: zoom-in;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-botkit-media-image a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ai-botkit-media-image img {
+    display: block;
+    max-width: 100%;
+    max-height: 400px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    background: #f3f4f6;
+}
+
+/* Loading placeholder */
+.ai-botkit-media-image img[src=""] {
+    min-height: 100px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: ai-botkit-image-loading 1.5s infinite;
+}
+
+@keyframes ai-botkit-image-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Image gallery (multiple images) */
+.ai-botkit-media-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.ai-botkit-media-gallery .ai-botkit-media-image {
+    margin: 0;
+}
+
+.ai-botkit-media-gallery .ai-botkit-media-image img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+/* =========================================================
+   Video Embed
+   ========================================================= */
+
+.ai-botkit-media-video {
+    margin: 12px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ai-botkit-video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.ai-botkit-video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Video placeholder (before embed) */
+.ai-botkit-video-placeholder {
+    position: relative;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.ai-botkit-video-placeholder img {
+    width: 100%;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.ai-botkit-video-placeholder:hover img {
+    transform: scale(1.02);
+}
+
+.ai-botkit-video-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.ai-botkit-video-placeholder:hover .ai-botkit-video-play {
+    background: rgba(239, 68, 68, 0.9);
+}
+
+.ai-botkit-video-play svg {
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+    margin-left: 4px;
+}
+
+/* =========================================================
+   File Attachment Card
+   ========================================================= */
+
+.ai-botkit-media-document {
+    margin: 8px 0;
+}
+
+.ai-botkit-file-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-botkit-file-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ai-botkit-file-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.ai-botkit-file-icon svg {
+    width: 24px;
+    height: 24px;
+    color: #ef4444;
+    /* PDF red */
+}
+
+.ai-botkit-file-card[data-type="doc"] .ai-botkit-file-icon svg,
+.ai-botkit-file-card[data-type="docx"] .ai-botkit-file-icon svg {
+    color: #3b82f6;
+    /* Word blue */
+}
+
+.ai-botkit-file-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ai-botkit-file-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ai-botkit-file-size {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.ai-botkit-file-download {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #3b82f6;
+    border-radius: 50%;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ai-botkit-file-download:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.ai-botkit-file-download svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* =========================================================
+   Link Preview Card
+   ========================================================= */
+
+.ai-botkit-media-link {
+    margin: 8px 0;
+}
+
+.ai-botkit-link-card {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    text-decoration: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-botkit-link-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.ai-botkit-link-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.ai-botkit-link-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.ai-botkit-link-card:hover .ai-botkit-link-image img {
+    transform: scale(1.02);
+}
+
+.ai-botkit-link-content {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ai-botkit-link-site {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ai-botkit-link-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ai-botkit-link-description {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Compact link preview (no image) */
+.ai-botkit-link-card.compact {
+    flex-direction: row;
+    padding: 12px 16px;
+}
+
+.ai-botkit-link-card.compact .ai-botkit-link-image {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+
+.ai-botkit-link-card.compact .ai-botkit-link-content {
+    padding: 0;
+}
+
+/* =========================================================
+   Lightbox
+   ========================================================= */
+
+.ai-botkit-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.ai-botkit-lightbox.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.ai-botkit-lightbox-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.ai-botkit-lightbox-container {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    z-index: 1;
+}
+
+.ai-botkit-lightbox-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-botkit-lightbox-content img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.ai-botkit-lightbox-close {
+    position: absolute;
+    top: -48px;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.ai-botkit-lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.ai-botkit-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.ai-botkit-lightbox-nav:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.ai-botkit-lightbox-prev {
+    left: -64px;
+}
+
+.ai-botkit-lightbox-next {
+    right: -64px;
+}
+
+/* =========================================================
+   Drag and Drop Overlay
+   ========================================================= */
+
+.ai-botkit-drop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(59, 130, 246, 0.95);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+}
+
+.ai-botkit-drop-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.ai-botkit-drop-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    color: #ffffff;
+}
+
+.ai-botkit-drop-message svg {
+    width: 64px;
+    height: 64px;
+    animation: ai-botkit-bounce 1s ease infinite;
+}
+
+.ai-botkit-drop-message span {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+@keyframes ai-botkit-bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* =========================================================
+   Message Media Container
+   ========================================================= */
+
+.ai-botkit-message-media {
+    margin-top: 8px;
+}
+
+.ai-botkit-message-media>*:first-child {
+    margin-top: 0;
+}
+
+.ai-botkit-message-media>*:last-child {
+    margin-bottom: 0;
+}
+
+/* =========================================================
+   Responsive Styles
+   ========================================================= */
+
+@media (max-width: 640px) {
+    .ai-botkit-upload-preview {
+        min-width: auto;
+        max-width: 100%;
+    }
+
+    .ai-botkit-link-image {
+        height: 140px;
+    }
+
+    .ai-botkit-media-gallery {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ai-botkit-media-gallery .ai-botkit-media-image img {
+        height: 120px;
+    }
+
+    .ai-botkit-lightbox-nav {
+        display: none;
+    }
+
+    .ai-botkit-lightbox-close {
+        top: 16px;
+        right: 16px;
+    }
+
+    /* Touch gestures hint */
+    .ai-botkit-lightbox-content::after {
+        content: 'Swipe to navigate';
+        position: absolute;
+        bottom: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+/* =========================================================
+   Dark Mode Support
+   ========================================================= */
+
+@media (prefers-color-scheme: dark) {
+    .ai-botkit-media-preview-container {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .ai-botkit-upload-preview {
+        background: #111827;
+        border-color: #374151;
+    }
+
+    .ai-botkit-preview-name {
+        color: #f3f4f6;
+    }
+
+    .ai-botkit-file-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .ai-botkit-file-card:hover {
+        border-color: #4b5563;
+    }
+
+    .ai-botkit-file-icon {
+        background: #111827;
+        border-color: #374151;
+    }
+
+    .ai-botkit-file-name {
+        color: #f3f4f6;
+    }
+
+    .ai-botkit-link-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .ai-botkit-link-card:hover {
+        border-color: #3b82f6;
+    }
+
+    .ai-botkit-link-image {
+        background: #111827;
+    }
+
+    .ai-botkit-link-title {
+        color: #f3f4f6;
+    }
+}
+
+/* =========================================================
+   Print Styles
+   ========================================================= */
+
+@media print {
+
+    .ai-botkit-media-btn,
+    .ai-botkit-media-preview-container,
+    .ai-botkit-lightbox,
+    .ai-botkit-drop-overlay {
+        display: none !important;
+    }
+
+    .ai-botkit-media-video {
+        break-inside: avoid;
+    }
+
+    .ai-botkit-video-wrapper {
+        padding-bottom: 0;
+        height: auto;
+    }
+
+    .ai-botkit-video-wrapper iframe {
+        display: none;
+    }
+
+    .ai-botkit-video-wrapper::after {
+        content: '[Video content - not available in print]';
+        display: block;
+        padding: 20px;
+        text-align: center;
+        color: #6b7280;
+        font-style: italic;
+    }
+
+    .ai-botkit-media-image a {
+        cursor: default;
+    }
+
+    .ai-botkit-link-card {
+        break-inside: avoid;
+    }
+}
+
+/* =========================================================
+   Message Attachments (in chat bubbles)
+   ========================================================= */
+
+.ai-botkit-message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.ai-botkit-message-attachment {
+    font-size: 12px;
+}
+
+.ai-botkit-message-attachment a {
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.ai-botkit-message-attachment a:hover {
+    text-decoration: underline;
+}
+
+.ai-botkit-message-attachment-image {
+    max-width: 160px;
+}
+
+.ai-botkit-message-attachment-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ai-botkit-message-attachment-image a:hover img {
+    opacity: 0.9;
+}

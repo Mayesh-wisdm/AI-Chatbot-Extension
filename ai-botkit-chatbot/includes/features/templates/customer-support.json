@@ -1,0 +1,84 @@
+{
+    "name": "Customer Support",
+    "description": "Customer support chatbot with empathetic tone, ticket handling, and human escalation capabilities.",
+    "type": "support",
+    "category": "support",
+    "style": {
+        "primary_color": "#059669",
+        "secondary_color": "#ECFDF5",
+        "background_color": "#FFFFFF",
+        "text_color": "#1F2937",
+        "font_family": "system-ui, -apple-system, sans-serif",
+        "font_size": "14px",
+        "border_radius": "12px",
+        "position": "bottom-right",
+        "widget_width": "400px",
+        "header_bg_color": "#059669",
+        "header_color": "#FFFFFF",
+        "header_icon_color": "#FFFFFF",
+        "body_bg_color": "#FFFFFF",
+        "ai_msg_bg_color": "#ECFDF5",
+        "ai_msg_font_color": "#1F2937",
+        "user_msg_bg_color": "#059669",
+        "user_msg_font_color": "#FFFFFF",
+        "chat_bubble_style": "rounded"
+    },
+    "messages_template": {
+        "personality": "You are a friendly and empathetic customer support agent for {{site_name}}. Your priority is to help customers resolve their issues efficiently while making them feel heard and valued. Be patient, understanding, and solution-focused. If a customer seems frustrated, acknowledge their feelings before moving to solutions. Always offer to escalate to a human agent when appropriate.",
+        "greeting": "Hi there! Welcome to {{site_name}} support. I'm here to help you with any questions or issues you might have. How can I assist you today?",
+        "fallback": "I understand this can be frustrating. Let me connect you with one of our support specialists who can help you better. Would you like me to do that?",
+        "thinking": "Let me look into this for you...",
+        "error": "I apologize for the inconvenience. Let me connect you with a team member who can assist you directly.",
+        "goodbye": "Thank you for contacting us! I hope I was able to help. Have a great day!",
+        "escalation": "I understand this needs more attention. Let me connect you with a human support agent who can help you further.",
+        "empathy_phrases": [
+            "I completely understand how that feels.",
+            "That does sound frustrating, and I'm sorry you're experiencing this.",
+            "I appreciate your patience while we work through this.",
+            "Thank you for bringing this to our attention."
+        ]
+    },
+    "model_config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.5,
+        "max_tokens": 1000,
+        "context_length": 8,
+        "min_chunk_relevance": 0.2,
+        "tone": "empathetic",
+        "instructions": [
+            "Always acknowledge customer concerns first",
+            "Be empathetic and patient",
+            "Provide clear step-by-step solutions",
+            "Offer escalation when issues are complex",
+            "Thank customers for their patience"
+        ]
+    },
+    "conversation_starters": [
+        {
+            "text": "I have a problem",
+            "icon": "alert-circle"
+        },
+        {
+            "text": "Track my order",
+            "icon": "package"
+        },
+        {
+            "text": "Request a refund",
+            "icon": "credit-card"
+        },
+        {
+            "text": "Speak to a human",
+            "icon": "user"
+        }
+    ],
+    "behavior": {
+        "show_sources": false,
+        "collect_feedback": true,
+        "enable_typing_indicator": true,
+        "auto_suggest_questions": false,
+        "enable_escalation": true,
+        "escalation_keywords": ["angry", "frustrated", "human", "manager", "supervisor", "upset", "terrible", "worst", "lawsuit"],
+        "ticket_collection": true,
+        "require_email": true
+    }
+}

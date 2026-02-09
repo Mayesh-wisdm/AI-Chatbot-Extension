@@ -7,187 +7,272 @@ use AI_BotKit\Models\Chatbot;
  * Handles shortcode integration for the chat interface
  */
 class Shortcode_Handler {
-    /**
-     * RAG Engine instance
-     */
-    private $rag_engine;
+	/**
+	 * RAG Engine instance
+	 */
+	private $rag_engine;
 
-    /**
-     * Initialize the handler
-     * 
-     * @param \AI_BotKit\Core\RAG_Engine $rag_engine RAG Engine instance
-     */
-    public function __construct($rag_engine) {
-        $this->rag_engine = $rag_engine;
-        $this->register_shortcodes();
-    }
+	/**
+	 * Initialize the handler
+	 *
+	 * @param \AI_BotKit\Core\RAG_Engine $rag_engine RAG Engine instance
+	 */
+	public function __construct( $rag_engine ) {
+		$this->rag_engine = $rag_engine;
+		$this->register_shortcodes();
+	}
 
-    /**
-     * Register shortcodes
-     */
-    private function register_shortcodes(): void {
-        add_shortcode('ai_botkit_chat', [$this, 'render_chat']);
-        add_shortcode('ai_botkit_widget', [$this, 'render_widget']);
-    }
+	/**
+	 * Register shortcodes
+	 */
+	private function register_shortcodes(): void {
+		add_shortcode( 'ai_botkit_chat', array( $this, 'render_chat' ) );
+		add_shortcode( 'ai_botkit_widget', array( $this, 'render_widget' ) );
+	}
 
-    /**
-     * Render chat interface
-     * 
-     * @param array $atts Shortcode attributes
-     * @return string Rendered chat interface
-     */
-    public function render_chat($atts = []): string {
-        // Parse attributes
-        $args = shortcode_atts([
-            'id' => '',
-            'title' => __('AI Assistant', 'knowvault'),
-            'welcome_message' => __('Hello! How can I help you today?', 'knowvault'),
-            'placeholder' => __('Type your message...', 'knowvault'),
-            'context' => '', // Optional context to focus the chat
-            'width' => '100%',
-            'height' => '600px',
-            'theme' => 'light',
-            'widget' => 0
-        ], $atts);
+	/**
+	 * Render chat interface
+	 *
+	 * @param array $atts Shortcode attributes
+	 * @return string Rendered chat interface
+	 */
+	public function render_chat( $atts = array() ): string {
+		// Parse attributes
+		$args = shortcode_atts(
+			array(
+				'id'              => '',
+				'title'           => __( 'AI Assistant', 'knowvault' ),
+				'welcome_message' => __( 'Hello! How can I help you today?', 'knowvault' ),
+				'placeholder'     => __( 'Type your message...', 'knowvault' ),
+				'context'         => '', // Optional context to focus the chat
+				'width'           => '100%',
+				'height'          => '600px',
+				'theme'           => 'light',
+				'widget'          => 0,
+			),
+			$atts
+		);
 
-        $chatbot = new Chatbot($args['id']);
+		$chatbot = new Chatbot( $args['id'] );
 
-        if (!$chatbot->exists()) {
-            return __('Chatbot not found.', 'knowvault');
-        }
+		if ( ! $chatbot->exists() ) {
+			return __( 'Chatbot not found.', 'knowvault' );
+		}
 
-        $chatbot_data = $chatbot->get_data();
-        
-        // Check if chatbot is active
-        if (!$chatbot_data['active']) {
-            return ''; // Return empty string for inactive chatbots
-        }
+		$chatbot_data = $chatbot->get_data();
 
-        $chat_id = uniqid('chat_');
+		// Check if chatbot is active
+		if ( ! $chatbot_data['active'] ) {
+			return ''; // Return empty string for inactive chatbots
+		}
 
-        // Enqueue required assets
-        $this->enqueue_assets($chat_id, $chatbot_data);
+		$chat_id = uniqid( 'chat_' );
 
-        // Start output buffering
-        ob_start();
+		// Process greeting for output (placeholders + shortcodes)
+		$messages_template = json_decode( $chatbot_data['messages_template'], true );
+		$greeting_raw      = $messages_template['greeting'] ?? __( 'Hello! How can I help you today?', 'knowvault' );
+		$greeting_output   = $this->process_message_template_content( $greeting_raw );
 
-        // Include chat template
-        include AI_BOTKIT_PUBLIC_DIR . 'templates/chat.php';
+		// Enqueue required assets
+		$this->enqueue_assets( $chat_id, $chatbot_data, $greeting_output );
 
-        // Return buffered content
-        return ob_get_clean();
-    }
+		// Start output buffering
+		ob_start();
 
-    /**
-     * Render chat widget
-     * 
-     * @param array $atts Shortcode attributes
-     * @return string Rendered chat widget
-     */
-    public function render_widget($atts = []): string {
-        // Parse attributes
-        $args = shortcode_atts([
-            'id' => '',
-            'position' => 'right',
-            'offset_x' => 20,
-            'offset_y' => 20,
-            'title' => __('AI Assistant', 'knowvault'),
-            'welcome_message' => __('Hello! How can I help you today?', 'knowvault'),
-            'button_text' => __('Chat with AI', 'knowvault'),
-            'context' => '', // Optional context to focus the chat
-            'theme' => 'light',
-        ], $atts);
+		// Include chat template (uses $greeting_output)
+		include AI_BOTKIT_PUBLIC_DIR . 'templates/chat.php';
 
-        // Set widget flag
-        $args['widget'] = true;
+		// Return buffered content
+		return ob_get_clean();
+	}
 
-        $chatbot = new Chatbot($args['id']);
+	/**
+	 * Process message template content: replace placeholders and run shortcodes.
+	 *
+	 * Supports {{site_name}}, {{user_name}}, {site_name}, {user_name} and any WordPress shortcode.
+	 *
+	 * @param string $content Raw content from messages_template (greeting, fallback, etc.).
+	 * @return string Processed content safe for output.
+	 */
+	private function process_message_template_content( string $content ): string {
+		$site_name = get_bloginfo( 'name' );
+		$user_name = is_user_logged_in() ? wp_get_current_user()->display_name : __( 'Guest User', 'knowvault' );
 
-        if (!$chatbot->exists()) {
-            return __('Chatbot not found.', 'knowvault');
-        }
+		$content = str_replace( array( '{{site_name}}', '{site_name}' ), $site_name, $content );
+		$content = str_replace( array( '{{user_name}}', '{user_name}' ), $user_name, $content );
 
-        $chatbot_data = $chatbot->get_data();
-        
-        // Check if chatbot is active
-        if (!$chatbot_data['active']) {
-            return ''; // Return empty string for inactive chatbots
-        }
+		return do_shortcode( $content );
+	}
 
-        $chat_id = uniqid('chat_');
+	/**
+	 * Render chat widget
+	 *
+	 * @param array $atts Shortcode attributes
+	 * @return string Rendered chat widget
+	 */
+	public function render_widget( $atts = array() ): string {
+		// Parse attributes
+		$args = shortcode_atts(
+			array(
+				'id'              => '',
+				'position'        => 'right',
+				'offset_x'        => 20,
+				'offset_y'        => 20,
+				'title'           => __( 'AI Assistant', 'knowvault' ),
+				'welcome_message' => __( 'Hello! How can I help you today?', 'knowvault' ),
+				'button_text'     => __( 'Chat with AI', 'knowvault' ),
+				'context'         => '', // Optional context to focus the chat
+				'theme'           => 'light',
+			),
+			$atts
+		);
 
-        // Enqueue required assets
-        $this->enqueue_assets($chat_id, $chatbot_data);
+		// Set widget flag
+		$args['widget'] = true;
 
-        // Start output buffering
-        ob_start();
+		$chatbot = new Chatbot( $args['id'] );
 
-        // Include widget template
-        include AI_BOTKIT_PUBLIC_DIR . 'templates/widget.php';
+		if ( ! $chatbot->exists() ) {
+			return __( 'Chatbot not found.', 'knowvault' );
+		}
 
-        // Return buffered content
-        return ob_get_clean();
-    }
+		$chatbot_data = $chatbot->get_data();
 
-    /**
-     * Enqueue required assets
-     */
-    private function enqueue_assets($chat_id, $chatbot_data): void {
-        // Enqueue styles
-        wp_enqueue_style(
-            'ai-botkit-chat',
-            AI_BOTKIT_PLUGIN_URL . 'public/css/chat.css',
-            [],
-            AI_BOTKIT_VERSION
-        );
+		// Check if chatbot is active
+		if ( ! $chatbot_data['active'] ) {
+			return ''; // Return empty string for inactive chatbots
+		}
 
-        wp_enqueue_style(
-            'tabler-icons',
-            AI_BOTKIT_PLUGIN_URL . 'admin/css/tabler-icons.css',
-            array(),
-            AI_BOTKIT_VERSION
-        );
+		$chat_id = uniqid( 'chat_' );
 
-        $styles = json_decode($chatbot_data['style'], true);
-        $messages_template = json_decode($chatbot_data['messages_template'], true);
+		// Process greeting for output (placeholders + shortcodes) so chat.php and JS get it
+		$messages_template = json_decode( $chatbot_data['messages_template'], true );
+		$greeting_raw      = $messages_template['greeting'] ?? __( 'Hello! How can I help you today?', 'knowvault' );
+		$greeting_output   = $this->process_message_template_content( $greeting_raw );
 
-        $inline_css = $this->get_inline_css($styles);
-        wp_add_inline_style('ai-botkit-chat', wp_kses_post($inline_css));
-        // Enqueue SweetAlert for modern confirmations
-        wp_enqueue_script(
-            'sweetalert2',
-            'https://cdn.jsdelivr.net/npm/sweetalert2@11',
-            array(),
-            '11.0.0',
-            true
-        );
+		// Enqueue required assets
+		$this->enqueue_assets( $chat_id, $chatbot_data, $greeting_output );
 
-        // Enqueue scripts
-        wp_enqueue_script(
-            'ai-botkit-chat',
-            AI_BOTKIT_PLUGIN_URL . 'public/js/chat.js',
-            ['jquery', 'sweetalert2'],
-            AI_BOTKIT_VERSION,
-            true
-        );
+		// Start output buffering
+		ob_start();
 
-        // Localize script
-        wp_localize_script('ai-botkit-chat', 'ai_botkitChat', [
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('ai_botkit_chat'),
-            'chatId' => $chat_id,
-            'botID' => $chatbot_data['id'],
-            'color' => $styles['primary_color'],
-            'i18n' => [
-                'errorMessage' => __('An error occurred. Please try again.', 'knowvault'),
-                'networkError' => __('Network error. Please check your connection.', 'knowvault'),
-                'sendError' => __('Failed to send message. Please try again.', 'knowvault'),
-                'welcomeMessage' => $messages_template['greeting']
-            ]
-        ]);
+		// Include widget template (includes chat.php which uses $greeting_output)
+		include AI_BOTKIT_PUBLIC_DIR . 'templates/widget.php';
 
-        // Add SweetAlert configuration
-        wp_add_inline_script('sweetalert2', '
+		// Return buffered content
+		return ob_get_clean();
+	}
+
+	/**
+	 * Enqueue required assets
+	 *
+	 * @param string      $chat_id        Chat instance ID.
+	 * @param array       $chatbot_data   Chatbot data.
+	 * @param string|null $greeting_output Optional already-processed greeting (placeholders + shortcodes). If null, computed from chatbot_data.
+	 */
+	private function enqueue_assets( $chat_id, $chatbot_data, $greeting_output = null ): void {
+		// Enqueue styles
+		wp_enqueue_style(
+			'ai-botkit-chat',
+			AI_BOTKIT_PLUGIN_URL . 'public/css/chat.css',
+			array(),
+			AI_BOTKIT_VERSION
+		);
+
+		wp_enqueue_style(
+			'tabler-icons',
+			AI_BOTKIT_PLUGIN_URL . 'admin/css/tabler-icons.css',
+			array(),
+			AI_BOTKIT_VERSION
+		);
+
+		$styles            = json_decode( $chatbot_data['style'], true );
+		$messages_template = json_decode( $chatbot_data['messages_template'], true );
+
+		if ( $greeting_output === null ) {
+			$greeting_raw    = $messages_template['greeting'] ?? __( 'Hello! How can I help you today?', 'knowvault' );
+			$greeting_output = $this->process_message_template_content( $greeting_raw );
+		}
+
+		$inline_css = $this->get_inline_css( $styles );
+		wp_add_inline_style( 'ai-botkit-chat', wp_kses_post( $inline_css ) );
+		// Enqueue SweetAlert for modern confirmations
+		wp_enqueue_script(
+			'sweetalert2',
+			'https://cdn.jsdelivr.net/npm/sweetalert2@11',
+			array(),
+			'11.0.0',
+			true
+		);
+
+		// Enqueue scripts
+		wp_enqueue_script(
+			'ai-botkit-chat',
+			AI_BOTKIT_PLUGIN_URL . 'public/js/chat.js',
+			array( 'jquery', 'sweetalert2' ),
+			AI_BOTKIT_VERSION,
+			true
+		);
+
+		// Localize script.
+		wp_localize_script(
+			'ai-botkit-chat',
+			'ai_botkitChat',
+			array(
+				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+				'nonce'      => wp_create_nonce( 'ai_botkit_chat' ),
+				'chatId'     => $chat_id,
+				'botID'      => $chatbot_data['id'],
+				'color'      => $styles['primary_color'],
+				'isLoggedIn' => is_user_logged_in(),
+				'i18n'       => array(
+					'errorMessage'   => __( 'An error occurred. Please try again.', 'knowvault' ),
+					'networkError'   => __( 'Network error. Please check your connection.', 'knowvault' ),
+					'sendError'      => __( 'Failed to send message. Please try again.', 'knowvault' ),
+					'welcomeMessage' => $greeting_output,
+					// Phase 2: Chat History i18n strings.
+					'messages'       => __( 'messages', 'knowvault' ),
+					'toggleFavorite' => __( 'Toggle favorite', 'knowvault' ),
+					'archive'        => __( 'Archive', 'knowvault' ),
+					'delete'         => __( 'Delete', 'knowvault' ),
+					'deleteTitle'    => __( 'Delete Conversation?', 'knowvault' ),
+					'deleteConfirm'  => __( 'Are you sure you want to delete this conversation? This action cannot be undone.', 'knowvault' ),
+					'deleteButton'   => __( 'Yes, delete it!', 'knowvault' ),
+					'cancelButton'   => __( 'Cancel', 'knowvault' ),
+					'loadError'      => __( 'Failed to load conversations.', 'knowvault' ),
+					'switchError'    => __( 'Failed to load conversation.', 'knowvault' ),
+					'filterError'    => __( 'Failed to filter conversations.', 'knowvault' ),
+					'errorTitle'     => __( 'Error', 'knowvault' ),
+					'historyTitle'   => __( 'Chat History', 'knowvault' ),
+					'noHistory'      => __( 'No conversations yet', 'knowvault' ),
+					'noHistoryDesc'  => __( 'Start a conversation and it will appear here.', 'knowvault' ),
+					'loadMore'       => __( 'Load more', 'knowvault' ),
+					'today'          => __( 'Today', 'knowvault' ),
+					'thisWeek'       => __( 'This week', 'knowvault' ),
+					'favorites'      => __( 'Favorites', 'knowvault' ),
+					'newChat'        => __( 'New conversation', 'knowvault' ),
+					'exportPdf'      => __( 'Export PDF', 'knowvault' ),
+				),
+			)
+		);
+
+		// Phase 2: Enqueue chat history assets for logged-in users.
+		if ( is_user_logged_in() ) {
+			$this->enqueue_chat_history_assets();
+			$this->enqueue_chat_search_assets();
+			$this->enqueue_chat_export_assets();
+		}
+
+		// Phase 2: Enqueue rich media assets (FR-220 to FR-229).
+		$this->enqueue_media_assets();
+
+		// Phase 2: LMS/WooCommerce suggestions (FR-250 to FR-259).
+		$this->enqueue_chat_suggestions_assets();
+
+		// Add SweetAlert configuration
+		wp_add_inline_script(
+			'sweetalert2',
+			'
             if (typeof Swal !== "undefined") {
                 Swal.mixin({
                     customClass: {
@@ -199,53 +284,54 @@ class Shortcode_Handler {
                     backdrop: true
                 });
             }
-        ');
-    }
+        '
+		);
+	}
 
-    /**
-     * Get chat settings
-     * 
-     * @return array Chat settings
-     */
-    private function get_settings(): array {
-        return [
-            'maxTokens' => get_option('ai_botkit_max_tokens', 1000),
-            'temperature' => get_option('ai_botkit_temperature', 0.7),
-            'model' => get_option('ai_botkit_openai_model', 'gpt-4-turbo-preview'),
-            'streamResponse' => true,
-        ];
-    }
+	/**
+	 * Get chat settings
+	 *
+	 * @return array Chat settings
+	 */
+	private function get_settings(): array {
+		return array(
+			'maxTokens'      => get_option( 'ai_botkit_max_tokens', 1000 ),
+			'temperature'    => get_option( 'ai_botkit_temperature', 0.7 ),
+			'model'          => get_option( 'ai_botkit_openai_model', 'gpt-4-turbo-preview' ),
+			'streamResponse' => true,
+		);
+	}
 
-    /**
-     * Get inline CSS
-     * 
-     * @param array $styles Chatbot data
-     * @return string Inline CSS
-     */
-    private function get_inline_css($styles): string {
-        $css = '';
+	/**
+	 * Get inline CSS
+	 *
+	 * @param array $styles Chatbot data
+	 * @return string Inline CSS
+	 */
+	private function get_inline_css( $styles ): string {
+		$css = '';
 
-        $default_styles = [
-            "width" => "424",
-            "location" => "bottom-right",
-            "font_size" => "14",
-            "max_height" => "700",
-            "font_family" => "Inter",
-            "bubble_width" => "55",
-            "header_color" => "#000000",
-            "body_bg_color" => "#ffffff",
-            "bubble_height" => "55",
-            "primary_color" => "#1E3A8A",
-            "ai_msg_bg_color" => "#1E3A8A1a",
-            "header_bg_color" => "#1E3A8A",
-            "ai_msg_font_color" => "#1C1C1C",
-            "user_msg_bg_color" => "#1E3A8A",
-            "user_msg_font_color" => "#1C1C1C"
-        ];
+		$default_styles = array(
+			'width'               => '424',
+			'location'            => 'bottom-right',
+			'font_size'           => '14',
+			'max_height'          => '700',
+			'font_family'         => 'Inter',
+			'bubble_width'        => '55',
+			'header_color'        => '#000000',
+			'body_bg_color'       => '#ffffff',
+			'bubble_height'       => '55',
+			'primary_color'       => '#1E3A8A',
+			'ai_msg_bg_color'     => '#1E3A8A1a',
+			'header_bg_color'     => '#1E3A8A',
+			'ai_msg_font_color'   => '#1C1C1C',
+			'user_msg_bg_color'   => '#1E3A8A',
+			'user_msg_font_color' => '#1C1C1C',
+		);
 
-        // merge default styles with user styles
-        $styles = array_merge($default_styles, $styles);
-        $css .= '
+		// merge default styles with user styles
+		$styles = array_merge( $default_styles, $styles );
+		$css   .= '
         .ai-botkit-widget,
         .ai-botkit-widget-container{
             width: ' . $styles['width'] . 'px;
@@ -257,26 +343,26 @@ class Shortcode_Handler {
             color: ' . $styles['header_color'] . ' !important;
         }
         .ai-botkit-chat-actions button{
-            color: ' . ($styles['header_icon_color'] ?? '#ffffff') . ' !important;
+            color: ' . ( $styles['header_icon_color'] ?? '#ffffff' ) . ' !important;
         }
         
         .ai-botkit-chat-messages{
             background-color: ' . $styles['body_bg_color'] . ';
             color: ' . $styles['ai_msg_font_color'] . ';
-            background-image: url(' . ($styles['background_image'] ?? '') . ');
+            background-image: url(' . ( $styles['background_image'] ?? '' ) . ');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }
         .ai-botkit-message.user .ai-botkit-message-content,
         .ai-botkit-message.user .ai-botkit-message-avatar{
-            background-color: ' . ($styles['user_msg_bg_color'] ?? '#007cba') . ';
-            color: ' . ($styles['user_msg_font_color'] ?? '#ffffff') . ';
+            background-color: ' . ( $styles['user_msg_bg_color'] ?? '#007cba' ) . ';
+            color: ' . ( $styles['user_msg_font_color'] ?? '#ffffff' ) . ';
         }
         .ai-botkit-message.assistant .ai-botkit-message-content,
         .ai-botkit-message.assistant .ai-botkit-message-avatar{
-            background-color: ' . ($styles['ai_msg_bg_color'] ?? '#ffffff') . ';
-            color: ' . ($styles['ai_msg_font_color'] ?? '#333333') . ';
+            background-color: ' . ( $styles['ai_msg_bg_color'] ?? '#ffffff' ) . ';
+            color: ' . ( $styles['ai_msg_font_color'] ?? '#333333' ) . ';
         }
         .ai-botkit-message-text{
             font-size: ' . $styles['font_size'] . 'px;
@@ -295,15 +381,22 @@ class Shortcode_Handler {
                 left: 0;
             }
         }
+        
+        /* Recommendation panel CSS variables */
+        .ai-botkit-chat {
+            --ai-botkit-suggestion-title-color: ' . ( $styles['suggestion_title_color'] ?? '#555555' ) . ';
+            --ai-botkit-suggestion-card-bg: ' . ( $styles['suggestion_card_bg'] ?? '#FFFFFF' ) . ';
+            --ai-botkit-suggestion-card-border: ' . ( $styles['suggestion_card_border'] ?? '#E7E7E7' ) . ';
+        }
             
         ';
-        if(($styles['theme'] ?? 'theme-1') === 'theme-2' || ($styles['theme'] ?? 'theme-1') === 'theme-4') {
-            if(isset($styles['background_image']) && $styles['background_image']) {
-                $image = $styles['background_image'];
-            } else {
-                $image = esc_url(AI_BOTKIT_PLUGIN_URL . '/public/images/chatbot-bg.svg');
-            }
-            $css .= '
+		if ( ( $styles['theme'] ?? 'theme-1' ) === 'theme-2' || ( $styles['theme'] ?? 'theme-1' ) === 'theme-4' ) {
+			if ( isset( $styles['background_image'] ) && $styles['background_image'] ) {
+				$image = $styles['background_image'];
+			} else {
+				$image = esc_url( AI_BOTKIT_PLUGIN_URL . '/public/images/chatbot-bg.svg' );
+			}
+			$css .= '
             .ai-botkit-chat-messages{
                 background-image: url(' . $image . ');
                 background-size: cover;
@@ -311,9 +404,9 @@ class Shortcode_Handler {
                 background-repeat: no-repeat;
             }
             ';
-        }
-        if(($styles['enable_gradient'] ?? 0) === 1) {
-            $css .= '
+		}
+		if ( ( $styles['enable_gradient'] ?? 0 ) === 1 ) {
+			$css .= '
             .ai-botkit-widget-button{
                 background: linear-gradient(to right, ' . $styles['gradient_color_1'] . ', ' . $styles['gradient_color_2'] . ') !important;
             }
@@ -324,8 +417,8 @@ class Shortcode_Handler {
                 background: linear-gradient(to right, ' . $styles['gradient_color_1'] . ', ' . $styles['gradient_color_2'] . ') !important;
             }
             ';
-        } else {
-            $css .= '
+		} else {
+			$css .= '
             .ai-botkit-widget-button{
                 background: ' . $styles['primary_color'] . ' !important;
             }
@@ -336,24 +429,201 @@ class Shortcode_Handler {
                 background-color: ' . $styles['primary_color'] . ' !important;
             }
             ';
-        }
-        return $css;
-    }
+		}
+		return $css;
+	}
 
-    /**
-     * Render sitewide chatbot
-     */
-    public function render_sitewide_chatbot(): void {
-        $site_wide_chatbot_id = get_option('ai_botkit_chatbot_sitewide_enabled');
-        // check if there is already a widget on the page
-        global $post;
+	/**
+	 * Render sitewide chatbot.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_sitewide_chatbot(): void {
+		$site_wide_chatbot_id = get_option( 'ai_botkit_chatbot_sitewide_enabled' );
+		// Check if there is already a widget on the page.
+		global $post;
 
-        if ( isset($post->post_content) && has_shortcode($post->post_content, 'ai_botkit_widget') ) {
-            return;
-        }
-        if ( is_numeric($site_wide_chatbot_id) && $site_wide_chatbot_id > 0 ) {
-            echo do_shortcode('[ai_botkit_widget id="' . $site_wide_chatbot_id . '"]');
-        }
-    }
-    
-} 
+		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'ai_botkit_widget' ) ) {
+			return;
+		}
+		if ( is_numeric( $site_wide_chatbot_id ) && $site_wide_chatbot_id > 0 ) {
+			echo do_shortcode( '[ai_botkit_widget id="' . $site_wide_chatbot_id . '"]' );
+		}
+	}
+
+	/**
+	 * Enqueue chat history assets.
+	 *
+	 * Phase 2: Chat History Feature (FR-201 to FR-209)
+	 * Only loaded for logged-in users.
+	 *
+	 * @since 2.0.0
+	 */
+	private function enqueue_chat_history_assets(): void {
+		// Enqueue chat history CSS.
+		wp_enqueue_style(
+			'ai-botkit-chat-history',
+			AI_BOTKIT_PLUGIN_URL . 'public/css/chat-history.css',
+			array( 'ai-botkit-chat' ),
+			AI_BOTKIT_VERSION
+		);
+
+		// Enqueue chat history JavaScript.
+		wp_enqueue_script(
+			'ai-botkit-chat-history',
+			AI_BOTKIT_PLUGIN_URL . 'public/js/chat-history.js',
+			array( 'jquery', 'ai-botkit-chat', 'sweetalert2' ),
+			AI_BOTKIT_VERSION,
+			true
+		);
+	}
+
+	/**
+	 * Enqueue chat search assets (frontend search in history panel).
+	 *
+	 * Phase 2: Search Functionality (FR-210 to FR-219).
+	 *
+	 * @since 2.0.0
+	 */
+	private function enqueue_chat_search_assets(): void {
+		wp_enqueue_style(
+			'ai-botkit-chat-search',
+			AI_BOTKIT_PLUGIN_URL . 'public/css/chat-search.css',
+			array( 'ai-botkit-chat-history' ),
+			AI_BOTKIT_VERSION
+		);
+
+		wp_enqueue_script(
+			'ai-botkit-chat-search',
+			AI_BOTKIT_PLUGIN_URL . 'public/js/chat-search.js',
+			array( 'jquery', 'ai-botkit-chat-history' ),
+			AI_BOTKIT_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'ai-botkit-chat-search',
+			'aiBotKitSearchConfig',
+			array(
+				'container'         => '.ai-botkit-history-search-wrapper',
+				'inputSelector'     => '.ai-botkit-search-input',
+				'resultsSelector'   => '.ai-botkit-search-results',
+				'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
+				'nonce'             => wp_create_nonce( 'ai_botkit_chat' ),
+				'ajaxAction'        => 'ai_botkit_search_messages',
+				'suggestionsAction' => 'ai_botkit_search_suggestions',
+				'isAdmin'           => false,
+				'perPage'           => 20,
+				'minQueryLength'    => 2,
+				'i18n'              => array(
+					'searchLabel'      => __( 'Search conversations', 'knowvault' ),
+					'resultsFound'     => __( 'Found {count} results', 'knowvault' ),
+					'searchTime'       => __( 'in {time}s', 'knowvault' ),
+					'noResults'        => __( 'No results found for "{query}"', 'knowvault' ),
+					'searchTips'       => __( 'Try using different keywords or check your spelling.', 'knowvault' ),
+					'viewConversation' => __( 'View Conversation', 'knowvault' ),
+					'userMessage'      => __( 'User', 'knowvault' ),
+					'botMessage'       => __( 'Bot', 'knowvault' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Enqueue chat export assets (PDF transcript button in history).
+	 *
+	 * Phase 2: Chat Transcripts Export (FR-240 to FR-249).
+	 *
+	 * @since 2.0.0
+	 */
+	private function enqueue_chat_export_assets(): void {
+		wp_enqueue_script(
+			'ai-botkit-chat-export',
+			AI_BOTKIT_PLUGIN_URL . 'public/js/chat-export.js',
+			array( 'jquery', 'ai-botkit-chat-history' ),
+			AI_BOTKIT_VERSION,
+			true
+		);
+	}
+
+	/**
+	 * Enqueue chat suggestions assets (LMS/WooCommerce recommendation cards).
+	 *
+	 * Phase 2: LMS/WooCommerce Suggestions (FR-250 to FR-259).
+	 *
+	 * @since 2.0.0
+	 */
+	private function enqueue_chat_suggestions_assets(): void {
+		wp_enqueue_style(
+			'ai-botkit-chat-suggestions',
+			AI_BOTKIT_PLUGIN_URL . 'public/css/chat-suggestions.css',
+			array( 'ai-botkit-chat' ),
+			AI_BOTKIT_VERSION
+		);
+		wp_enqueue_script(
+			'ai-botkit-chat-suggestions',
+			AI_BOTKIT_PLUGIN_URL . 'public/js/chat-suggestions.js',
+			array( 'jquery', 'ai-botkit-chat' ),
+			AI_BOTKIT_VERSION,
+			true
+		);
+	}
+
+	/**
+	 * Enqueue rich media assets.
+	 *
+	 * Phase 2: Rich Media Support (FR-220 to FR-229)
+	 * Handles images, videos, files, and link previews.
+	 *
+	 * @since 2.0.0
+	 */
+	private function enqueue_media_assets(): void {
+		// Enqueue chat media CSS.
+		wp_enqueue_style(
+			'ai-botkit-chat-media',
+			AI_BOTKIT_PLUGIN_URL . 'public/css/chat-media.css',
+			array( 'ai-botkit-chat' ),
+			AI_BOTKIT_VERSION
+		);
+
+		// Enqueue chat media JavaScript.
+		wp_enqueue_script(
+			'ai-botkit-chat-media',
+			AI_BOTKIT_PLUGIN_URL . 'public/js/chat-media.js',
+			array( 'jquery', 'ai-botkit-chat' ),
+			AI_BOTKIT_VERSION,
+			true
+		);
+
+		// Get max file size from options.
+		$max_file_size = get_option( 'ai_botkit_max_media_size', 10485760 ); // 10MB default
+
+		// Localize script with media settings.
+		wp_localize_script(
+			'ai-botkit-chat-media',
+			'aiBotKitSettings',
+			array(
+				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+				'nonce'        => wp_create_nonce( 'ai_botkit_chat' ),
+				'maxMediaSize' => $max_file_size,
+				'i18n'         => array(
+					'uploadError'        => __( 'Failed to upload file.', 'knowvault' ),
+					'fileTooLarge'       => __( 'File is too large. Maximum size is %s.', 'knowvault' ),
+					'invalidFileType'    => __( 'File type not allowed.', 'knowvault' ),
+					'networkError'       => __( 'Network error. Please try again.', 'knowvault' ),
+					'dropToUpload'       => __( 'Drop file to upload', 'knowvault' ),
+					'uploading'          => __( 'Uploading...', 'knowvault' ),
+					'uploadComplete'     => __( 'Upload complete', 'knowvault' ),
+					'clickToExpand'      => __( 'Click to expand', 'knowvault' ),
+					'download'           => __( 'Download', 'knowvault' ),
+					'close'              => __( 'Close', 'knowvault' ),
+					'previous'           => __( 'Previous', 'knowvault' ),
+					'next'               => __( 'Next', 'knowvault' ),
+					'swipeToNavigate'    => __( 'Swipe to navigate', 'knowvault' ),
+					'loadingPreview'     => __( 'Loading preview...', 'knowvault' ),
+					'previewUnavailable' => __( 'Preview unavailable', 'knowvault' ),
+				),
+			)
+		);
+	}
+}

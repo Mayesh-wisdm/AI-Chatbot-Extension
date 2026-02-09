@@ -34,20 +34,43 @@ class Chatbot {
 
     /**
      * Get all chatbots
+     *
+     * @return array|null Array of chatbots or null on error.
      */
     public static function get_all() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'ai_botkit_chatbots';
-        return $wpdb->get_results("SELECT * FROM {$table_name} ORDER BY name ASC", ARRAY_A);
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe, uses $wpdb->prefix.
+        $results = $wpdb->get_results( "SELECT * FROM {$table_name} ORDER BY name ASC", ARRAY_A );
+        return $results !== null ? $results : array();
     }
 
     /**
      * Get active chatbots
+     *
+     * @return array Array of active chatbots.
      */
     public static function get_active() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'ai_botkit_chatbots';
-        return $wpdb->get_results("SELECT * FROM {$table_name} WHERE active = 1 ORDER BY name ASC", ARRAY_A);
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe, uses $wpdb->prefix.
+        $results = $wpdb->get_results( "SELECT * FROM {$table_name} WHERE active = 1 ORDER BY name ASC", ARRAY_A );
+        return $results !== null ? $results : array();
+    }
+
+    /**
+     * Get chatbot by ID
+     *
+     * @param int $id Chatbot ID.
+     * @return array|null Chatbot data or null if not found.
+     */
+    public static function get_by_id( $id ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'ai_botkit_chatbots';
+        return $wpdb->get_row(
+            $wpdb->prepare( "SELECT * FROM {$table_name} WHERE id = %d", absint( $id ) ),
+            ARRAY_A
+        );
     }
 
     /**
@@ -95,16 +118,22 @@ class Chatbot {
 
         if ($this->id) {
             // Update existing chatbot
-            $wpdb->update(
+            $result = $wpdb->update(
                 $this->table_name,
                 $data,
                 array('id' => $this->id),
                 $format,
                 array('%d')
             );
+            if ( false === $result ) {
+                return new \WP_Error( 'db_update_error', __( 'Failed to update chatbot.', 'knowvault' ) );
+            }
         } else {
             // Create new chatbot
-            $wpdb->insert($this->table_name, $data, $format);
+            $result = $wpdb->insert($this->table_name, $data, $format);
+            if ( false === $result ) {
+                return new \WP_Error( 'db_insert_error', __( 'Failed to create chatbot.', 'knowvault' ) );
+            }
             $this->id = $wpdb->insert_id;
         }
 

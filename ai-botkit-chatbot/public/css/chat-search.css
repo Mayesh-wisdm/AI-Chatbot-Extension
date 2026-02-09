@@ -1,0 +1,787 @@
+/**
+ * AI BotKit Chat Search Styles
+ *
+ * Styles for the search functionality including:
+ * - Search input and suggestions
+ * - Search results display
+ * - Highlighted text
+ * - Filter panel
+ * - Pagination
+ *
+ * @package AI_BotKit
+ * @since   2.0.0
+ *
+ * Implements: FR-210 to FR-219 (Search Functionality Feature)
+ */
+
+/* =========================================
+   CSS Custom Properties (Variables)
+   ========================================= */
+
+.ai-botkit-search-container {
+    --search-primary-color: #0073aa;
+    --search-primary-hover: #005a87;
+    --search-text-color: #333333;
+    --search-text-muted: #666666;
+    --search-border-color: #dddddd;
+    --search-bg-color: #ffffff;
+    --search-bg-hover: #f5f5f5;
+    --search-highlight-bg: #fff3cd;
+    --search-highlight-text: #856404;
+    --search-error-color: #dc3545;
+    --search-success-color: #28a745;
+    --search-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --search-radius: 4px;
+    --search-radius-lg: 8px;
+    --search-spacing-xs: 4px;
+    --search-spacing-sm: 8px;
+    --search-spacing-md: 16px;
+    --search-spacing-lg: 24px;
+    --search-font-size: 14px;
+    --search-font-size-sm: 12px;
+    --search-font-size-lg: 16px;
+    --search-transition: 0.2s ease;
+}
+
+/* =========================================
+   Search Container
+   ========================================= */
+
+.ai-botkit-search-container {
+    position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: var(--search-font-size);
+    color: var(--search-text-color);
+    line-height: 1.5;
+}
+
+.ai-botkit-search-container *,
+.ai-botkit-search-container *::before,
+.ai-botkit-search-container *::after {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   Search Input Section
+   ========================================= */
+
+.ai-botkit-search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--search-bg-color);
+    border: 1px solid var(--search-border-color);
+    border-radius: var(--search-radius);
+    transition: border-color var(--search-transition), box-shadow var(--search-transition);
+}
+
+.ai-botkit-search-input-wrapper:focus-within {
+    border-color: var(--search-primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2);
+}
+
+.ai-botkit-search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--search-spacing-sm) var(--search-spacing-md);
+    color: var(--search-text-muted);
+    pointer-events: none;
+}
+
+.ai-botkit-search-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.ai-botkit-search-input {
+    flex: 1;
+    width: 100%;
+    padding: var(--search-spacing-sm) var(--search-spacing-md);
+    padding-left: 0;
+    border: none;
+    background: transparent;
+    font-size: var(--search-font-size);
+    color: var(--search-text-color);
+    outline: none;
+}
+
+.ai-botkit-search-input::placeholder {
+    color: var(--search-text-muted);
+}
+
+.ai-botkit-search-clear {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-right: var(--search-spacing-xs);
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--search-text-muted);
+    cursor: pointer;
+    border-radius: var(--search-radius);
+    transition: background-color var(--search-transition), color var(--search-transition);
+}
+
+.ai-botkit-search-clear:hover {
+    background: var(--search-bg-hover);
+    color: var(--search-text-color);
+}
+
+.ai-botkit-search-clear svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* =========================================
+   Search Suggestions
+   ========================================= */
+
+.ai-botkit-search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: none;
+    margin-top: var(--search-spacing-xs);
+    background: var(--search-bg-color);
+    border: 1px solid var(--search-border-color);
+    border-radius: var(--search-radius);
+    box-shadow: var(--search-shadow);
+    overflow: hidden;
+}
+
+.ai-botkit-search-suggestions.active {
+    display: block;
+}
+
+.ai-botkit-search-suggestion-item {
+    padding: var(--search-spacing-sm) var(--search-spacing-md);
+    cursor: pointer;
+    transition: background-color var(--search-transition);
+}
+
+.ai-botkit-search-suggestion-item:hover,
+.ai-botkit-search-suggestion-item.active {
+    background: var(--search-bg-hover);
+}
+
+.ai-botkit-search-suggestion-item:not(:last-child) {
+    border-bottom: 1px solid var(--search-border-color);
+}
+
+/* =========================================
+   Loading State
+   ========================================= */
+
+.ai-botkit-search-loading {
+    display: none;
+    align-items: center;
+    gap: var(--search-spacing-sm);
+    padding: var(--search-spacing-sm) var(--search-spacing-md);
+    position: relative;
+    min-height: 36px;
+}
+
+.ai-botkit-search-container.loading .ai-botkit-search-loading {
+    display: flex;
+}
+
+.ai-botkit-search-loading .ai-botkit-search-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--search-border-color);
+    border-top-color: var(--search-primary-color);
+    border-radius: 50%;
+    animation: ai-botkit-search-spin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+
+.ai-botkit-search-loading .ai-botkit-search-loading-text {
+    font-size: var(--search-font-size-sm);
+    color: var(--search-text-muted);
+}
+
+@keyframes ai-botkit-search-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =========================================
+   Search Filters
+   ========================================= */
+
+.ai-botkit-search-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--search-spacing-sm);
+    margin-top: var(--search-spacing-md);
+    padding: var(--search-spacing-md);
+    background: var(--search-bg-hover);
+    border-radius: var(--search-radius);
+}
+
+.ai-botkit-search-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--search-spacing-xs);
+}
+
+.ai-botkit-search-filter-label {
+    font-size: var(--search-font-size-sm);
+    font-weight: 500;
+    color: var(--search-text-muted);
+}
+
+.ai-botkit-search-filter-select,
+.ai-botkit-search-filter-input {
+    padding: var(--search-spacing-xs) var(--search-spacing-sm);
+    border: 1px solid var(--search-border-color);
+    border-radius: var(--search-radius);
+    background: var(--search-bg-color);
+    font-size: var(--search-font-size-sm);
+    color: var(--search-text-color);
+    min-width: 120px;
+}
+
+.ai-botkit-search-filter-select:focus,
+.ai-botkit-search-filter-input:focus {
+    outline: none;
+    border-color: var(--search-primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2);
+}
+
+/* Active Filters (Chips) */
+.ai-botkit-search-active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--search-spacing-xs);
+    margin-top: var(--search-spacing-sm);
+}
+
+.ai-botkit-search-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--search-spacing-xs);
+    padding: var(--search-spacing-xs) var(--search-spacing-sm);
+    background: var(--search-primary-color);
+    color: #ffffff;
+    font-size: var(--search-font-size-sm);
+    border-radius: 16px;
+}
+
+.ai-botkit-search-filter-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    transition: background-color var(--search-transition);
+}
+
+.ai-botkit-search-filter-remove:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* =========================================
+   Search Results
+   ========================================= */
+
+.ai-botkit-search-results {
+    margin-top: var(--search-spacing-md);
+}
+
+/* Results Header */
+.ai-botkit-search-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--search-spacing-sm) var(--search-spacing-md);
+    border-bottom: 1px solid var(--search-border-color);
+    margin-bottom: var(--search-spacing-md);
+}
+
+.ai-botkit-search-count {
+    font-weight: 600;
+    color: var(--search-text-color);
+}
+
+.ai-botkit-search-time {
+    font-size: var(--search-font-size-sm);
+    color: var(--search-text-muted);
+}
+
+/* No Results */
+.ai-botkit-search-no-results {
+    text-align: center;
+    padding: var(--search-spacing-lg);
+    color: var(--search-text-muted);
+}
+
+.ai-botkit-search-no-results-icon {
+    margin-bottom: var(--search-spacing-md);
+    color: var(--search-border-color);
+}
+
+.ai-botkit-search-no-results p {
+    margin: 0 0 var(--search-spacing-sm);
+}
+
+.ai-botkit-search-tips {
+    font-size: var(--search-font-size-sm);
+}
+
+/* Results List */
+.ai-botkit-search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--search-spacing-md);
+}
+
+/* Result Item */
+.ai-botkit-search-result-item {
+    padding: var(--search-spacing-md);
+    background: var(--search-bg-color);
+    border: 1px solid var(--search-border-color);
+    border-radius: var(--search-radius-lg);
+    transition: border-color var(--search-transition), box-shadow var(--search-transition);
+    cursor: pointer;
+}
+
+.ai-botkit-search-result-item:hover,
+.ai-botkit-search-result-item:focus {
+    border-color: var(--search-primary-color);
+    box-shadow: var(--search-shadow);
+    outline: none;
+}
+
+/* Result Header */
+.ai-botkit-search-result-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--search-spacing-sm);
+    margin-bottom: var(--search-spacing-sm);
+}
+
+.ai-botkit-search-result-role {
+    display: inline-flex;
+    padding: 2px 8px;
+    font-size: var(--search-font-size-sm);
+    font-weight: 500;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ai-botkit-search-result-role-user {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.ai-botkit-search-result-role-assistant {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.ai-botkit-search-result-chatbot {
+    font-weight: 500;
+    color: var(--search-text-color);
+}
+
+.ai-botkit-search-result-date {
+    font-size: var(--search-font-size-sm);
+    color: var(--search-text-muted);
+}
+
+.ai-botkit-search-result-user {
+    font-size: var(--search-font-size-sm);
+    color: var(--search-text-muted);
+    padding: 2px 8px;
+    background: var(--search-bg-hover);
+    border-radius: 12px;
+}
+
+/* Result Content */
+.ai-botkit-search-result-content {
+    padding: var(--search-spacing-sm) 0;
+    line-height: 1.6;
+    color: var(--search-text-color);
+    word-wrap: break-word;
+}
+
+/* Result Footer */
+.ai-botkit-search-result-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--search-spacing-sm);
+    padding-top: var(--search-spacing-sm);
+    border-top: 1px solid var(--search-border-color);
+}
+
+.ai-botkit-search-result-relevance {
+    font-size: var(--search-font-size-sm);
+    color: var(--search-text-muted);
+}
+
+.ai-botkit-search-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--search-spacing-xs);
+    padding: var(--search-spacing-xs) var(--search-spacing-sm);
+    border: none;
+    background: var(--search-primary-color);
+    color: #ffffff;
+    font-size: var(--search-font-size-sm);
+    font-weight: 500;
+    border-radius: var(--search-radius);
+    cursor: pointer;
+    transition: background-color var(--search-transition);
+}
+
+.ai-botkit-search-view-btn:hover {
+    background: var(--search-primary-hover);
+}
+
+.ai-botkit-search-view-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* =========================================
+   Text Highlighting
+   ========================================= */
+
+.ai-botkit-highlight,
+mark.ai-botkit-highlight {
+    background-color: var(--search-highlight-bg);
+    color: var(--search-highlight-text);
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+/* =========================================
+   Pagination
+   ========================================= */
+
+.ai-botkit-search-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--search-spacing-sm);
+    margin-top: var(--search-spacing-lg);
+    padding-top: var(--search-spacing-md);
+    border-top: 1px solid var(--search-border-color);
+}
+
+.ai-botkit-search-page-btn {
+    padding: var(--search-spacing-xs) var(--search-spacing-md);
+    border: 1px solid var(--search-border-color);
+    background: var(--search-bg-color);
+    color: var(--search-primary-color);
+    font-size: var(--search-font-size);
+    border-radius: var(--search-radius);
+    cursor: pointer;
+    transition: all var(--search-transition);
+}
+
+.ai-botkit-search-page-btn:hover:not(:disabled) {
+    background: var(--search-primary-color);
+    color: #ffffff;
+    border-color: var(--search-primary-color);
+}
+
+.ai-botkit-search-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ai-botkit-search-page-info {
+    padding: 0 var(--search-spacing-md);
+    font-size: var(--search-font-size-sm);
+    color: var(--search-text-muted);
+}
+
+/* =========================================
+   Error State
+   ========================================= */
+
+.ai-botkit-search-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--search-spacing-sm);
+    padding: var(--search-spacing-lg);
+    text-align: center;
+    color: var(--search-error-color);
+}
+
+.ai-botkit-search-error svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.7;
+}
+
+.ai-botkit-search-error p {
+    margin: 0;
+}
+
+/* =========================================
+   Search Panel (Modal Mode)
+   ========================================= */
+
+.ai-botkit-search-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--search-spacing-lg);
+    padding-top: 10vh;
+    background: rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+}
+
+.ai-botkit-search-panel.modal.open {
+    display: flex;
+}
+
+.ai-botkit-search-panel .ai-botkit-search-container {
+    width: 100%;
+    max-width: 700px;
+    max-height: 80vh;
+    padding: var(--search-spacing-lg);
+    background: var(--search-bg-color);
+    border-radius: var(--search-radius-lg);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+}
+
+.ai-botkit-search-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--search-spacing-md);
+    padding-bottom: var(--search-spacing-md);
+    border-bottom: 1px solid var(--search-border-color);
+}
+
+.ai-botkit-search-panel-title {
+    margin: 0;
+    font-size: var(--search-font-size-lg);
+    font-weight: 600;
+}
+
+.ai-botkit-search-panel-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--search-text-muted);
+    cursor: pointer;
+    border-radius: var(--search-radius);
+    transition: background-color var(--search-transition);
+}
+
+.ai-botkit-search-panel-close:hover {
+    background: var(--search-bg-hover);
+}
+
+/* =========================================
+   Admin Search Styles
+   ========================================= */
+
+.ai-botkit-admin-search .ai-botkit-search-result-user {
+    display: inline-block;
+}
+
+.ai-botkit-admin-search .ai-botkit-search-filters {
+    background: #f8f9fa;
+}
+
+.ai-botkit-admin-search .ai-botkit-search-filter-group {
+    min-width: 150px;
+}
+
+/* =========================================
+   Accessibility
+   ========================================= */
+
+/* Screen Reader Only */
+.screen-reader-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus Visible */
+.ai-botkit-search-container :focus-visible {
+    outline: 2px solid var(--search-primary-color);
+    outline-offset: 2px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .ai-botkit-search-container,
+    .ai-botkit-search-container * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* =========================================
+   Responsive Styles
+   ========================================= */
+
+@media screen and (max-width: 768px) {
+    .ai-botkit-search-filters {
+        flex-direction: column;
+    }
+
+    .ai-botkit-search-filter-group {
+        width: 100%;
+    }
+
+    .ai-botkit-search-filter-select,
+    .ai-botkit-search-filter-input {
+        width: 100%;
+    }
+
+    .ai-botkit-search-result-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ai-botkit-search-result-footer {
+        flex-direction: column;
+        gap: var(--search-spacing-sm);
+    }
+
+    .ai-botkit-search-view-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .ai-botkit-search-panel {
+        padding: var(--search-spacing-sm);
+        padding-top: var(--search-spacing-md);
+    }
+
+    .ai-botkit-search-panel .ai-botkit-search-container {
+        max-height: 90vh;
+        padding: var(--search-spacing-md);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .ai-botkit-search-container {
+        --search-spacing-md: 12px;
+        --search-spacing-lg: 16px;
+    }
+
+    .ai-botkit-search-pagination {
+        flex-wrap: wrap;
+    }
+
+    .ai-botkit-search-page-btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .ai-botkit-search-page-info {
+        width: 100%;
+        text-align: center;
+        order: -1;
+        margin-bottom: var(--search-spacing-sm);
+    }
+}
+
+/* =========================================
+   Dark Mode Support
+   ========================================= */
+
+@media (prefers-color-scheme: dark) {
+
+    .ai-botkit-search-container.dark-mode,
+    .ai-botkit-search-panel.dark-mode .ai-botkit-search-container {
+        --search-text-color: #e4e4e4;
+        --search-text-muted: #a0a0a0;
+        --search-border-color: #444444;
+        --search-bg-color: #1e1e1e;
+        --search-bg-hover: #2d2d2d;
+        --search-highlight-bg: #665d00;
+        --search-highlight-text: #ffd700;
+        --search-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .ai-botkit-search-container.dark-mode .ai-botkit-search-result-role-user {
+        background: #1a365d;
+        color: #90cdf4;
+    }
+
+    .ai-botkit-search-container.dark-mode .ai-botkit-search-result-role-assistant {
+        background: #44337a;
+        color: #d6bcfa;
+    }
+}
+
+/* =========================================
+   Print Styles
+   ========================================= */
+
+@media print {
+
+    .ai-botkit-search-input-wrapper,
+    .ai-botkit-search-filters,
+    .ai-botkit-search-pagination,
+    .ai-botkit-search-suggestions,
+    .ai-botkit-search-view-btn {
+        display: none !important;
+    }
+
+    .ai-botkit-search-results {
+        margin-top: 0;
+    }
+
+    .ai-botkit-search-result-item {
+        page-break-inside: avoid;
+        border: 1px solid #000;
+    }
+
+    .ai-botkit-highlight {
+        background: none;
+        font-weight: bold;
+        text-decoration: underline;
+    }
+}

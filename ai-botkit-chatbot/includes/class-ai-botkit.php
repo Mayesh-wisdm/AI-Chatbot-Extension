@@ -72,10 +72,36 @@ class AI_BotKit {
      */
     public function __construct() {
         $this->load_dependencies();
+        $this->check_and_run_migrations();
         $this->setup_components();
         $this->define_admin_hooks();
         $this->define_public_hooks();
         $this->init_background_processes();
+    }
+
+    /**
+     * Check and run any pending database migrations.
+     *
+     * This ensures migrations run even when the plugin is updated
+     * without being deactivated/reactivated.
+     */
+    private function check_and_run_migrations(): void {
+        // Only run in admin or during AJAX to avoid slowing down frontend
+        if ( ! is_admin() && ! wp_doing_ajax() ) {
+            return;
+        }
+
+        // Run Phase 2 migrations if needed
+        require_once AI_BOTKIT_INCLUDES_DIR . 'core/class-phase2-migration.php';
+        $phase2_migration = new \AI_BotKit\Core\Phase2_Migration();
+
+        if ( $phase2_migration->is_migration_needed() ) {
+            $result = $phase2_migration->run_migrations();
+
+            if ( ! $result['success'] && ! empty( $result['errors'] ) ) {
+                error_log( 'AI BotKit Phase 2 Migration Errors: ' . implode( ', ', $result['errors'] ) );
+            }
+        }
     }
 
     /**
@@ -160,6 +186,11 @@ class AI_BotKit {
         // Models
         require_once AI_BOTKIT_INCLUDES_DIR . 'models/class-chatbot.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'models/class-conversation.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'models/class-template.php';
+
+        // Features (Phase 2)
+        require_once AI_BOTKIT_INCLUDES_DIR . 'features/class-template-manager.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'features/class-template-ajax-handler.php';
 
         // No external dependencies - using lightweight PDF extraction
 
