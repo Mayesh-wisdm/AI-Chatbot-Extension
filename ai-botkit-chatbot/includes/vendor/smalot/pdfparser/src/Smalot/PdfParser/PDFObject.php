@@ -775,28 +775,16 @@ class PDFObject
                         break;
 
                     case 'Do':
-                        if (is_null($page)) {
-                            break;
-                        }
+                        if (null !== $page) {
+                            $args = preg_split('/\s/s', $command[self::COMMAND]);
+                            $id = trim(array_pop($args), '/ ');
+                            $xobject = $page->getXObject($id);
 
-                        $args = preg_split('/\s/s', $command[self::COMMAND]);
-                        $id = trim(array_pop($args), '/ ');
-                        $xobject = $page->getXObject($id);
-
-                        // Check we got a PDFObject back.
-                        if (!$xobject instanceof self) {
-                            break;
-                        }
-
-                        // If the PDFObject is an Image or a Form, do nothing as
-                        // neither of these XObject types are text.
-                        if ($xobject instanceof Image || $xobject instanceof Form) {
-                            break;
-                        }
-
-                        // Check this is not a circular reference.
-                        if (!\in_array($xobject->getUniqueId(), self::$recursionStack, true)) {
-                            $text[] = $xobject->getText($page);
+                            // @todo $xobject could be a ElementXRef object, which would then throw an error
+                            if (\is_object($xobject) && $xobject instanceof self && !\in_array($xobject->getUniqueId(), self::$recursionStack, true)) {
+                                // Not a circular reference.
+                                $text[] = $xobject->getText($page);
+                            }
                         }
                         break;
 

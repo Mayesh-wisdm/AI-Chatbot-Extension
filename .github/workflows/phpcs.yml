@@ -1,0 +1,103 @@
+name: PHP Coding Standards
+
+on:
+  push:
+    branches: [main, develop, release/*]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  phpcs:
+    name: PHPCS WordPress Standards
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, cs2pr
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install PHPCS and WordPress Coding Standards
+        run: |
+          composer global require "squizlabs/php_codesniffer=*"
+          composer global require "wp-coding-standards/wpcs:*"
+          composer global require "phpcompatibility/phpcompatibility-wp:*"
+          composer global require "dealerdirect/phpcodesniffer-composer-installer"
+
+      - name: Run PHPCS
+        run: |
+          ~/.composer/vendor/bin/phpcs \
+            --standard=WordPress \
+            --extensions=php \
+            --ignore=*/vendor/*,*/node_modules/* \
+            --report=checkstyle \
+            ai-botkit-chatbot/ | cs2pr
+        continue-on-error: true
+
+      - name: Run PHP Compatibility Check
+        run: |
+          ~/.composer/vendor/bin/phpcs \
+            --standard=PHPCompatibilityWP \
+            --runtime-set testVersion 7.4-8.2 \
+            --extensions=php \
+            --ignore=*/vendor/*,*/node_modules/* \
+            ai-botkit-chatbot/
+        continue-on-error: true
+
+  phpstan:
+    name: PHPStan Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          coverage: none
+
+      - name: Install PHPStan
+        run: |
+          composer global require phpstan/phpstan
+          composer global require szepeviktor/phpstan-wordpress
+
+      - name: Create PHPStan configuration
+        run: |
+          cat > phpstan.neon << 'EOF'
+          includes:
+            - vendor/szepeviktor/phpstan-wordpress/extension.neon
+          parameters:
+            level: 5
+            paths:
+              - ai-botkit-chatbot/includes
+            excludePaths:
+              - ai-botkit-chatbot/includes/vendor
+            ignoreErrors:
+              - '#Function [a-zA-Z_]+ not found#'
+          EOF
+
+      - name: Run PHPStan
+        run: |
+          ~/.composer/vendor/bin/phpstan analyse \
+            --error-format=github \
+            --memory-limit=1G
+        continue-on-error: true

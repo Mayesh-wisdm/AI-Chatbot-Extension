@@ -1,0 +1,137 @@
+name: PHPUnit Tests
+
+on:
+  push:
+    branches: [main, develop, release/*]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: PHP ${{ matrix.php }} / WP ${{ matrix.wp }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2']
+        wp: ['6.2', '6.4', 'latest']
+        exclude:
+          - php: '7.4'
+            wp: 'latest'
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, pdo_mysql, mbstring, intl, zip
+          coverage: xdebug
+          tools: composer
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-php${{ matrix.php }}-composer-
+
+      - name: Install WordPress test suite
+        run: |
+          # Download WordPress test suite installation script
+          curl -o /tmp/install-wp-tests.sh https://raw.githubusercontent.com/wp-cli/scaffold-command/master/templates/install-wp-tests.sh
+          chmod +x /tmp/install-wp-tests.sh
+          bash /tmp/install-wp-tests.sh wordpress_test root root 127.0.0.1 ${{ matrix.wp }} true
+
+      - name: Install plugin dependencies
+        run: |
+          cd ai-botkit-chatbot/includes
+          composer install --no-progress --prefer-dist
+
+      - name: Install PHPUnit
+        run: |
+          if [ "${{ matrix.php }}" = "7.4" ]; then
+            composer global require phpunit/phpunit:^9.0
+          else
+            composer global require phpunit/phpunit:^10.0
+          fi
+
+      - name: Run PHPUnit tests
+        run: |
+          cd tests
+          ~/.composer/vendor/bin/phpunit \
+            --configuration phpunit.xml \
+            --testsuite phase2-integration \
+            --coverage-clover=coverage.xml \
+            --log-junit=junit-results.xml
+        env:
+          WP_TESTS_DIR: /tmp/wordpress-tests-lib
+          WP_CORE_DIR: /tmp/wordpress
+
+      - name: Upload coverage to Codecov
+        if: matrix.php == '8.2' && matrix.wp == 'latest'
+        uses: codecov/codecov-action@v4
+        with:
+          file: tests/coverage.xml
+          flags: php${{ matrix.php }}-wp${{ matrix.wp }}
+          fail_ci_if_error: false
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-results-php${{ matrix.php }}-wp${{ matrix.wp }}
+          path: |
+            tests/junit-results.xml
+            tests/coverage.xml
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mysqli, mbstring
+          coverage: xdebug
+          tools: composer
+
+      - name: Install dependencies
+        run: |
+          cd ai-botkit-chatbot/includes
+          composer install --no-progress --prefer-dist
+
+      - name: Install PHPUnit
+        run: composer global require phpunit/phpunit:^10.0
+
+      - name: Run unit tests
+        run: |
+          cd tests/unit
+          ~/.composer/vendor/bin/phpunit --bootstrap ../../ai-botkit-chatbot/includes/vendor/autoload.php Phase2/
+        continue-on-error: true

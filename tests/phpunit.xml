@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<phpunit
+    bootstrap="integration/bootstrap.php"
+    backupGlobals="false"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    >
+    <testsuites>
+        <testsuite name="phase2-integration">
+            <directory suffix="Test.php">./integration</directory>
+        </testsuite>
+        <testsuite name="database">
+            <file>./integration/Phase2DatabaseTest.php</file>
+        </testsuite>
+        <testsuite name="ajax">
+            <file>./integration/Phase2AjaxTest.php</file>
+        </testsuite>
+        <testsuite name="rest-api">
+            <file>./integration/Phase2RestApiTest.php</file>
+        </testsuite>
+        <testsuite name="hooks">
+            <file>./integration/Phase2HooksTest.php</file>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <const name="WP_TESTS_MULTISITE" value="0"/>
+        <const name="WP_DEBUG" value="true"/>
+        <const name="AI_BOTKIT_TESTING" value="true"/>
+    </php>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">../ai-botkit-chatbot/includes</directory>
+            <exclude>
+                <directory suffix=".php">../ai-botkit-chatbot/vendor</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+
+    <logging>
+        <log type="testdox-text" target="./test-results.txt"/>
+    </logging>
+</phpunit>

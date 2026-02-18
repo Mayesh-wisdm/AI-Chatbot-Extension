@@ -507,6 +507,36 @@ class Admin {
             );
         }
 
+        // Enqueue templates scripts on templates page.
+        $is_templates_page = ( strpos( $hook, 'ai-botkit' ) !== false && isset( $_GET['tab'] ) && $_GET['tab'] === 'templates' );
+
+        if ( $is_templates_page ) {
+            wp_enqueue_script(
+                'ai-botkit-templates',
+                AI_BOTKIT_PLUGIN_URL . 'admin/js/templates.js',
+                array( 'jquery' ),
+                $this->version,
+                true
+            );
+
+            // Localize templates script with AJAX data.
+            wp_localize_script(
+                'ai-botkit-templates',
+                'ai_botkit_admin',
+                array(
+                    'ajax_url' => admin_url( 'admin-ajax.php' ),
+                    'nonce'    => wp_create_nonce( 'ai_botkit_admin' ),
+                )
+            );
+
+            wp_enqueue_style(
+                'ai-botkit-templates',
+                AI_BOTKIT_PLUGIN_URL . 'admin/css/templates.css',
+                array(),
+                $this->version
+            );
+        }
+
         // Localize script with plugin data
         wp_localize_script('ai-botkit-admin', 'ai_botkitAdmin', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),

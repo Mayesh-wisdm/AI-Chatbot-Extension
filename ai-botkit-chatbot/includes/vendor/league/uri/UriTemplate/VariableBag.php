@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace League\Uri\UriTemplate;
 
 use ArrayAccess;
-use BackedEnum;
 use Closure;
 use Countable;
 use IteratorAggregate;
@@ -98,12 +97,6 @@ final class VariableBag implements ArrayAccess, Countable, IteratorAggregate
         return [] !== $this->variables;
     }
 
-    public function equals(mixed $value): bool
-    {
-        return $value instanceof self
-            && $this->variables === $value->variables;
-    }
-
     /**
      * Fetches the variable value if none found returns null.
      *
@@ -117,7 +110,7 @@ final class VariableBag implements ArrayAccess, Countable, IteratorAggregate
     /**
      * @param Stringable|InputValue $value
      */
-    public function assign(string $name, BackedEnum|Stringable|string|bool|int|float|array|null $value): void
+    public function assign(string $name, Stringable|string|bool|int|float|array|null $value): void
     {
         $this->variables[$name] = $this->normalizeValue($value, $name, true);
     }
@@ -128,14 +121,10 @@ final class VariableBag implements ArrayAccess, Countable, IteratorAggregate
      * @throws TemplateCanNotBeExpanded if the value contains nested list
      */
     private function normalizeValue(
-        BackedEnum|Stringable|string|float|int|bool|array|null $value,
+        Stringable|string|float|int|bool|array|null $value,
         string $name,
         bool $isNestedListAllowed
     ): array|string {
-        if ($value instanceof BackedEnum) {
-            $value = $value->value;
-        }
-
         return match (true) {
             is_bool($value) => true === $value ? '1' : '0',
             (null === $value || is_scalar($value) || $value instanceof Stringable) => (string) $value,
