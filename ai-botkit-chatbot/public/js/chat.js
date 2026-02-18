@@ -184,8 +184,8 @@ jQuery(document).ready(function ($) {
         const input = chatContainer.find('.ai-botkit-input');
         const sendButton = chatContainer.find('.ai-botkit-send-button');
 
-        // Clear previous recommendation cards (remove wrappers, they'll be recreated if needed)
-        chatContainer.find('.ai-botkit-suggestions-wrapper').remove();
+        // DON'T remove recommendation cards - they should persist in chat history
+        // chatContainer.find('.ai-botkit-suggestions-wrapper').remove();
 
         // Disable input and button
         isProcessing = true;
@@ -347,25 +347,48 @@ jQuery(document).ready(function ($) {
             return;
         }
 
+        // Check if user message contains recommendation keywords BEFORE making ajax call
+        // This prevents unnecessary API calls for normal chat messages
+        const recommendationKeywords = [
+            'recommend', 'suggest', 'suggestion', 'show me', 'find me',
+            'looking for', 'need', 'want', 'help me find', 'what should i',
+            'best', 'top', 'popular'
+        ];
+
+        const userMessageLower = (userMessage || '').toLowerCase();
+        const hasRecommendationIntent = recommendationKeywords.some(keyword =>
+            userMessageLower.includes(keyword)
+        );
+
+        if (!hasRecommendationIntent) {
+            console.log('[AI BotKit] No recommendation keywords detected, skipping ajax call');
+            return;
+        }
+
         // Find the last assistant message to attach recommendations below it
         const $messages = chatContainer.find('.ai-botkit-chat-messages');
         const $lastAssistantMessage = $messages.find('.ai-botkit-message.assistant').last();
-        
+
         if (!$lastAssistantMessage.length) {
             console.warn('[AI BotKit] No assistant message found to attach recommendations');
             return;
         }
 
-        // Remove any existing suggestions wrapper (in case we're updating)
-        $messages.find('.ai-botkit-suggestions-wrapper').remove();
+        // Check if this message already has recommendations (don't duplicate)
+        if ($lastAssistantMessage.next('.ai-botkit-suggestions-wrapper').length > 0) {
+            console.log('[AI BotKit] Recommendations already exist for this message, skipping');
+            return;
+        }
 
-        // Create new suggestions wrapper and attach it after the last assistant message
+        // Create new suggestions wrapper and attach it after the CURRENT assistant message
         const $wrapper = $('<div class="ai-botkit-suggestions-wrapper" aria-label="Recommendations"></div>');
         $lastAssistantMessage.after($wrapper);
 
-        const conversationText = (userMessage || '') + ' ' + (assistantResponse || '');
-        console.log('[AI BotKit] Getting recommendations for:', conversationText.substring(0, 100));
-        
+        // Send ONLY the user message (not the assistant response)
+        // The backend will extract just the user's question and ignore bot responses
+        const conversationText = userMessage || '';
+        console.log('[AI BotKit] Getting recommendations for user message:', conversationText.substring(0, 100));
+
         if (typeof window.AIBotKitSuggestions.getRecommendations === 'function') {
             window.AIBotKitSuggestions.getRecommendations(conversationText, function (recs) {
                 console.log('[AI BotKit] Received recommendations:', recs);
@@ -374,9 +397,9 @@ jQuery(document).ready(function ($) {
                     console.log('[AI BotKit] Rendered', recs.length, 'recommendation cards');
                     scrollToBottom(chatContainer);
                 } else {
-                    // Remove wrapper if no recommendations
+                    // Remove wrapper if no recommendations (not explicitly requested)
                     $wrapper.remove();
-                    console.log('[AI BotKit] No recommendations to render or renderSuggestionCards not available');
+                    console.log('[AI BotKit] No recommendations to render');
                 }
             });
         } else {

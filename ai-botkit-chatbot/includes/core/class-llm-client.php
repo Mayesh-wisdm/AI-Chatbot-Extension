@@ -11,11 +11,16 @@ class LLM_Client {
      * Cache manager instance
      */
     private $cache_manager;
-    
+
     /**
      * Default model configuration
      */
     private $default_config;
+
+    /**
+     * HTTP API client for streaming
+     */
+    private $api_client;
     
     /**
      * Initialize the client
@@ -363,6 +368,7 @@ class LLM_Client {
 
         $engine = get_option('ai_botkit_engine', 'openai');
         try {
+            $embeddings = [];
 
             switch ($engine) {
                 case 'openai':
@@ -624,7 +630,13 @@ class LLM_Client {
             );
         }
 
-        return json_decode(wp_remote_retrieve_body($response), true);
+        $decoded = json_decode(wp_remote_retrieve_body($response), true);
+        if ( ! is_array( $decoded ) ) {
+            throw new LLM_Request_Exception(
+                esc_html__('Invalid JSON response from API', 'knowvault')
+            );
+        }
+        return $decoded;
     }
 }
 

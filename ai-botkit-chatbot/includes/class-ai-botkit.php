@@ -46,7 +46,11 @@ class AI_BotKit {
     /**
      * Integration components
      */
+    private $user_auth;
     private $wp_content;
+    private $woocommerce;
+    private $learndash;
+    private $rest_api;
 
     /**
      * Monitoring components
@@ -137,11 +141,11 @@ class AI_BotKit {
 
         // Integration components
         require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-wordpress-content.php';
-        // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-woocommerce-assistant.php';
-        // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-woocommerce.php';
-        // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-learndash.php';
-        // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-user-authentication.php';
-        // require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-rest-api.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-woocommerce-assistant.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-woocommerce.php';
+        // LearnDash is loaded conditionally in setup_components() when LEARNDASH_VERSION is defined.
+        require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-user-authentication.php';
+        require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-rest-api.php';
 
         // Monitoring components
         require_once AI_BOTKIT_INCLUDES_DIR . 'monitoring/class-health-checks.php';
@@ -153,7 +157,6 @@ class AI_BotKit {
         // Admin and public
         require_once AI_BOTKIT_INCLUDES_DIR . 'admin/class-admin.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'admin/class-ajax-handler.php';
-        require_once AI_BOTKIT_INCLUDES_DIR . 'admin/class-rate-limiter.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'public/class-ajax-handler.php';
         require_once AI_BOTKIT_INCLUDES_DIR . 'public/class-shortcode-handler.php';
 
@@ -231,11 +234,17 @@ class AI_BotKit {
         $this->analytics = new Analytics($this->cache_manager);
 
         // Initialize integration components
-        // $this->user_auth = new User_Authentication($this->rag_engine);
-        $this->wp_content = new WordPress_Content($this->rag_engine, $this->document_loader);
-        // $this->woocommerce = new WooCommerce($this->rag_engine, $this->document_loader, $this->cache_manager);
-        // $this->learndash = new LearnDash($this->rag_engine, $this->document_loader);
-        // $this->rest_api = new REST_API($this->rag_engine, $this->user_auth);
+        $this->user_auth = new Integration\User_Authentication($this->rag_engine);
+        $this->wp_content = new Integration\WordPress_Content($this->rag_engine, $this->document_loader);
+        $this->woocommerce = new Integration\WooCommerce($this->rag_engine, $this->document_loader, $this->cache_manager);
+
+        // Initialize LearnDash integration
+        if (defined('LEARNDASH_VERSION')) {
+            require_once AI_BOTKIT_INCLUDES_DIR . 'integration/class-learndash.php';
+            $this->learndash = new Integration\LearnDash($this->rag_engine, $this->document_loader);
+        }
+
+        $this->rest_api = new Integration\REST_API($this->rag_engine, $this->user_auth);
 
         // Initialize interface components
         $this->admin = new Admin($this->get_plugin_name(), $this->get_version(), $this->cache_manager, $this->rag_engine);
@@ -299,14 +308,14 @@ class AI_BotKit {
      * Run the plugin
      */
     public function run(): void {
-        // Load plugin text domain
-        // load_plugin_textdomain(
-        //     'knowvault',
-        //     false,
-        //     dirname(plugin_basename(dirname(__FILE__))) . '/languages'
-        // );
-        
-        // Initialize components
+        // Load plugin text domain.
+        load_plugin_textdomain(
+            'knowvault',
+            false,
+            dirname(plugin_basename(dirname(__FILE__))) . '/languages'
+        );
+
+        // Initialize components.
         do_action('ai_botkit_init', $this);
     }
 
@@ -328,5 +337,14 @@ class AI_BotKit {
      */
     public function get_version(): string {
         return defined('AI_BOTKIT_VERSION') ? AI_BOTKIT_VERSION : '1.0.0';
+    }
+
+    /**
+     * Get LearnDash integration instance
+     *
+     * @return Integration\LearnDash|null The LearnDash integration instance or null if not initialized
+     */
+    public function get_learndash_integration() {
+        return $this->learndash ?? null;
     }
 } 

@@ -244,8 +244,23 @@ class Activator {
             KEY post_type (post_type)
         ) $charset_collate;";
         dbDelta($sql);
+
+        // Content queue table for LearnDash and WooCommerce integration
+        $sql = "CREATE TABLE IF NOT EXISTS {$prefix}content_queue (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            source_type VARCHAR(50) NOT NULL,
+            source_id BIGINT(20) UNSIGNED NOT NULL,
+            action VARCHAR(20) NOT NULL DEFAULT 'update',
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NULL,
+            PRIMARY KEY (id),
+            KEY source_type_id (source_type, source_id),
+            KEY status (status)
+        ) $charset_collate;";
+        dbDelta($sql);
     }
-    
+
     /**
      * Create old ai_botkit_ tables for backward compatibility
      */
@@ -406,8 +421,23 @@ class Activator {
             KEY post_type (post_type)
         ) $charset_collate;";
         dbDelta($sql);
+
+        // Content queue table for LearnDash and WooCommerce integration
+        $sql = "CREATE TABLE IF NOT EXISTS {$prefix}content_queue (
+            id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            source_type VARCHAR(50) NOT NULL,
+            source_id BIGINT(20) UNSIGNED NOT NULL,
+            action VARCHAR(20) NOT NULL DEFAULT 'update',
+            status VARCHAR(20) NOT NULL DEFAULT 'pending',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NULL,
+            PRIMARY KEY (id),
+            KEY source_type_id (source_type, source_id),
+            KEY status (status)
+        ) $charset_collate;";
+        dbDelta($sql);
     }
-    
+
     /**
      * Add guest_ip column to conversations table for existing installations
      */

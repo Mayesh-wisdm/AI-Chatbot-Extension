@@ -40,7 +40,9 @@ class Document_Loader {
 
         $is_allowed = false;
         foreach ($allowed_dirs as $dir) {
-            if (strpos(realpath($file_path), realpath($dir)) === 0) {
+            $real_file = realpath($file_path);
+            $real_dir = realpath($dir);
+            if ($real_file !== false && $real_dir !== false && strpos($real_file, $real_dir) === 0) {
                 $is_allowed = true;
                 break;
             }
@@ -54,7 +56,7 @@ class Document_Loader {
 
         // Get file content and metadata
         $content = file_get_contents($file_path); // @codingStandardsIgnoreLine not accessible via url
-        $mime_type = wp_check_filetype($file_path)['type'];
+        $mime_type = wp_check_filetype($file_path)['type'] ?: 'application/octet-stream';
         $extension = pathinfo($file_path, PATHINFO_EXTENSION);
         
         return [
@@ -411,7 +413,7 @@ class Document_Loader {
         $temp_dir = $upload_dir['basedir'] . '/ai-botkit/temp';
         
         if (is_dir($temp_dir)) {
-            $files = glob($temp_dir . '/*');
+            $files = glob($temp_dir . '/*') ?: [];
             $now = time();
             
             foreach ($files as $file) {

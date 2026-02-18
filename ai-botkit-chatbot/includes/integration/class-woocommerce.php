@@ -95,7 +95,7 @@ class WooCommerce {
      */
     public function handle_product_update(int $product_id): void {
         $product = wc_get_product($product_id);
-        if ($product->get_status() !== 'publish') {
+        if ( ! $product || $product->get_status() !== 'publish') {
             return;
         }
 
@@ -354,6 +354,9 @@ class WooCommerce {
                 $content[] = "Variations:";
                 foreach ($variations as $variation) {
                     $variation_product = wc_get_product($variation['variation_id']);
+                    if ( ! $variation_product ) {
+                        continue;
+                    }
                     $attributes_text = [];
                     foreach ($variation['attributes'] as $key => $value) {
                         $taxonomy = str_replace('attribute_', '', $key);

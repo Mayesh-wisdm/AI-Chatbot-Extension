@@ -1,4 +1,4 @@
-# KnowVault (AI BotKit) Changelog
+# KnowVault (KnowVault) Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -222,7 +222,7 @@ This major release introduces six new feature areas designed to improve user exp
 
 ### Changed
 
-- Rebranded plugin from "AI BotKit" to "KnowVault"
+- Rebranded plugin from "KnowVault" to "KnowVault"
 - Updated color scheme from green to blue:
   - Primary color changed from #008858 to #1E3A8A (dark royal blue)
   - Accent color changed to #00BFA6 (teal) for highlights
@@ -361,7 +361,7 @@ This major release introduces six new feature areas designed to improve user exp
 
 ### Upgrading to 1.1.0
 
-1. **Rebranding**: Plugin is now called "KnowVault" (formerly AI BotKit)
+1. **Rebranding**: Plugin is now called "KnowVault" (formerly KnowVault)
 2. **Color Scheme**: UI has changed from green to blue
 3. **Database Tables**: New prefix option available; old tables still supported
 
@@ -380,4 +380,4 @@ For questions or issues:
 
 ---
 
-*KnowVault (AI BotKit) - Built by WisdmLabs*
+*KnowVault (KnowVault) - Built by WisdmLabs*

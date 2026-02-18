@@ -227,7 +227,7 @@ class Analytics {
             'event_type' => 'chat_interaction',
             'event_data' => wp_json_encode([
                 'message_length' => strlen($message),
-                'response_length' => strlen($response['response']),
+                'response_length' => strlen($response['response'] ?? ''),
                 'processing_time' => $metadata['processing_time'] ?? 0,
                 'token_usage' => $metadata['tokens'] ?? 0,
                 'context_chunks' => $metadata['context_chunks'] ?? 0,
@@ -310,19 +310,19 @@ class Analytics {
         $quality_score = 0;
         
         // Check response length (0-1 points)
-        $length = strlen($response['response']);
+        $length = strlen($response['response'] ?? '');
         $quality_score += min(1, $length / 1000);
-        
+
         // Check for citations (0-1 points)
-        $has_citations = !empty($response['metadata']['context_chunks']) && $response['metadata']['context_chunks'] > 0;
+        $has_citations = isset($response['metadata']['context_chunks']) && $response['metadata']['context_chunks'] > 0;
         $quality_score += $has_citations ? 1 : 0;
         
         // Check for code blocks (0-1 points)
-        $has_code = strpos($response['response'], '```') !== false;
+        $has_code = strpos($response['response'] ?? '', '```') !== false;
         $quality_score += $has_code ? 1 : 0;
-        
+
         // Check for formatting (0-1 points)
-        $has_formatting = preg_match('/[*_#]/', $response['response']);
+        $has_formatting = preg_match('/[*_#]/', $response['response'] ?? '');
         $quality_score += $has_formatting ? 1 : 0;
         
         // Normalize to 0-1 scale
@@ -333,8 +333,8 @@ class Analytics {
      * Clear analytics cache to ensure fresh data
      */
     public function clear_analytics_cache(): void {
-        // Clear all analytics dashboard cache entries
-        $this->cache_manager->delete('analytics_dashboard_*');
+        // Clear all analytics cache by invalidating the performance group
+        $this->cache_manager->invalidate_group('performance');
     }
 
     /**

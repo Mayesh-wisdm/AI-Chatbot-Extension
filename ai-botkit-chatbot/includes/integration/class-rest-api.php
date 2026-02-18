@@ -712,7 +712,7 @@ class REST_API {
         $blocked_ips      = json_decode( $blocked_ips_json, true );
 
         // Check if user's IP is in the blocked list.
-        return in_array( $user_ip, $blocked_ips, true );
+        return is_array( $blocked_ips ) && in_array( $user_ip, $blocked_ips, true );
     }
 
     // =========================================================
@@ -839,7 +839,8 @@ class REST_API {
             $result = $this->chat_history_handler->switch_conversation( $conversation_id, $user_id );
 
             if ( is_wp_error( $result ) ) {
-                $status = $result->get_error_data()['status'] ?? 500;
+                $error_data = $result->get_error_data();
+                $status = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
                 return new WP_REST_Response(
                     array( 'error' => $result->get_error_message() ),
                     $status
@@ -919,7 +920,8 @@ class REST_API {
             $result = $this->chat_history_handler->delete_conversation( $conversation_id, $user_id );
 
             if ( is_wp_error( $result ) ) {
-                $status = $result->get_error_data()['status'] ?? 500;
+                $error_data = $result->get_error_data();
+                $status = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
                 return new WP_REST_Response(
                     array( 'error' => $result->get_error_message() ),
                     $status
@@ -999,7 +1001,8 @@ class REST_API {
         $result = $this->chat_history_handler->toggle_favorite( $conversation_id, $user_id );
 
         if ( is_wp_error( $result ) ) {
-            $status = $result->get_error_data()['status'] ?? 500;
+            $error_data = $result->get_error_data();
+                $status = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
             return new WP_REST_Response(
                 array( 'error' => $result->get_error_message() ),
                 $status
@@ -1040,7 +1043,8 @@ class REST_API {
         $result = $this->chat_history_handler->archive_conversation( $conversation_id, $user_id );
 
         if ( is_wp_error( $result ) ) {
-            $status = $result->get_error_data()['status'] ?? 500;
+            $error_data = $result->get_error_data();
+                $status = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
             return new WP_REST_Response(
                 array( 'error' => $result->get_error_message() ),
                 $status
@@ -1084,7 +1088,8 @@ class REST_API {
         $result = $this->chat_history_handler->unarchive_conversation( $conversation_id, $user_id );
 
         if ( is_wp_error( $result ) ) {
-            $status = $result->get_error_data()['status'] ?? 500;
+            $error_data = $result->get_error_data();
+                $status = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : 500;
             return new WP_REST_Response(
                 array( 'error' => $result->get_error_message() ),
                 $status

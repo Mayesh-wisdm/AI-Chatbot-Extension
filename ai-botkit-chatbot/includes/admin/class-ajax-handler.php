@@ -2,8 +2,10 @@
 namespace AI_BotKit\Admin;
 
 use AI_BotKit\Core\RAG_Engine;
+use AI_BotKit\Core\Rate_Limiter;
 use AI_BotKit\Core\Unified_Cache_Manager;
 use AI_BotKit\Models\Chatbot;
+use AI_BotKit\Utils\Table_Helper;
 
 /**
  * Class Ajax_Handler
@@ -92,6 +94,12 @@ class Ajax_Handler {
 		add_action( 'wp_ajax_ai_botkit_export_csv', array( $this, 'handle_export_csv' ) );
 		add_action( 'wp_ajax_ai_botkit_batch_export', array( $this, 'handle_batch_export' ) );
 		add_action( 'wp_ajax_ai_botkit_export_status', array( $this, 'handle_export_status' ) );
+
+		// Bulk action endpoints for knowledge base
+		add_action( 'wp_ajax_ai_botkit_bulk_delete', array( $this, 'handle_bulk_delete' ) );
+		add_action( 'wp_ajax_ai_botkit_bulk_reprocess', array( $this, 'handle_bulk_reprocess' ) );
+		add_action( 'wp_ajax_ai_botkit_bulk_add_to_bot', array( $this, 'handle_bulk_add_to_bot' ) );
+		add_action( 'wp_ajax_ai_botkit_bulk_export', array( $this, 'handle_bulk_export' ) );
 	}
 
 	/**
@@ -2029,6 +2037,9 @@ class Ajax_Handler {
 					$document_url = '<a href="' . $document->file_path . '" target="_blank">' . esc_html__( 'Visit URL', 'knowvault' ) . '</a>';
 				} elseif ( 'file' == $document_type ) {
 					$document_url = size_format( filesize( $document->file_path ), 2 );
+				} else {
+					// Handle other document types (LearnDash courses, WooCommerce products, etc.)
+					$document_url = !empty($document->source_id) ? '<a href="' . get_permalink($document->source_id) . '" target="_blank">' . esc_html__('View', 'knowvault') . '</a>' : esc_html__('N/A', 'knowvault');
 				}
 
 				$status_badge = '';
@@ -2040,6 +2051,9 @@ class Ajax_Handler {
 					$status_badge = '<span class="ai-botkit-badge ai-botkit-badge-success">' . esc_html__( 'Completed', 'knowvault' ) . '</span>';
 				} elseif ( 'failed' == $document->status ) {
 					$status_badge = '<span class="ai-botkit-badge ai-botkit-badge-danger ai-botkit-error-clickable" data-document-id="' . $document->id . '" style="cursor: pointer;" title="Click to view error details">' . esc_html__( 'Failed', 'knowvault' ) . '</span>';
+				} else {
+					// Default case for NULL or unknown status
+					$status_badge = '<span class="ai-botkit-badge ai-botkit-badge-secondary">' . esc_html__( 'Unknown', 'knowvault' ) . '</span>';
 				}
 
 				// Add reprocess button for completed documents
@@ -2564,5 +2578,363 @@ class Ajax_Handler {
 		} catch ( \Exception $e ) {
 			wp_send_json_error( array( 'message' => $e->getMessage() ) );
 		}
+	}
+
+	/**
+	 * Handle bulk delete documents
+	 *
+	 * @since 2.0.4
+	 */
+	public function handle_bulk_delete() {
+		check_ajax_referer( 'ai_botkit_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Insufficient permissions.', 'knowvault' ) ) );
+		}
+
+		if ( ! isset( $_POST['document_ids'] ) || ! is_array( $_POST['document_ids'] ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Invalid parameters.', 'knowvault' ) ) );
+		}
+
+		$document_ids = array_map( 'intval', $_POST['document_ids'] );
+
+		if ( empty( $document_ids ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'No documents selected.', 'knowvault' ) ) );
+		}
+
+		global $wpdb;
+		$deleted_count = 0;
+		$errors        = array();
+
+		$documents_table  = Table_Helper::get_table_name('documents');
+		$chunks_table     = Table_Helper::get_table_name('chunks');
+		$embeddings_table = Table_Helper::get_table_name('embeddings');
+
+		foreach ( $document_ids as $document_id ) {
+			if ( $document_id <= 0 ) {
+				continue;
+			}
+
+			// Delete from documents table
+			$result = $wpdb->delete(
+				$documents_table,
+				array( 'id' => $document_id ),
+				array( '%d' )
+			);
+
+			if ( $result ) {
+				// Get chunk IDs for this document
+				$chunk_ids = $wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT id FROM {$chunks_table} WHERE document_id = %d",
+						$document_id
+					)
+				);
+
+				// Delete embeddings for these chunks
+				if ( ! empty( $chunk_ids ) ) {
+					$chunk_ids_placeholders = implode( ',', array_fill( 0, count( $chunk_ids ), '%d' ) );
+					$wpdb->query(
+						$wpdb->prepare(
+							"DELETE FROM {$embeddings_table} WHERE chunk_id IN ($chunk_ids_placeholders)",
+							$chunk_ids
+						)
+					);
+				}
+
+				// Delete chunks
+				$wpdb->delete(
+					$chunks_table,
+					array( 'document_id' => $document_id ),
+					array( '%d' )
+				);
+
+				$deleted_count++;
+			} else {
+				$errors[] = sprintf( esc_html__( 'Failed to delete document ID %d', 'knowvault' ), $document_id );
+			}
+		}
+
+		if ( $deleted_count > 0 ) {
+			wp_send_json_success(
+				array(
+					'message' => sprintf(
+						esc_html( _n( '%d document deleted successfully.', '%d documents deleted successfully.', $deleted_count, 'knowvault' ) ),
+						$deleted_count
+					),
+					'deleted' => $deleted_count,
+					'errors'  => $errors,
+				)
+			);
+		} else {
+			wp_send_json_error( array( 'message' => esc_html__( 'No documents were deleted.', 'knowvault' ) ) );
+		}
+	}
+
+	/**
+	 * Handle bulk reprocess documents
+	 *
+	 * @since 2.0.4
+	 */
+	public function handle_bulk_reprocess() {
+		check_ajax_referer( 'ai_botkit_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Insufficient permissions.', 'knowvault' ) ) );
+		}
+
+		if ( ! isset( $_POST['document_ids'] ) || ! is_array( $_POST['document_ids'] ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Invalid parameters.', 'knowvault' ) ) );
+		}
+
+		$document_ids = array_map( 'intval', $_POST['document_ids'] );
+
+		if ( empty( $document_ids ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'No documents selected.', 'knowvault' ) ) );
+		}
+
+		try {
+			global $wpdb;
+
+			$documents_table = Table_Helper::get_table_name('documents');
+
+			// Create RAG Engine dependencies
+			$llm_client           = new \AI_BotKit\Core\LLM_Client();
+			$document_loader      = new \AI_BotKit\Core\Document_Loader();
+			$text_chunker         = new \AI_BotKit\Core\Text_Chunker();
+			$embeddings_generator = new \AI_BotKit\Core\Embeddings_Generator( $llm_client );
+			$vector_database      = new \AI_BotKit\Core\Vector_Database();
+			$retriever            = new \AI_BotKit\Core\Retriever( $vector_database, $embeddings_generator );
+			$rag_engine           = new \AI_BotKit\Core\RAG_Engine(
+				$document_loader,
+				$text_chunker,
+				$embeddings_generator,
+				$vector_database,
+				$retriever,
+				$llm_client
+			);
+
+			$processed_count = 0;
+			$errors          = array();
+
+			foreach ( $document_ids as $document_id ) {
+				if ( $document_id <= 0 ) {
+					continue;
+				}
+
+				// Get document details
+				$document = $wpdb->get_row(
+					$wpdb->prepare(
+						"SELECT * FROM {$documents_table} WHERE id = %d",
+						$document_id
+					)
+				);
+
+				if ( ! $document ) {
+					$errors[] = sprintf( esc_html__( 'Document ID %d not found', 'knowvault' ), $document_id );
+					continue;
+				}
+
+				// Determine source based on type
+				if ( $document->source_type === 'url' ) {
+					$source = $document->file_path;
+				} elseif ( $document->source_type === 'file' ) {
+					$source = $document->file_path;
+				} else {
+					$source = $document->source_id;
+				}
+
+				try {
+					$result = $rag_engine->process_document( $source, $document->source_type, $document_id );
+
+					if ( empty( $result['embedding_count'] ) || $result['embedding_count'] == 0 ) {
+						$errors[] = sprintf( esc_html__( 'Document ID %d: No embeddings generated', 'knowvault' ), $document_id );
+					} else {
+						$processed_count++;
+					}
+				} catch ( \Exception $e ) {
+					$errors[] = sprintf( esc_html__( 'Document ID %d: %s', 'knowvault' ), $document_id, $e->getMessage() );
+				}
+			}
+
+			if ( $processed_count > 0 ) {
+				wp_send_json_success(
+					array(
+						'message'   => sprintf(
+							esc_html( _n( '%d document reprocessed successfully.', '%d documents reprocessed successfully.', $processed_count, 'knowvault' ) ),
+							$processed_count
+						),
+						'processed' => $processed_count,
+						'errors'    => $errors,
+					)
+				);
+			} else {
+				wp_send_json_error(
+					array(
+						'message' => esc_html__( 'No documents were reprocessed.', 'knowvault' ),
+						'errors'  => $errors,
+					)
+				);
+			}
+		} catch ( \Exception $e ) {
+			wp_send_json_error( array( 'message' => $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Handle bulk add to bot
+	 *
+	 * @since 2.0.4
+	 */
+	public function handle_bulk_add_to_bot() {
+		check_ajax_referer( 'ai_botkit_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Insufficient permissions.', 'knowvault' ) ) );
+		}
+
+		if ( ! isset( $_POST['document_ids'] ) || ! is_array( $_POST['document_ids'] ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Invalid parameters.', 'knowvault' ) ) );
+		}
+
+		if ( ! isset( $_POST['chatbot_id'] ) || empty( $_POST['chatbot_id'] ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Chatbot ID is required.', 'knowvault' ) ) );
+		}
+
+		$document_ids = array_map( 'intval', $_POST['document_ids'] );
+		$chatbot_id   = intval( $_POST['chatbot_id'] );
+
+		if ( empty( $document_ids ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'No documents selected.', 'knowvault' ) ) );
+		}
+
+		if ( $chatbot_id <= 0 ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Invalid chatbot ID.', 'knowvault' ) ) );
+		}
+
+		try {
+			$chatbot     = new Chatbot( $chatbot_id );
+			$added_count = 0;
+			$errors      = array();
+
+			foreach ( $document_ids as $doc_id ) {
+				if ( $doc_id <= 0 ) {
+					continue;
+				}
+
+				try {
+					$chatbot->add_content( 'document', $doc_id );
+					$added_count++;
+				} catch ( \Exception $e ) {
+					$errors[] = sprintf( esc_html__( 'Document ID %d: %s', 'knowvault' ), $doc_id, $e->getMessage() );
+				}
+			}
+
+			if ( $added_count > 0 ) {
+				wp_send_json_success(
+					array(
+						'message' => sprintf(
+							esc_html( _n( '%d document added to chatbot.', '%d documents added to chatbot.', $added_count, 'knowvault' ) ),
+							$added_count
+						),
+						'added'   => $added_count,
+						'errors'  => $errors,
+					)
+				);
+			} else {
+				wp_send_json_error(
+					array(
+						'message' => esc_html__( 'No documents were added to the chatbot.', 'knowvault' ),
+						'errors'  => $errors,
+					)
+				);
+			}
+		} catch ( \Exception $e ) {
+			wp_send_json_error( array( 'message' => $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Handle bulk export documents
+	 *
+	 * @since 2.0.4
+	 */
+	public function handle_bulk_export() {
+		check_ajax_referer( 'ai_botkit_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Insufficient permissions.', 'knowvault' ) ) );
+		}
+
+		if ( ! isset( $_POST['document_ids'] ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Invalid parameters.', 'knowvault' ) ) );
+		}
+
+		$document_ids = json_decode( stripslashes( $_POST['document_ids'] ), true );
+
+		if ( ! is_array( $document_ids ) || empty( $document_ids ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'No documents selected.', 'knowvault' ) ) );
+		}
+
+		$document_ids = array_map( 'intval', $document_ids );
+
+		global $wpdb;
+
+		$documents_table = Table_Helper::get_table_name('documents');
+
+		// Get documents
+		$placeholders = implode( ',', array_fill( 0, count( $document_ids ), '%d' ) );
+		$documents    = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, title, source_type, file_path, source_id, status, created_at
+				FROM {$documents_table}
+				WHERE id IN ($placeholders)",
+				$document_ids
+			)
+		);
+
+		if ( empty( $documents ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'No documents found.', 'knowvault' ) ) );
+		}
+
+		// Generate CSV
+		$filename = 'knowvault-documents-' . date( 'Y-m-d-His' ) . '.csv';
+
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=' . $filename );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		$output = fopen( 'php://output', 'w' );
+
+		// CSV headers
+		fputcsv( $output, array( 'ID', 'Title', 'Type', 'Source', 'Status', 'Created' ) );
+
+		// CSV rows
+		foreach ( $documents as $document ) {
+			$source = '';
+			if ( $document->source_type === 'url' ) {
+				$source = $document->file_path;
+			} elseif ( $document->source_type === 'file' ) {
+				$source = basename( $document->file_path );
+			} elseif ( ! empty( $document->source_id ) ) {
+				$source = get_permalink( $document->source_id );
+			}
+
+			fputcsv(
+				$output,
+				array(
+					$document->id,
+					$document->title,
+					$document->source_type,
+					$source,
+					$document->status,
+					$document->created_at,
+				)
+			);
+		}
+
+		fclose( $output );
+		exit;
 	}
 }

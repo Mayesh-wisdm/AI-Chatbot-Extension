@@ -1,4 +1,4 @@
-# KnowVault (AI BotKit) - AI Chatbot for WordPress
+# KnowVault (KnowVault) - AI Chatbot for WordPress
 
 > **Version:** 2.0.0
 > **Requires WordPress:** 5.8+

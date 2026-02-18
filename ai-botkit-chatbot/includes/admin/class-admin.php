@@ -460,6 +460,21 @@ class Admin {
                     'success' => __('Success', 'knowvault')
                 )
             ));
+
+            // Enqueue bulk actions script
+            wp_enqueue_script(
+                'ai-botkit-knowledge-bulk-actions',
+                AI_BOTKIT_PLUGIN_URL . 'admin/js/knowledge-base-bulk-actions.js',
+                array('jquery'),
+                $this->version,
+                true
+            );
+
+            // Localize bulk actions script
+            wp_localize_script('ai-botkit-knowledge-bulk-actions', 'ai_botkit_admin', array(
+                'nonce' => wp_create_nonce('ai_botkit_admin'),
+                'ajaxurl' => admin_url('admin-ajax.php')
+            ));
         }
 
         // Enqueue templates scripts on templates page.

@@ -234,7 +234,7 @@ class Vector_Database {
                             'chunk_id' => (int) $row['chunk_id'],
                             'content' => $row['content'],
                             'similarity' => $similarity,
-                            'metadata' => json_decode($row['metadata'], true),
+                            'metadata' => json_decode($row['metadata'], true) ?? [],
                         ];
                     }
                 }
@@ -301,6 +301,7 @@ class Vector_Database {
      */
     private function store_chunk(int $document_id, string $content, array $metadata): int {
         global $wpdb;
+        $chunk_index = $metadata['chunk_index'] ?? 0;
         unset($metadata['document_id']);
         unset($metadata['content']);
         unset($metadata['chunk_index']);
@@ -310,7 +311,7 @@ class Vector_Database {
             [
                 'document_id' => $document_id,
                 'content' => $content,
-                'chunk_index' => $metadata['chunk_index'] ?? 0,
+                'chunk_index' => $chunk_index,
                 'metadata' => wp_json_encode($metadata),
                 'created_at' => current_time('mysql')
             ],
@@ -388,10 +389,12 @@ class Vector_Database {
                     }
                 } else {
                     // Delete from local embeddings table
-                    $deleted_embeddings = $wpdb->delete(
-                $this->table_prefix . 'embeddings',
-                        ['chunk_id' => $chunk_ids],
-                        ['%d']
+                    $placeholders = implode(',', array_fill(0, count($chunk_ids), '%d'));
+                    $deleted_embeddings = $wpdb->query(
+                        $wpdb->prepare(
+                            "DELETE FROM {$this->table_prefix}embeddings WHERE chunk_id IN ($placeholders)",
+                            ...$chunk_ids
+                        )
                     );
                 }
 

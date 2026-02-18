@@ -3470,7 +3470,7 @@ jQuery(document).ready(function ($) {
             const $pageInfo = $('#ai-botkit-page-info');
 
             // Show loading state
-            $tableBody.html('<tr><td colspan="6" style="text-align: center; padding: 20px;"><i class="ti ti-loader-2" style="animation: spin 1s linear infinite;"></i> Loading...</td></tr>');
+            $tableBody.html('<tr><td colspan="7" style="text-align: center; padding: 20px;"><i class="ti ti-loader-2" style="animation: spin 1s linear infinite;"></i> Loading...</td></tr>');
             $pagination.hide();
 
             $.ajax({
@@ -3490,7 +3490,10 @@ jQuery(document).ready(function ($) {
                         if (response.data.documents.length > 0) {
                             response.data.documents.forEach(function (doc) {
                                 tableRows += `
-                                    <tr>
+                                    <tr data-document-id="${doc.id}">
+                                        <td style="text-align: center;">
+                                            <input type="checkbox" class="ai-botkit-document-checkbox" value="${doc.id}">
+                                        </td>
                                         <td>${doc.name}</td>
                                         <td>${doc.type}</td>
                                         <td>${doc.status}</td>
@@ -3506,7 +3509,7 @@ jQuery(document).ready(function ($) {
                                 `;
                             });
                         } else {
-                            tableRows = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No documents found.</td></tr>';
+                            tableRows = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No documents found.</td></tr>';
                         }
                         $tableBody.html(tableRows);
 
@@ -3532,12 +3535,12 @@ jQuery(document).ready(function ($) {
                             $pagination.hide();
                         }
                     } else {
-                        $tableBody.html('<tr><td colspan="6" style="text-align: center; padding: 20px; color: #e74c3c;">Error loading data: ' + response.data.message + '</td></tr>');
+                        $tableBody.html('<tr><td colspan="7" style="text-align: center; padding: 20px; color: #e74c3c;">Error loading data: ' + response.data.message + '</td></tr>');
                         $pagination.hide(); // Hide pagination on error too
                     }
                 },
                 error: function () {
-                    $tableBody.html('<tr><td colspan="6" style="text-align: center; padding: 20px; color: #e74c3c;">Error loading data. Please try again.</td></tr>');
+                    $tableBody.html('<tr><td colspan="7" style="text-align: center; padding: 20px; color: #e74c3c;">Error loading data. Please try again.</td></tr>');
                     $pagination.hide(); // Hide pagination on error too
                 }
             });

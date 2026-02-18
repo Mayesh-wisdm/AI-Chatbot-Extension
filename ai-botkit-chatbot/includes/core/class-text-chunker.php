@@ -80,7 +80,7 @@ class Text_Chunker {
      * @return array Array of text chunks
      */
     private function split_by_pattern(string $text, string $pattern): array {
-        $chunks = preg_split($pattern, $text, -1, PREG_SPLIT_NO_EMPTY);
+        $chunks = preg_split($pattern, $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
         return array_map('trim', $chunks);
     }
 
@@ -272,7 +272,8 @@ class Text_Chunker {
     private function normalize_text(string $text): string {
         // Convert to UTF-8 if needed
         if (!mb_check_encoding($text, 'UTF-8')) {
-            $text = mb_convert_encoding($text, 'UTF-8');
+            $detected = mb_detect_encoding($text, 'UTF-8, ISO-8859-1, Windows-1252', true) ?: 'ISO-8859-1';
+            $text = mb_convert_encoding($text, 'UTF-8', $detected);
         }
 
         // Normalize line endings

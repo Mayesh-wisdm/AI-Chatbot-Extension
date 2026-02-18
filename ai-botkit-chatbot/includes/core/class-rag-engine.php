@@ -105,14 +105,18 @@ class RAG_Engine {
 	/**
 	 * Process a document for RAG
 	 *
-	 * @param string $source Source identifier (file path, URL, post ID)
-	 * @param string $source_type Type of source (file, url, post)
-	 * @param array  $options Processing options
+	 * @param string $source Source identifier (file path, URL, post ID, or content)
+	 * @param string $source_type Type of source (file, url, post, learndash_course, product)
+	 * @param array  $options Processing options (source_id, title, type, url, metadata, etc.)
 	 * @return array Processing results
 	 * @throws RAG_Engine_Exception
 	 */
-	public function process_document( string $source, string $source_type, int $document_id, array $options = array() ): array {
+	public function process_document( string $source, string $source_type, array $options = array() ): array {
 		try {
+			// Extract or get document ID from options
+			$source_id = $options['source_id'] ?? 0;
+			$document_id = $this->get_or_create_document_id( $source_type, $source_id, $options );
+
 			// Check if this is an update (document already exists)
 			$is_update = $this->document_exists( $document_id );
 
@@ -139,12 +143,21 @@ class RAG_Engine {
 			}
 
 			// Load document based on source type
-
 			$document = match ( $source_type ) {
 				'file' => $this->document_loader->load_from_file( $source, $document_id ),
 				'url' => $this->document_loader->load_from_url( $source, $document_id ),
 				'post' => $this->document_loader->load_from_post( (int) $source, $document_id ),
-				default => throw new RAG_Engine_Exception( "Unsupported source type: $source_type" )
+				// For all other source types (learndash_course, product, etc.), treat $source as raw content
+				default => array(
+					'content' => $source,
+					'metadata' => array_merge(
+						array(
+							'source_type' => $source_type,
+							'document_id' => $document_id,
+						),
+						$options
+					),
+				)
 			};
 
 			// Split into chunks
@@ -171,6 +184,18 @@ class RAG_Engine {
 			foreach ( $stored_chunks as $i => $chunk ) {
 			}
 
+			// Mark document as processed successfully
+			$wpdb->update(
+				$wpdb->prefix . 'ai_botkit_documents',
+				array(
+					'status' => 'processed',
+					'updated_at' => current_time( 'mysql' ),
+				),
+				array( 'id' => $document_id ),
+				array( '%s', '%s' ),
+				array( '%d' )
+			);
+
 			$result = array(
 				'document_id'     => $document_id,
 				'chunk_count'     => count( $chunks ),
@@ -183,6 +208,20 @@ class RAG_Engine {
 			return $result;
 
 		} catch ( \Exception $e ) {
+			// Mark document as failed if we have a document_id
+			if ( isset( $document_id ) && $document_id > 0 ) {
+				$wpdb->update(
+					$wpdb->prefix . 'ai_botkit_documents',
+					array(
+						'status' => 'failed',
+						'updated_at' => current_time( 'mysql' ),
+					),
+					array( 'id' => $document_id ),
+					array( '%s', '%s' ),
+					array( '%d' )
+				);
+			}
+
 			throw new RAG_Engine_Exception(
 				esc_html__( 'Failed to process document: ', 'knowvault' ) . esc_html( $e->getMessage() ),
 				0,
@@ -208,11 +247,15 @@ class RAG_Engine {
 			$chatbot      = new Chatbot( $bot_id );
 			$chatbot_data = $chatbot->get_data();
 
-			$model_config = json_decode( $chatbot_data['model_config'], true );
+			if ( ! $chatbot_data ) {
+				throw new RAG_Engine_Exception( esc_html__( 'Chatbot not found', 'knowvault' ) );
+			}
+
+			$model_config = json_decode( $chatbot_data['model_config'] ?? '', true ) ?? array();
 
 			// Check for banned keywords
 			$banned_keywords_json = get_option( 'ai_botkit_banned_keywords', '[]' );
-			$banned_keywords      = json_decode( $banned_keywords_json, true );
+			$banned_keywords      = json_decode( $banned_keywords_json, true ) ?? array();
 
 			if ( ! empty( $banned_keywords ) ) {
 				$message_lowercase = strtolower( $message );
@@ -260,7 +303,7 @@ class RAG_Engine {
 
 			// Find relevant context
 			$retrieval_options = array(
-				'max_results'    => $model_config['context_length'] ? $model_config['context_length'] : self::DEFAULT_SETTINGS['max_context_chunks'],
+				'max_results'    => $model_config['context_length'] ?? self::DEFAULT_SETTINGS['max_context_chunks'],
 				'min_similarity' => $model_config['min_chunk_relevance'] ?? self::DEFAULT_SETTINGS['min_chunk_relevance'],
 			);
 
@@ -272,8 +315,8 @@ class RAG_Engine {
 
 			// check if context is empty
 			if ( empty( $context ) ) {
-				$message_template = json_decode( $chatbot_data['messages_template'], true );
-				$message          = $message_template['fallback'];
+				$message_template = json_decode( $chatbot_data['messages_template'] ?? '', true ) ?? array();
+				$message          = $message_template['fallback'] ?? esc_html__( 'I could not find relevant information.', 'knowvault' );
 				return array(
 					'response' => wp_unslash( $message ),
 					'context'  => array(),
@@ -288,9 +331,9 @@ class RAG_Engine {
 			// Format context for prompt
 			$formatted_context = $this->format_context_for_prompt( $context );
 
-			$options['model']       = $model_config['model'] ? $model_config['model'] : get_option( 'ai_botkit_chat_model', 'gpt-4o-mini' );
-			$options['max_tokens']  = $model_config['max_tokens'] ? $model_config['max_tokens'] : get_option( 'ai_botkit_max_tokens', 1000 );
-			$options['temperature'] = $model_config['temperature'] ? $model_config['temperature'] : get_option( 'ai_botkit_temperature', 0.7 );
+			$options['model']       = $model_config['model'] ?? get_option( 'ai_botkit_chat_model', 'gpt-4o-mini' );
+			$options['max_tokens']  = $model_config['max_tokens'] ?? get_option( 'ai_botkit_max_tokens', 1000 );
+			$options['temperature'] = $model_config['temperature'] ?? get_option( 'ai_botkit_temperature', 0.7 );
 
 			// Build conversation messages (include attachments in user message context)
 			$messages = $this->build_conversation_messages( $message, $history, $formatted_context, $model_config, $options );
@@ -371,11 +414,15 @@ class RAG_Engine {
 			$chatbot      = new Chatbot( $bot_id );
 			$chatbot_data = $chatbot->get_data();
 
-			$model_config = json_decode( $chatbot_data['model_config'], true );
+			if ( ! $chatbot_data ) {
+				throw new RAG_Engine_Exception( esc_html__( 'Chatbot not found', 'knowvault' ) );
+			}
+
+			$model_config = json_decode( $chatbot_data['model_config'] ?? '', true ) ?? array();
 
 			// Check for banned keywords
 			$banned_keywords_json = get_option( 'ai_botkit_banned_keywords', '[]' );
-			$banned_keywords      = json_decode( $banned_keywords_json, true );
+			$banned_keywords      = json_decode( $banned_keywords_json, true ) ?? array();
 
 			if ( ! empty( $banned_keywords ) ) {
 				$message_lowercase = strtolower( $message );
@@ -420,7 +467,7 @@ class RAG_Engine {
 
 			// Find relevant context
 			$retrieval_options = array(
-				'max_results'    => $model_config['context_length'] ? $model_config['context_length'] : self::DEFAULT_SETTINGS['max_context_chunks'],
+				'max_results'    => $model_config['context_length'] ?? self::DEFAULT_SETTINGS['max_context_chunks'],
 				'min_similarity' => $model_config['min_chunk_relevance'] ?? self::DEFAULT_SETTINGS['min_chunk_relevance'],
 			);
 
@@ -444,9 +491,9 @@ class RAG_Engine {
 			// Format context for prompt
 			$formatted_context = $this->format_context_for_prompt( $context );
 
-			$options['model']       = $model_config['model'] ? $model_config['model'] : get_option( 'ai_botkit_chat_model', 'gpt-4o-mini' );
-			$options['max_tokens']  = $model_config['max_tokens'] ? $model_config['max_tokens'] : get_option( 'ai_botkit_max_tokens', 1000 );
-			$options['temperature'] = $model_config['temperature'] ? $model_config['temperature'] : get_option( 'ai_botkit_temperature', 0.7 );
+			$options['model']       = $model_config['model'] ?? get_option( 'ai_botkit_chat_model', 'gpt-4o-mini' );
+			$options['max_tokens']  = $model_config['max_tokens'] ?? get_option( 'ai_botkit_max_tokens', 1000 );
+			$options['temperature'] = $model_config['temperature'] ?? get_option( 'ai_botkit_temperature', 0.7 );
 
 			// Build conversation messages (include attachments when streaming)
 			$messages = $this->build_conversation_messages( $message, $history, $formatted_context, $model_config, $options );
@@ -551,11 +598,11 @@ class RAG_Engine {
 		$formatted = array();
 
 		foreach ( $context as $chunk ) {
-			$source      = $chunk['source'];
+			$source      = $chunk['source'] ?? array();
 			$formatted[] = sprintf(
 				"Source: %s (%s)\n%s",
-				$source['title'] ?: $source['url'] ?: $source['type'],
-				$source['url'],
+				( $source['title'] ?? '' ) ?: ( $source['url'] ?? '' ) ?: ( $source['type'] ?? 'unknown' ),
+				$source['url'] ?? '',
 				$chunk['content']
 			);
 		}
@@ -592,8 +639,11 @@ class RAG_Engine {
 			),
 		);
 
-		// Limit history to last 5 messages
-		$history = array_slice( $history, -$chatbot_data['max_messages'] );
+		// Limit history to last N messages
+		$max_messages = (int) ( $chatbot_data['max_messages'] ?? 10 );
+		if ( $max_messages > 0 ) {
+			$history = array_slice( $history, -$max_messages );
+		}
 
 		// Add conversation history
 		foreach ( $history as $turn ) {
@@ -734,6 +784,63 @@ class RAG_Engine {
 	 * @param int $document_id Document ID
 	 * @return bool True if document exists, false otherwise
 	 */
+	/**
+	 * Get existing document ID or create a new document record
+	 *
+	 * @param string $source_type Type of source
+	 * @param int $source_id Source ID (post ID, course ID, product ID, etc.)
+	 * @param array $options Document options (title, metadata, etc.)
+	 * @return int Document ID
+	 */
+	private function get_or_create_document_id( string $source_type, int $source_id, array $options ): int {
+		global $wpdb;
+
+		// Try to find existing document by source_type and source_id
+		if ( $source_id > 0 ) {
+			$existing_id = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT id FROM {$wpdb->prefix}ai_botkit_documents WHERE source_type = %s AND source_id = %d",
+					$source_type,
+					$source_id
+				)
+			);
+
+			if ( $existing_id ) {
+				// Update the document status to processing
+				$wpdb->update(
+					$wpdb->prefix . 'ai_botkit_documents',
+					array(
+						'status' => 'processing',
+						'updated_at' => current_time( 'mysql' ),
+					),
+					array( 'id' => $existing_id ),
+					array( '%s', '%s' ),
+					array( '%d' )
+				);
+
+				return (int) $existing_id;
+			}
+		}
+
+		// Create new document record
+		$title = $options['title'] ?? 'Untitled Document';
+
+		$wpdb->insert(
+			$wpdb->prefix . 'ai_botkit_documents',
+			array(
+				'title' => $title,
+				'source_type' => $source_type,
+				'source_id' => $source_id > 0 ? $source_id : null,
+				'status' => 'processing',
+				'created_at' => current_time( 'mysql' ),
+				'updated_at' => current_time( 'mysql' ),
+			),
+			array( '%s', '%s', '%d', '%s', '%s', '%s' )
+		);
+
+		return (int) $wpdb->insert_id;
+	}
+
 	private function document_exists( int $document_id ): bool {
 		global $wpdb;
 

@@ -46,7 +46,7 @@ class Rate_Limiter {
                 $stats = $this->get_user_usage_stats($user_id);
             } else {
                 // For non-logged-in users, use IP address
-                $user_ip = $_SERVER['REMOTE_ADDR'];
+                $user_ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
                 $ip_hash = hash('sha256', $user_ip);
                 
                 // Get usage statistics for the past 24 hours by IP hash
@@ -164,7 +164,7 @@ class Rate_Limiter {
                 }
                 
                 // Count tokens from all messages
-                $metadata = json_decode($message->metadata, true);
+                $metadata = json_decode($message->metadata ?? '', true) ?? [];
                 if (isset($metadata['tokens'])) {
                     $total_tokens += (int) $metadata['tokens'];
                 }
@@ -202,7 +202,7 @@ class Rate_Limiter {
                 $stats = $this->get_user_usage_stats($user_id);
             } else {
                 // For non-logged-in users, use IP address
-                $user_ip = $_SERVER['REMOTE_ADDR'];
+                $user_ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
                 $ip_hash = hash('sha256', $user_ip);
                 $stats = $this->get_user_usage_stats(null, $ip_hash);
             }

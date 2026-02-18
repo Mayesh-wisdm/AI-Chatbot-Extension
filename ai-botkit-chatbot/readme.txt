@@ -4,7 +4,7 @@ Tags: AI, Chatbot, ChatGPT, Live Chat, Live Support
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 2.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -186,22 +186,22 @@ A: No. KnowVault is designed for users without coding skills, featuring a simple
 A: KnowVault supports OpenAI GPT-4, Anthropic Claude, Google Gemini, and open-source models like DeepSeek and LLAMA via Together.ai.
 ** Q: What does “Bring Your Own API Key” mean?**
 A: It means you need to obtain an API key from your chosen AI service provider, giving you control over your costs and the flexibility to choose your preferred AI provider.
-** Q: Is there a cost associated with using AI BotKit?**
-A: AI BotKit itself is free. However, users are responsible for costs incurred through their chosen third-party AI provider.
+** Q: Is there a cost associated with using KnowVault?**
+A: KnowVault itself is free. However, users are responsible for costs incurred through their chosen third-party AI provider.
 ** Q: How do I train the chatbot on my website content?**
-A: AI BotKit features a native training method. Simply select your existing pages, posts, or upload documents like PDFs, and the chatbot will instantly learn from this content without external databases.
+A: KnowVault features a native training method. Simply select your existing pages, posts, or upload documents like PDFs, and the chatbot will instantly learn from this content without external databases.
 ** Q: Can I customize the chatbot appearance?**
 A: Yes, you can fully customize your chatbot’s appearance using our intuitive visual editor, without needing any CSS or coding skills.
-** Q: Does AI BotKit support multiple languages?**
-A: Yes. AI BotKit supports over 50 languages, enabling your chatbot to communicate seamlessly with a global audience.
-** Q: How do I install AI BotKit?**
-A: You can install AI BotKit directly from your WordPress dashboard by navigating to Plugins > Add New and searching for AI BotKit, or by uploading the downloaded plugin zip file.
+** Q: Does KnowVault support multiple languages?**
+A: Yes. KnowVault supports over 50 languages, enabling your chatbot to communicate seamlessly with a global audience.
+** Q: How do I install KnowVault?**
+A: You can install KnowVault directly from your WordPress dashboard by navigating to Plugins > Add New and searching for KnowVault, or by uploading the downloaded plugin zip file.
 ** Q: Can I monitor chatbot interactions and performance?**
-A: Yes. AI BotKit provides detailed analytics that allow you to track conversation metrics, popular questions, user interactions, and leads captured.
-** Q: Is AI BotKit GDPR-compliant?**
-A: Yes. AI BotKit stores all chatbot data locally within your WordPress installation, adhering strictly to GDPR standards and ensuring your data remains secure.
-** Q: What industries benefit most from AI BotKit?**
-A: AI BotKit is ideal for businesses in e-commerce, education, small businesses, and agencies looking to automate support, generate leads, and improve customer interaction.
+A: Yes. KnowVault provides detailed analytics that allow you to track conversation metrics, popular questions, user interactions, and leads captured.
+** Q: Is KnowVault GDPR-compliant?**
+A: Yes. KnowVault stores all chatbot data locally within your WordPress installation, adhering strictly to GDPR standards and ensuring your data remains secure.
+** Q: What industries benefit most from KnowVault?**
+A: KnowVault is ideal for businesses in e-commerce, education, small businesses, and agencies looking to automate support, generate leads, and improve customer interaction.
 ** Q: What if I encounter compatibility issues with other plugins?**
 A: We provide clear instructions to resolve common conflicts, especially with caching plugins. Support is available through our documentation and email assistance.
 

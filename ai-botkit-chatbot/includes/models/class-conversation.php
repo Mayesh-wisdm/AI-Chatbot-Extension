@@ -14,6 +14,8 @@
 
 namespace AI_BotKit\Models;
 
+use AI_BotKit\Utils\Table_Helper;
+
 /**
  * Conversation Model Class.
  *
@@ -57,8 +59,8 @@ class Conversation {
      */
     public function __construct( $id = null ) {
         global $wpdb;
-        $this->table_name     = $wpdb->prefix . 'ai_botkit_conversations';
-        $this->messages_table = $wpdb->prefix . 'ai_botkit_messages';
+        $this->table_name     = Table_Helper::get_table_name('conversations');
+        $this->messages_table = Table_Helper::get_table_name('messages');
 
         if ( $id ) {
             $this->id = $id;

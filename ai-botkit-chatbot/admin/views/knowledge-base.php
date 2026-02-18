@@ -1,6 +1,8 @@
 <?php
 defined('ABSPATH') || exit;
 
+use AI_BotKit\Utils\Table_Helper;
+
 // Get current page and items per page
 $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
 $items_per_page = 20;
@@ -209,11 +211,51 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 				</div>
 			<?php } else { ?>
 
+			<!-- Bulk Actions Toolbar -->
+			<div class="ai-botkit-bulk-actions-toolbar" style="margin-bottom: 15px; padding: 10px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; display: none;">
+				<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+					<span id="ai-botkit-selected-count" style="font-weight: 600; color: #2271b1;">0 <?php esc_html_e('selected', 'knowvault'); ?></span>
+
+					<select id="ai-botkit-bulk-action" class="ai-botkit-input" style="width: auto;">
+						<option value=""><?php esc_html_e('Bulk Actions', 'knowvault'); ?></option>
+						<option value="delete"><?php esc_html_e('Delete', 'knowvault'); ?></option>
+						<option value="reprocess"><?php esc_html_e('Reprocess', 'knowvault'); ?></option>
+						<option value="add_to_bot"><?php esc_html_e('Add to Chatbot', 'knowvault'); ?></option>
+						<option value="export"><?php esc_html_e('Export List', 'knowvault'); ?></option>
+					</select>
+
+					<div id="ai-botkit-bot-select-container" style="display: none;">
+						<select id="ai-botkit-target-bot" class="ai-botkit-input" style="width: 200px;">
+							<option value=""><?php esc_html_e('Select Chatbot', 'knowvault'); ?></option>
+							<?php
+							// Get all chatbots for the "Add to Bot" dropdown.
+							$chatbots_table = Table_Helper::get_table_name('chatbots');
+							$chatbots = $wpdb->get_results("SELECT id, name FROM {$chatbots_table} ORDER BY name ASC");
+							foreach ($chatbots as $bot) {
+								echo '<option value="' . esc_attr($bot->id) . '">' . esc_html($bot->name) . '</option>';
+							}
+							?>
+						</select>
+					</div>
+
+					<button type="button" id="ai-botkit-apply-bulk-action" class="ai-botkit-button ai-botkit-button-primary">
+						<?php esc_html_e('Apply', 'knowvault'); ?>
+					</button>
+
+					<button type="button" id="ai-botkit-clear-selection" class="ai-botkit-button" style="margin-left: auto;">
+						<?php esc_html_e('Clear Selection', 'knowvault'); ?>
+					</button>
+				</div>
+			</div>
+
 			<!-- Table -->
 			<div class="ai-botkit-table-container">
-				<table class="ai-botkit-table">
+				<table class="ai-botkit-table" id="ai-botkit-knowledge-table">
 					<thead>
 					<tr>
+						<th style="width: 40px;">
+							<input type="checkbox" id="ai-botkit-select-all" title="<?php esc_attr_e('Select All', 'knowvault'); ?>">
+						</th>
 						<th><?php esc_html_e('Name', 'knowvault'); ?></th>
 						<th><?php esc_html_e('Type', 'knowvault'); ?></th>
 						<th><?php esc_html_e('Status', 'knowvault'); ?></th>
@@ -233,9 +275,15 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 							$document_url = '<a href="' . $document->file_path . '" target="_blank">' . esc_html__('Visit URL', 'knowvault') . '</a>';
 						} elseif ( 'file' == $document_type ) {
 							$document_url = size_format( filesize( $document->file_path ), 2 );
+						} else {
+							// Handle other document types (LearnDash courses, WooCommerce products, etc.)
+							$document_url = !empty($document->source_id) ? '<a href="' . get_permalink($document->source_id) . '" target="_blank">' . esc_html__('View', 'knowvault') . '</a>' : esc_html__('N/A', 'knowvault');
 						}
 						?>
-						<tr>
+						<tr data-document-id="<?php echo esc_attr($document->id); ?>">
+							<td style="text-align: center;">
+								<input type="checkbox" class="ai-botkit-document-checkbox" value="<?php echo esc_attr($document->id); ?>">
+							</td>
 							<td><?php echo strlen($document_name) > 20 ? substr($document_name, 0, 20) . '...' : esc_html($document_name); ?></td>
 							<td><?php echo esc_html($document_type); ?></td>
 							<td><?php
@@ -247,6 +295,9 @@ $nonce = wp_create_nonce('ai_botkit_chatbots');
 									echo '<span class="ai-botkit-badge ai-botkit-badge-success">' . esc_html__('Completed', 'knowvault') . '</span>';
 								} elseif ( 'failed' == $document->status ) {
 									echo '<span class="ai-botkit-badge ai-botkit-badge-danger ai-botkit-error-clickable" data-document-id="' . esc_attr($document->id) . '" style="cursor: pointer;" title="Click to view error details">' . esc_html__('Failed', 'knowvault') . '</span>';
+								} else {
+									// Default case for NULL or unknown status
+									echo '<span class="ai-botkit-badge ai-botkit-badge-secondary">' . esc_html__('Unknown', 'knowvault') . '</span>';
 								}
 							?></td>
 							<td><?php echo esc_html($document_date); ?></td>

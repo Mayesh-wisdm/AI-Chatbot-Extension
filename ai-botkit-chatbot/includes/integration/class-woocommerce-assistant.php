@@ -180,7 +180,7 @@ class WooCommerce_Assistant {
         }
 
         $cart = WC()->cart;
-        if ($cart->is_empty()) {
+        if ( ! $cart || $cart->is_empty()) {
             $response['content'] .= "\n\nYour shopping cart is currently empty.";
             return $response;
         }
@@ -230,7 +230,7 @@ class WooCommerce_Assistant {
             "\n\nOrder #%s Status:\nStatus: %s\nDate: %s\nTotal: %s\nShipping Method: %s\n",
             $order->get_order_number(),
             wc_get_order_status_name($order->get_status()),
-            $order->get_date_created()->date_i18n(get_option('date_format')),
+            $order->get_date_created() ? $order->get_date_created()->date_i18n(get_option('date_format')) : '',
             $order->get_formatted_order_total(),
             $order->get_shipping_method()
         );
@@ -451,8 +451,12 @@ class WooCommerce_Assistant {
      * Get recently viewed products
      */
     private function get_recently_viewed_products(): array {
-        $viewed_products = array_filter(array_map('wc_get_product', 
-            WC()->session->get('recently_viewed', [])
+        $session = WC()->session;
+        if ( ! $session ) {
+            return array();
+        }
+        $viewed_products = array_filter(array_map('wc_get_product',
+            $session->get('recently_viewed', [])
         ));
 
         return array_slice($viewed_products, 0, 5);

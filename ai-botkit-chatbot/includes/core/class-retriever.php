@@ -85,9 +85,13 @@ class Retriever {
             $options = array_merge(self::DEFAULT_SETTINGS, $options);
 
             // Generate query embedding
-            $query_embedding = $this->embeddings_generator->generate_embeddings([
+            $embeddings_result = $this->embeddings_generator->generate_embeddings([
                 ['content' => $query]
-            ], $this->default_model)[0]['embedding'];
+            ], $this->default_model);
+            if ( empty( $embeddings_result ) || ! isset( $embeddings_result[0]['embedding'] ) ) {
+                return [];
+            }
+            $query_embedding = $embeddings_result[0]['embedding'];
 
             // Find similar chunks
             $similar_chunks = $this->vector_db->find_similar(
@@ -148,7 +152,7 @@ class Retriever {
                 'content' => $chunk['current']['content'],
                 'metadata' => $chunk['current']['metadata'],
                 'relevance' => $chunk['current']['similarity'],
-                'source' => isset($chunk['current']['metadata']) ? $this->format_source($chunk['current']['metadata']) : []
+                'source' => ! empty($chunk['current']['metadata']) && is_array($chunk['current']['metadata']) ? $this->format_source($chunk['current']['metadata']) : []
             ];
         }, $chunks);
     }

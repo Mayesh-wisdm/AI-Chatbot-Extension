@@ -96,7 +96,7 @@ class Health_Checks {
         }
 
         // Cache the results
-        $this->cache_manager->set(self::CACHE_KEY, $status, self::CACHE_DURATION);
+        $this->cache_manager->set(self::CACHE_KEY, $status, 'default', self::CACHE_DURATION);
 
         return $status;
     }
@@ -197,6 +197,9 @@ class Health_Checks {
         // Check memory usage
         $memory_limit = wp_convert_hr_to_bytes(ini_get('memory_limit'));
         $memory_usage = memory_get_usage(true);
+        if ( $memory_limit <= 0 ) {
+            return $status;
+        }
         $memory_percent = ($memory_usage / $memory_limit) * 100;
 
         if ($memory_percent > 90) {

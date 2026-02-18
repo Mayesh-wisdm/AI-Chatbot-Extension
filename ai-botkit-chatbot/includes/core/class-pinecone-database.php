@@ -257,6 +257,7 @@ class Pinecone_Database {
                     'Content-Type' => 'application/json',
                 ),
                 'body'        => wp_json_encode($request_body),
+                'timeout'     => 30,
             );
 
             $response = wp_remote_post($this->get_base_url() . '/query', $args);
@@ -739,7 +740,7 @@ class Pinecone_Database {
                 ];
             } else {
                 $error_data = json_decode($body, true);
-                $error_message = $error_data['message'] ?? 'Unknown error';
+                $error_message = is_array($error_data) ? ($error_data['message'] ?? 'Unknown error') : 'Unknown error';
                 throw new Pinecone_Exception("Failed to delete all vectors: {$error_message} (Status: {$status_code})");
             }
 

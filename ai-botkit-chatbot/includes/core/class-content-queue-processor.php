@@ -138,7 +138,7 @@ class Content_Queue_Processor {
         }
         
         $stats = $this->generate_queue_statistics();
-        $this->cache_manager->set($cache_key, $stats, 300); // 5 minutes
+        $this->cache_manager->set($cache_key, $stats, 'default', 300); // 5 minutes
         
         return $stats;
     }

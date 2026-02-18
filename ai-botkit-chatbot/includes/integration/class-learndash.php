@@ -245,8 +245,11 @@ class LearnDash {
         $content[] = "Points: " . ($course_meta['_sfwd-courses_course_points'][0] ?? '0');
 
         // Get lessons
-        $lessons = learndash_get_course_lessons_list($course);
+        $lessons = learndash_get_course_lessons_list($course->ID);
         foreach ($lessons as $lesson) {
+            if ( ! isset( $lesson['post'] ) || ! $lesson['post'] instanceof \WP_Post ) {
+                continue;
+            }
             $content[] = "\nLesson: " . $lesson['post']->post_title;
             $content[] = wp_strip_all_tags($lesson['post']->post_content);
 
@@ -333,26 +336,59 @@ class LearnDash {
         $queue_table = $wpdb->prefix . 'ai_botkit_content_queue';
 
         return [
-            'total_courses' => wp_count_posts('sfwd-courses')->publish,
-            'total_lessons' => wp_count_posts('sfwd-lessons')->publish,
-            'total_topics' => wp_count_posts('sfwd-topic')->publish,
-            'total_quizzes' => wp_count_posts('sfwd-quiz')->publish,
+            'total_courses' => (int) ( wp_count_posts('sfwd-courses')->publish ?? 0 ),
+            'total_lessons' => (int) ( wp_count_posts('sfwd-lessons')->publish ?? 0 ),
+            'total_topics' => (int) ( wp_count_posts('sfwd-topic')->publish ?? 0 ),
+            'total_quizzes' => (int) ( wp_count_posts('sfwd-quiz')->publish ?? 0 ),
             'processed_content' => $wpdb->get_var(
                 $wpdb->prepare(
-                    "SELECT COUNT(*) FROM {$documents_table} 
+                    "SELECT COUNT(*) FROM {$documents_table}
                     WHERE source_type LIKE %s",
                     'learndash_%'
                 )
             ),
             'pending_items' => $wpdb->get_var(
                 $wpdb->prepare(
-                    "SELECT COUNT(*) FROM {$queue_table} 
-                    WHERE source_type LIKE %s 
+                    "SELECT COUNT(*) FROM {$queue_table}
+                    WHERE source_type LIKE %s
                     AND status = 'pending'",
                     'learndash_%'
                 )
             ),
             'is_active' => $this->is_active
+        ];
+    }
+
+    /**
+     * Bulk sync all LearnDash courses to RAG system
+     *
+     * @return array Results with counts
+     */
+    public function bulk_sync_courses(): array {
+        $courses = get_posts([
+            'post_type' => 'sfwd-courses',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ]);
+
+        $queued = 0;
+        $skipped = 0;
+
+        foreach ($courses as $course) {
+            // Queue each course for processing
+            $this->queue_content_for_processing($course->ID, 'course', 'update');
+            $queued++;
+        }
+
+        // Trigger queue processing
+        do_action('ai_botkit_process_queue');
+
+        return [
+            'total_courses' => count($courses),
+            'queued' => $queued,
+            'skipped' => $skipped
         ];
     }
 } 

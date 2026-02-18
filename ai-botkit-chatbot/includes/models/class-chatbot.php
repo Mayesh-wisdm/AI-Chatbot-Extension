@@ -1,5 +1,8 @@
 <?php
 namespace AI_BotKit\Models;
+
+use AI_BotKit\Utils\Table_Helper;
+
 /**
  * Chatbot Model Class
  */
@@ -13,7 +16,7 @@ class Chatbot {
      */
     public function __construct($id = null) {
         global $wpdb;
-        $this->table_name = $wpdb->prefix . 'ai_botkit_chatbots';
+        $this->table_name = Table_Helper::get_table_name('chatbots');
         
         if ($id) {
             $this->id = $id;
@@ -39,7 +42,7 @@ class Chatbot {
      */
     public static function get_all() {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'ai_botkit_chatbots';
+        $table_name = Table_Helper::get_table_name('chatbots');
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe, uses $wpdb->prefix.
         $results = $wpdb->get_results( "SELECT * FROM {$table_name} ORDER BY name ASC", ARRAY_A );
         return $results !== null ? $results : array();

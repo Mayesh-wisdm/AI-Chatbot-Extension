@@ -1831,7 +1831,7 @@ class Ajax_Handler {
 			// Get request parameters.
 			$conversation_text = isset( $_POST['conversation_text'] ) ? sanitize_textarea_field( wp_unslash( $_POST['conversation_text'] ) ) : '';
 			$chatbot_id        = isset( $_POST['chatbot_id'] ) ? absint( $_POST['chatbot_id'] ) : 0;
-			$limit             = isset( $_POST['limit'] ) ? absint( $_POST['limit'] ) : 5;
+			$limit             = isset( $_POST['limit'] ) ? absint( $_POST['limit'] ) : 2; // Default to 2 recommendations
 			$session_id        = isset( $_POST['session_id'] ) ? sanitize_key( $_POST['session_id'] ) : '';
 
 			// Build context.

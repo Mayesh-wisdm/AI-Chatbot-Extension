@@ -1,0 +1,66 @@
+# =============================================================================
+# .gitignore for ai-botkit-chatbot WordPress Plugin
+# =============================================================================
+
+# -- Development & CI Tools --
+.claude/
+.playwright-mcp/
+_project_specs/
+
+# -- Documentation (dev-only, not shipped with plugin) --
+docs/
+reports/
+specs/
+CLAUDE.md
+CONTRIBUTING.md
+CHANGELOG.md
+FIT_QUALITY_REPORT.md
+RECOMMENDATION_TESTING_GUIDE.md
+USER_DOCUMENTATION.md
+
+# -- Tests --
+tests/
+phpunit.xml
+phpunit.xml.dist
+
+# -- Composer (vendor IS shipped, but lock/json are dev-only) --
+includes/composer.json
+includes/composer.lock
+
+# -- Node / Playwright --
+node_modules/
+package-lock.json
+.auth/
+
+# -- Playwright artifacts --
+playwright-report/
+test-results/
+*.output/
+
+# -- Environment & secrets --
+.env
+.env.*
+!.env.example
+
+# -- OS files --
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# -- IDE files --
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# -- PHP --
+*.log
+error_log
+debug.log
+
+# -- WordPress --
+wp-config.php
+wp-content/uploads/
